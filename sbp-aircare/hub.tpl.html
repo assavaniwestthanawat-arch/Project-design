@@ -1,0 +1,160 @@
+<title>SBP AirCare Prototypes</title>
+<style>
+@font-face{font-family:'Anuphan';font-weight:400;font-display:swap;src:url(assets/fonts/anuphan-thai-400-normal.woff2) format('woff2');unicode-range:U+0E01-0E5B,U+200C-200D,U+25CC}
+@font-face{font-family:'Anuphan';font-weight:400;font-display:swap;src:url(assets/fonts/anuphan-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+2000-206F}
+@font-face{font-family:'Anuphan';font-weight:600;font-display:swap;src:url(assets/fonts/anuphan-thai-600-normal.woff2) format('woff2');unicode-range:U+0E01-0E5B,U+200C-200D,U+25CC}
+@font-face{font-family:'Anuphan';font-weight:600;font-display:swap;src:url(assets/fonts/anuphan-latin-600-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+2000-206F}
+@font-face{font-family:'IBM Plex Mono';font-weight:500;font-display:swap;src:url(assets/fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2')}
+/* Hub — handoff index: brand blue/orange, one reading column for the plan, cards for the three prototypes. */
+:root{--bg:#F2F5F9;--card:#FFFFFF;--ink:#132033;--ink-2:#4E5E71;--ink-3:#8190A3;--line:#DCE4EE;--blue:#123F7B;--blue-2:#1B5AA8;--blue-l:#E6EEF8;--or:#E2711D;--or-l:#FCEBDD;--ok:#1B7A45;
+  --core:#123F7B;--comp:#2E86D6;--insp:#9CC3EC;--skip:#E3E8EF;--sans:'Anuphan','Noto Sans Thai',Tahoma,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0C121A;--card:#131C27;--ink:#E6EDF5;--ink-2:#A7B5C5;--ink-3:#6F8095;--line:#233246;--blue:#8DB9F2;--blue-2:#8DB9F2;--blue-l:#172A42;--or:#F08A3A;--or-l:#33200F;--core:#8DB9F2;--comp:#3D7FC0;--insp:#28496E;--skip:#1B2533;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0C121A;--card:#131C27;--ink:#E6EDF5;--ink-2:#A7B5C5;--ink-3:#6F8095;--line:#233246;--blue:#8DB9F2;--blue-2:#8DB9F2;--blue-l:#172A42;--or:#F08A3A;--or-l:#33200F;--core:#8DB9F2;--comp:#3D7FC0;--insp:#28496E;--skip:#1B2533;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.72 var(--sans);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:clamp(16px,3vw,32px);padding-block:28px 80px}
+h1,h2,h3{line-height:1.3;margin:0;text-wrap:balance;font-weight:600}
+a{color:var(--blue-2)}
+.mono{font-family:var(--mono)}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:end;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:18px}
+.top h1{font-size:clamp(26px,3.4vw,40px)}
+.top p{color:var(--ink-2);max-width:44em;margin-top:6px}
+.doc{font:500 12px var(--mono);border:1.5px solid var(--ink);padding:4px 10px;border-radius:4px;white-space:nowrap}
+nav.toc{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0 8px}
+nav.toc a{font-size:14px;text-decoration:none;border:1px solid var(--line);background:var(--card);color:var(--ink-2);padding:5px 12px;border-radius:999px}
+nav.toc a:hover{border-color:var(--blue-2);color:var(--ink)}
+section{margin-top:44px}
+section>h2{font-size:26px;margin-bottom:6px}
+section>p.lead{color:var(--ink-2);margin-bottom:18px;max-width:46em}
+.vars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.var{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.swatch{height:120px;position:relative;display:flex;align-items:flex-end;padding:14px}
+.swatch .chips{display:flex;gap:6px}
+.swatch .chips i{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.7)}
+.swatch b{position:absolute;right:14px;top:10px;font:600 44px var(--mono);opacity:.9}
+.v-a .swatch{background:linear-gradient(135deg,#EEF2F6,#FFFFFF 60%);color:#123F7B}
+.v-b .swatch{background:#F4F7FA;background-image:linear-gradient(90deg,rgba(18,63,123,.08) 1px,transparent 1px),linear-gradient(rgba(18,63,123,.08) 1px,transparent 1px);background-size:20px 20px;color:#0E2238;border-bottom:1.5px solid #0E2238}
+.v-c .swatch{background:radial-gradient(90% 90% at 70% 30%,#16324A,#090E14);color:#5AD0FF}
+.var .body{padding:16px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.var h3{font-size:20px}
+.var .who{font-size:14px;color:var(--ink-3)}
+.var ul{margin:0;padding-left:18px;font-size:14.5px;color:var(--ink-2)}
+.var .open{margin-top:auto;display:inline-flex;justify-content:center;align-items:center;min-height:44px;border-radius:12px;background:var(--ink);color:var(--bg);font-weight:600;text-decoration:none}
+.var .open:hover{background:var(--blue-2);color:#fff}
+.rec{margin-top:14px;background:var(--or-l);border-left:4px solid var(--or);border-radius:10px;padding:14px 18px}
+.rec b{color:var(--ink)}
+@media (max-width:900px){.vars{grid-template-columns:1fr}}
+.try{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;counter-reset:t}
+.try li{list-style:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:14.5px;color:var(--ink-2)}
+.try li b{color:var(--ink);display:block}
+.try{padding:0;margin:0}
+@media (max-width:700px){.try{grid-template-columns:1fr}}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--ink-2);margin-bottom:12px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.hundred{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;padding:0;margin:0}
+.hundred li{list-style:none;border-radius:6px;padding:5px 6px;min-height:52px;display:flex;flex-direction:column;justify-content:space-between;font-size:11px;line-height:1.25;overflow:hidden;cursor:default;transition:transform .15s}
+.hundred li:hover{transform:scale(1.06);position:relative;z-index:2;box-shadow:0 6px 18px -6px rgba(0,0,0,.35)}
+.hundred li b{font:500 11px var(--mono)}
+.hundred li span{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.t-core{background:var(--core);color:#fff}.t-comp{background:var(--comp);color:#fff}.t-insp{background:var(--insp);color:#0E2238}.t-skip{background:var(--skip);color:var(--ink-3)}
+:root[data-theme="dark"] .t-core{color:#0C121A}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .t-core{color:#0C121A}}
+@media (max-width:760px){.hundred{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.plan{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:clamp(18px,3vw,36px)}
+.plan h2{font-size:22px;margin:34px 0 10px;padding-top:18px;border-top:1px solid var(--line)}
+.plan h2:first-child{margin-top:0;border-top:0;padding-top:0}
+.plan h3{font-size:18px;margin:22px 0 8px}
+.plan p,.plan li{max-width:72ch;color:var(--ink-2)}
+.plan strong{color:var(--ink)}
+.plan hr{border:0;border-top:1px solid var(--line);margin:24px 0}
+.tw{overflow-x:auto;margin:10px 0 16px;border:1px solid var(--line);border-radius:12px}
+.plan table{border-collapse:collapse;width:100%;font-size:14px}
+.plan th,.plan td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.plan th{background:var(--blue-l);color:var(--ink);font-weight:600;white-space:nowrap}
+.plan tr:last-child td{border-bottom:0}
+.plan td:first-child{white-space:nowrap;font-family:var(--mono);font-size:13px;color:var(--ink)}
+.plan pre{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px;overflow-x:auto;font:13px/1.6 var(--mono);color:var(--ink)}
+.plan code{font-family:var(--mono);font-size:.9em;background:var(--blue-l);padding:1px 5px;border-radius:5px;color:var(--ink)}
+.plan pre code{background:none;padding:0}
+.plan li.todo{list-style:none;margin-left:-20px}
+.plan li.todo::before{content:"☐ ";color:var(--or)}
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;padding:0}
+.files li{list-style:none;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;color:var(--ink-2)}
+.files li b{font:500 13px var(--mono);color:var(--ink);display:block}
+footer{margin-top:40px;color:var(--ink-3);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="mono" style="color:var(--ink-3);font-size:13px">บริษัท สหบูรพากรุ๊ป จำกัด · SBP AirCare</p>
+      <h1>ต้นแบบเว็บไซต์ 3 รูปแบบ + แผนส่งมอบทีมพัฒนา</h1>
+      <p>ต้นแบบทุกแบบรันได้จริงในเบราว์เซอร์: 3D แยกชิ้นส่วน, X-ray, ทิศทางลม, ล้างเสมือนจริง, ห้องจำลอง, ตัวคำนวณสัญญารายปี และ Catalog 1,119 SKU ที่กรองได้ ข้อมูลสินค้าและราคาทั้งหมดเป็นตัวอย่างเพื่อทดสอบหน้าจอ</p>
+    </div>
+    <span class="doc">SBP-WEB-011 · Rev.01 · 29.09.2569</span>
+  </header>
+  <nav class="toc" aria-label="สารบัญ"><a href="#variants">3 ต้นแบบ</a><a href="#try">สิ่งที่ลองได้</a><a href="#hundred">ผลรีวิว 100 เว็บ</a><a href="#plan">แผนสำหรับ Dev</a><a href="#files">ไฟล์ในชุดนี้</a></nav>
+
+  <section id="variants">
+    <h2>เลือกดูต้นแบบ</h2>
+    <p class="lead">โครงหน้าเหมือนกันทั้ง 3 แบบ (หน้าแรก บริการ สัญญารายปี สินค้า ข้างในแอร์ พื้นที่บริการ) เพื่อให้เทียบกันได้ตรง ๆ ต่างกันที่ภาษาภาพ วิธีเล่าเรื่อง และระดับของ 3D</p>
+    <div class="vars">
+      <article class="var v-a">
+        <div class="swatch"><b>A</b><div class="chips"><i style="background:#EEF2F6"></i><i style="background:#123F7B"></i><i style="background:#1B5AA8"></i><i style="background:#E2711D"></i></div></div>
+        <div class="body"><h3>Bento Clean</h3><p class="who">B2C + องค์กรทั่วไป · อ้างอิง 068, 028, 024, 092</p>
+          <ul><li>หน้าแรกแบบ bento พร้อม 3D ในการ์ด</li><li>เลื่อนลงแล้วแอร์แยกชิ้นส่วนทีละขั้น พร้อมขั้นตอนล้าง</li><li>ตัวช่วยเลือก BTU แบบลากจุด</li></ul>
+          <a class="open" href="./a.html">เปิดแบบ A</a></div>
+      </article>
+      <article class="var v-b">
+        <div class="swatch"><b>B</b><div class="chips"><i style="background:#F4F7FA"></i><i style="background:#0E2238"></i><i style="background:#2C6CB8"></i><i style="background:#E2711D"></i></div></div>
+        <div class="body"><h3>Engineering Sheet</h3><p class="who">ฝ่ายอาคาร จัดซื้อ ผู้รับเหมา · อ้างอิง 056, 052, 036, 060</p>
+          <ul><li>3D แบบพิมพ์เขียว เส้นโยงชื่อชิ้นส่วน title block</li><li>ตารางเครื่องแทนการ์ด + ตัวอย่างรายงานรายเครื่อง</li><li>แผนภาพพื้นที่แบบเส้นทางรถไฟ</li></ul>
+          <a class="open" href="./b.html">เปิดแบบ B</a></div>
+      </article>
+      <article class="var v-c">
+        <div class="swatch"><b>C</b><div class="chips"><i style="background:#090E14"></i><i style="background:#5AD0FF"></i><i style="background:#FF8A3D"></i><i style="background:#EAF0F6"></i></div></div>
+        <div class="body"><h3>Virtual Showroom</h3><p class="who">ลูกค้าที่อยากเห็นก่อนซื้อ · อ้างอิง 039, 022, 014, 095, 083</p>
+          <ul><li>โชว์รูม 3D เต็มจอ ล้างเสมือนจริงได้ทันที</li><li>เลื่อน "ลงลึก" เข้าไปในแอร์ 5 ชั้น</li><li>ห้องจำลองพื้นเปลี่ยนสีตามอุณหภูมิ</li></ul>
+          <a class="open" href="./c.html">เปิดแบบ C</a></div>
+      </article>
+    </div>
+    <div class="rec"><b>คำแนะนำ:</b> ใช้แบบ A เป็นโครงทั้งเว็บ ใช้ภาษาภาพแบบ B ในหน้าสำหรับองค์กร และทำโชว์รูม/ห้องจำลองของแบบ C เป็นหน้าฟีเจอร์แยก 1 หน้า เพราะงานหลักคือปิดสัญญาจำนวนมาก ความเร็วและความชัดของราคาสำคัญกว่าความว้าวทั้งเว็บ</div>
+  </section>
+
+  <section id="try">
+    <h2>สิ่งที่ลองได้ในต้นแบบ</h2>
+    <ul class="try">
+      <li><b>แยกชิ้นส่วน / X-ray</b>ลากหมุนโมเดล แตะชิ้นส่วนเพื่ออ่านหน้าที่และสิ่งที่ช่างทำตอนล้าง สลับคอยล์เย็น–คอยล์ร้อนได้</li>
+      <li><b>ล้างเสมือนจริง</b>เลื่อนระดับฝุ่น ครีบ ใบพัด ถาด จะเปลี่ยนสีและลมอ่อนลง กดล้างแล้วจะมีสเปรย์น้ำไล่ฝุ่นออก</li>
+      <li><b>สัญญารายปี</b>เลือกแบบอาคารหรือใส่จำนวนเครื่อง เห็นช่วงงบต่อปี กำลังคนต่อรอบ และส่วนลดตามจำนวน</li>
+      <li><b>Catalog 1,119 SKU</b>กรองตามประเภท BTU แบรนด์ ราคา ระบบ สลับ BTU ในการ์ด เทียบได้ 4 รุ่น มือถือเป็น bottom sheet</li>
+      <li><b>ตรวจพื้นที่</b>พิมพ์ชื่อเขต อำเภอ จังหวัด หรือรหัสไปรษณีย์ แผนภาพจะไฮไลต์จังหวัดนั้น</li>
+      <li><b>ห้องจำลอง (แบบ C)</b>ปรับขนาดห้อง แดด คน และขนาดแอร์ ดูพื้นห้องเย็นลง และเวลาจนถึง 25°C แบบจำลอง</li>
+    </ul>
+  </section>
+
+  <section id="hundred">
+    <h2>ผลรีวิว 100 เว็บต้นฉบับ</h2>
+    <p class="lead">ตรวจใหม่ทั้ง 100 ชิ้นทั้งคำอธิบายและซอร์สโค้ด ชี้เมาส์ที่ช่องเพื่อดูว่าดึงส่วนไหนมาใช้ รายละเอียดเต็มอยู่ในหัวข้อ 2 ของแผนด้านล่าง</p>
+    <div class="legend"><span><i class="t-core"></i>โครงหลัก 7</span><span><i class="t-comp"></i>ยืมคอมโพเนนต์ 27</span><span><i class="t-insp"></i>แรงบันดาลใจ 8</span><span><i class="t-skip"></i>ตัดทิ้ง 58</span></div>
+    <ul class="hundred">{{CELLS}}</ul>
+  </section>
+
+  <section id="plan">
+    <h2>แผนโครงสร้างสำหรับทีมพัฒนา</h2>
+    <p class="lead">เนื้อหาเดียวกับไฟล์ SBP-WEB-011_Dev_Handoff_Plan.md ที่ส่งให้ทีม</p>
+    <div class="plan">{{PLAN}}</div>
+  </section>
+
+  <section id="files">
+    <h2>ไฟล์ในชุดนี้</h2>
+    <ul class="files">
+      <li><b>a.html · b.html · c.html</b>ต้นแบบ 3 แบบ (markup + CSS ของแต่ละแบบ)</li>
+      <li><b>assets/sbp-core.js</b>Domain logic: catalog, facet, zone, ตัวคำนวณสัญญา, BTU</li>
+      <li><b>assets/proto-ui.js</b>พฤติกรรม UI ที่ใช้ร่วมกันทั้ง 3 แบบ</li>
+      <li><b>assets/ac3d.js</b>ระบบ 3D: แอร์ 2 ชุด, exploded, X-ray, ลม, ฝุ่น, ห้องจำลอง</li>
+      <li><b>assets/three.module.min.js</b>Three.js r170 (MIT)</li>
+      <li><b>assets/fonts/</b>Anuphan, IBM Plex Sans Thai, IBM Plex Mono, Kanit (OFL)</li>
+    </ul>
+  </section>
+  <footer>ต้นแบบนี้ไม่ส่งข้อมูลฟอร์มจริง ข้อมูลรุ่น ราคา สถานะคิว และรายงานเป็นตัวอย่างทั้งหมด</footer>
+</div>

@@ -1,0 +1,94 @@
+/* B3 "คู่มือช่าง" — facility managers and buyers who check standards; job: verify how the work is done, estimate a year.
+   White paper, graphite ink, hairline rules, small radii, no shadows: a field manual. The page index stays on screen as a
+   left rail (a manual's chapters) — every page is one chapter. Type: Bai Jamjuree for headings (technical, squared),
+   IBM Plex Sans Thai for reading, tabular figures everywhere prices line up. Orange marks the current chapter and the
+   primary action only. Signature: the chapter rail + the "what you can check" spec sheet in the hero. */
+:root{
+  --bg:#FFFFFF; --tile:#FFFFFF; --tile-2:#F3F5F8; --ink:#121A24; --ink-2:#3E4A59; --ink-3:#576373;
+  --line:#DCE2EA; --blue:#15396F; --blue-2:#1B51A4; --blue-l:#E9EFF8; --or:#C4401F; --or-d:#A9361A; --or-l:#FCEDE7; --on-or:#FFFFFF;
+  --brand-or:#EF4E2E; --brand-blue:#1B51A4; --plate:transparent; --ok:#166A3B; --warn:#9E4A0B; --bad:#B02A26; --feature:#15396F; --feature-ink:#F1F5FB;
+  --shadow:none; --r:6px; --r-s:6px; --r-ph:4px;
+  --sans:'IBM Plex Sans Thai','Noto Sans Thai','Leelawadee UI',Tahoma,sans-serif; --display:'Bai Jamjuree','IBM Plex Sans Thai',Tahoma,sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --ease:cubic-bezier(.22,.7,.18,1); --rail:252px; --hdr-h:24px;
+  --s-card:var(--tile); --s-card-2:var(--tile-2); --s-ink:var(--ink); --s-ink-2:var(--ink-2); --s-ink-3:var(--ink-3); --s-line:var(--line); --s-accent:var(--or); --s-on-accent:var(--on-or); --s-accent-soft:var(--blue-l); --s-ok:var(--ok); --s-warn:var(--warn); --s-bad:var(--bad); --s-r:6px; --s-mono:var(--mono); --sx-pill:6px;
+}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600}
+.tnum,.b3-jobs td,.b3-spec dd{font-variant-numeric:tabular-nums}
+.tile,.card,.ucard,.opts,.facets-wrap,.faq details,.steps li{box-shadow:none;border:1px solid var(--line)}
+.btn-primary,.btn-ghost,.btn-soft,.v-btn{border-radius:6px}
+.seg,.pill,.chip,.search input,.cat-top select,.radio-pill span{border-radius:6px}
+.seg button{border-radius:4px}
+.proto{background:var(--tile-2);color:var(--ink-2);border-bottom:1px solid var(--line)}.proto a{color:var(--blue-2)}
+/* chapter rail */
+.hdr.side{background:var(--tile);backdrop-filter:none}
+@media (min-width:1081px){
+  .proto{margin-left:var(--rail)}
+  .hdr.side{position:fixed;top:0;bottom:0;left:0;width:var(--rail);border-bottom:0;border-right:1px solid var(--line);overflow:auto;padding-top:env(safe-area-inset-top,0px)}
+  .hdr.side .wrap{height:auto;min-height:100%;flex-direction:column;align-items:stretch;gap:18px;padding:22px 18px 24px}
+  .hdr.side .nav{flex-direction:column;margin:0;gap:1px;overflow:visible}
+  .hdr.side .nav a{border-radius:0;padding:10px 12px;font-size:15px;color:var(--ink-2);border-left:3px solid transparent}
+  .hdr.side .nav a:hover{background:var(--tile-2)}
+  .hdr.side .nav a[aria-current="page"]{border-left-color:var(--brand-or);background:var(--tile-2);color:var(--ink);font-weight:600}
+  .hdr.side .wrap>*{order:5}.hdr.side .logo{order:0}.hdr.side .wrap>[data-cart-btn]{order:1;width:100%}.hdr.side .nav{order:2}
+  .hdr.side .vsw{align-self:flex-start}
+  .b3-main{margin-left:var(--rail)}
+  .b3-main .wrap{max-width:1120px}
+}
+.side-co{font-size:14px;color:var(--ink-3)}.side-co a{color:var(--ink);font-weight:600;text-decoration:none}
+@media (max-width:1080px){
+  .side-co{display:none}
+  .hdr.side .wrap{flex-wrap:wrap;height:auto;padding-block:8px 0;row-gap:0}
+  .hdr.side .nav{display:flex;order:9;flex:1 0 100%;margin:4px 0 0;gap:0}
+  .hdr.side .nav a{border-radius:0;border-bottom:3px solid transparent;padding:9px 12px}
+  .hdr.side .nav a[aria-current="page"]{border-bottom-color:var(--brand-or);color:var(--ink);font-weight:600}
+  .vsw{margin-left:auto}
+  :root{--hdr-h:116px}
+}
+@media (max-width:640px){.logo small{display:none}.vsw a{padding:5px 7px}}
+.vsw{border-radius:6px}.vsw a{border-radius:4px}.vsw a[aria-current]{background:var(--ink);color:#fff}
+/* hero: photo, statement + spec sheet, the job table */
+.b3-hero{padding-block:24px 8px;display:grid;gap:22px}
+.b3-hero-ph{--ar:21/9}
+.b3-hero-g{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(18px,3vw,40px);align-items:start}
+.b3-hero h1{font-size:clamp(30px,3.8vw,48px);line-height:1.2;letter-spacing:-.005em}
+.b3-hero .lede{margin-top:12px;font-size:17px;line-height:1.75;color:var(--ink-2);max-width:38em}
+.b3-cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.b3-spec{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);border-top:2px solid var(--ink)}
+.b3-spec dt,.b3-spec dd{padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.b3-spec dt{color:var(--ink-3);padding-right:16px}
+.b3-spec dd{margin:0;font-weight:500}
+.b3-jobs{width:100%;border-collapse:collapse;font-size:15px}
+.b3-jobs caption{text-align:left;font:600 18px var(--display);padding-bottom:10px}
+.b3-jobs th,.b3-jobs td{padding:12px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.b3-jobs thead th{font-size:13px;font-weight:500;color:var(--ink-3);border-bottom:2px solid var(--ink);padding-block:8px}
+.b3-jobs tbody th a{color:var(--ink);font-weight:600;text-decoration:none}
+.b3-jobs tbody tr:hover{background:var(--tile-2)}
+.b3-jobs td:nth-child(3){white-space:nowrap}
+.b3-go{display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;color:var(--blue-2);font-weight:600}
+@media (max-width:760px){.b3-hero-g{grid-template-columns:minmax(0,1fr)}.b3-jobs thead{display:none}.b3-jobs tr{display:grid;grid-template-columns:minmax(0,1fr) auto;padding:10px 0;border-bottom:1px solid var(--line)}.b3-jobs th,.b3-jobs td{border:0;padding:2px 0}.b3-jobs td:nth-child(2){grid-column:1;color:var(--ink-3);font-size:14px}.b3-jobs td:nth-child(3){grid-column:1}.b3-jobs td:last-child{grid-column:2;grid-row:1/span 3;align-self:center}.b3-hero-ph{--ar:16/9}}
+/* sections: a chapter mark beside every section heading */
+section.sec{padding-block:52px 8px}
+.sec-h{border-top:1px solid var(--line);padding-top:18px}
+.sec-h h2{font-size:clamp(23px,2.5vw,30px);position:relative}
+.sec-h h2::before{content:"";position:absolute;left:0;top:-20px;width:44px;height:3px;background:var(--brand-or)}
+.sx-vh{padding-block:30px 6px}
+.sx-vh h1{font-size:clamp(28px,3.6vw,42px)}
+.sx-jump a{border-radius:6px}
+#start .sx-int{border-radius:6px}
+#start .sx-ico{border-radius:6px;background:var(--blue-l);color:var(--blue-2)}
+.svc .tile:hover{transform:none;border-color:var(--blue-2)}
+.svc .tile.key{outline:0;border-color:var(--ink);border-width:1.5px}
+.card .ph{border-radius:4px}
+footer{background:var(--tile-2)}
+/* r17 · documentation plates: a hairline frame offset from the photo like a plate in a field manual, an ink caption tag,
+   slightly cooler and flatter colour (the look of site documentation, not advertising) */
+:root{
+  --ph-filter:saturate(.9) contrast(1.04);
+  --ph-light:linear-gradient(180deg,rgba(214,226,244,.14),rgba(18,26,36,.12));
+  --ph-cap-r:2px; --ph-cap-bg:#121A24; --ph-cap-ink:#FFFFFF;
+}
+.ph3{outline:1px solid var(--line);outline-offset:5px}
+.b3-hero .b3-hero-ph{aspect-ratio:2/1;--ph-pos:50% 34%;max-height:min(58vh,560px);width:100%}
+@media (max-width:760px){.b3-hero .b3-hero-ph{aspect-ratio:4/3}}
+.b3-hero{gap:30px}
+.sx-vh.has-ph>figure{margin-inline:6px}

@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SBP AirCare · แบบ D2 ดิจิทัลทวิน</title>
+<meta name="description" content="แอร์ทุกเครื่องในอาคารของคุณ เห็นเป็นภาพจำลอง 3 มิติทีละขั้นงาน สัญญาล้างรายปีราคาขั้นบันได ขั้นตอนตามแบบฟอร์มของบริษัท รายงานรายเครื่อง ติดตั้ง ซ่อม และนัดสำรวจหน้างาน จากบริษัท สหบูรพากรุ๊ป จำกัด">
+<meta property="og:title" content="SBP AirCare · ดิจิทัลทวินสำหรับองค์กร">
+<meta property="og:description" content="ดูทุกงานทีละขั้นในภาพจำลอง 3 มิติ ประเมินสัญญารายปีตามจำนวนเครื่อง แล้วนัดสำรวจหน้างาน">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#EDF2F8">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/shared.css">
+<link rel="stylesheet" href="assets/business.css">
+<link rel="stylesheet" href="assets/booking.css">
+<link rel="stylesheet" href="assets/services.css">
+<link rel="stylesheet" href="assets/v2.css">
+<link rel="stylesheet" href="assets/film.css">
+<style>
+/* แบบ D2 · ดิจิทัลทวิน (r16) — for facility managers: the building's air conditioning as an operations console. Every chapter is
+   a module — a 3D view that runs through its job step by step with a timeline under it, and an inspector beside it reading
+   out the step (who does what, which form) — followed by the work order: the contract estimate, prices and the request.
+   A rail on the left lists the modules like the systems of a building.
+   Palette: blueprint paper, navy ink, FUJIVA blue for structure and focus, a faint drawing grid, SP orange only on the action
+   that books a job. Type: IBM Plex Sans Thai (everything read) and IBM Plex Mono (form codes, counters, step numbers — the
+   data the team writes on site). A deliberately single light theme. */
+:root{
+  --paper:#EDF2F8; --surface:#FFFFFF; --frost:#E3EAF3; --ink:#0F2440; --ink-2:#33496B; --ink-3:#54698A; --line:rgba(15,36,64,.1); --line-2:rgba(15,36,64,.2);
+  --brand:#1B51A4; --brand-soft:rgba(27,81,164,.09); --go:#EF4E2E; --go-2:#F4683F; --on-go:#1A0D08; --ok:#13795B; --warn:#975A00; --bad:#B42318;
+  --glass:rgba(255,255,255,.86); --glass-ink:#0F2440; --plate:#FFFFFF; --stage-bg:#DCE5F0; --r:4px; --grid:rgba(27,81,164,.07);
+  --sub-ink:#0F2440; --sub-shade:transparent; --cut-name:fm-scan; --cut-color:rgba(27,81,164,.55); --cut-time:.7s;
+  --display:'IBM Plex Sans Thai',Tahoma,sans-serif; --text:'IBM Plex Sans Thai',Tahoma,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --s-card:var(--surface); --s-card-2:var(--frost); --s-ink:var(--ink); --s-ink-2:var(--ink-2); --s-ink-3:var(--ink-3); --s-line:var(--line-2);
+  --s-accent:#C4401F; --s-on-accent:#FFFFFF; --s-accent-soft:var(--brand-soft); --s-ok:var(--ok); --s-warn:var(--warn); --s-bad:var(--bad); --s-r:4px; --s-mono:var(--mono);
+  color-scheme:light;
+}
+body{background:var(--paper) linear-gradient(var(--grid) 1px,transparent 1px) 0 0/100% 32px,var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px}
+h1,h2,h3{font-weight:600}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* header */
+.v-hd{position:fixed;inset:0 0 auto;z-index:60;padding-top:env(safe-area-inset-top,0px);background:rgba(255,255,255,.92);box-shadow:0 1px 0 var(--line-2)}
+@supports (backdrop-filter:blur(8px)){.v-hd{background:rgba(255,255,255,.78);backdrop-filter:blur(12px) saturate(1.3)}}
+.v-hd-in{display:flex;align-items:center;gap:18px;min-height:62px}
+.e-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.e-brand img{display:block;height:26px;width:auto}
+.e-brand b{font:600 17px/1.1 var(--display);white-space:nowrap}
+.e-brand small{display:block;font:500 12px/1.2 var(--mono);color:var(--brand)}
+.v-nav{display:flex;gap:2px;margin-left:auto}
+.v-nav a{padding:8px 10px;font-size:14.5px;font-weight:500;color:var(--ink-2);text-decoration:none;border-radius:var(--r);white-space:nowrap}
+.v-nav a:hover,.v-nav a[aria-current]{color:var(--brand);background:var(--brand-soft)}
+.v-act{display:flex;align-items:center;gap:8px}
+.e-quote{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 12px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);color:var(--ink);cursor:pointer;font-size:14.5px;font-weight:500}
+.e-quote [data-cart-n]{min-width:22px;padding:0 6px;border-radius:11px;background:var(--brand);color:#fff;font:600 12.5px/22px var(--mono);text-align:center}
+.v-act .v-btn{min-height:42px}
+.v-menu{display:none;min-height:42px;padding:0 14px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);color:var(--ink);cursor:pointer}
+@media (max-width:1240px){
+  .v-menu{display:inline-flex;align-items:center}
+  .v-nav{position:absolute;top:100%;left:0;right:0;display:none;flex-direction:column;gap:0;padding:8px 16px 16px;background:rgba(255,255,255,.98);border-bottom:1px solid var(--line-2)}
+  .v-nav.open{display:flex}.v-nav a{padding:12px 4px;font-size:16px;border-bottom:1px solid var(--line)}
+  .v-act{margin-left:auto}
+}
+@media (max-width:560px){.e-brand b,.e-brand small{display:none}.e-quote .qt{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.v-act .v-btn{padding:0 12px}}
+
+/* layout: rail + modules */
+.e-main{display:grid;grid-template-columns:220px minmax(0,1fr);gap:clamp(20px,3vw,44px);padding-top:calc(var(--hd,62px) + 24px)}
+.e-rail{position:sticky;top:calc(var(--hd,62px) + 24px);align-self:start;display:grid;gap:4px}
+.e-rail p{margin:0 0 6px;font:500 12.5px/1.4 var(--mono);color:var(--ink-3)}
+.e-rail ol{list-style:none;margin:0;padding:0;display:grid;gap:2px;counter-reset:m}
+.e-rail a{display:grid;grid-template-columns:30px minmax(0,1fr);gap:6px;align-items:center;min-height:40px;padding:4px 10px 4px 6px;border-radius:var(--r);border-left:2px solid transparent;color:var(--ink-2);text-decoration:none;font-size:14.5px;line-height:1.35}
+.e-rail a::before{counter-increment:m;content:counter(m,decimal-leading-zero);font:500 12px var(--mono);color:var(--ink-3)}
+.e-rail a:hover{background:var(--brand-soft);color:var(--ink)}
+.e-rail a[aria-current]{border-left-color:var(--brand);background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 0 var(--line)}
+.e-rail a[aria-current]::before{color:var(--brand)}
+@media (max-width:1100px){.e-main{grid-template-columns:minmax(0,1fr)}.e-rail{display:none}}
+
+/* a module */
+.e-mod{padding-block:0 clamp(48px,7vh,80px);margin-bottom:clamp(48px,7vh,80px);border-bottom:1px solid var(--line-2);scroll-margin-top:calc(var(--hd,62px) + 16px)}
+.e-mh{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 24px;align-items:end;margin-bottom:16px}
+.e-mh .code{font:500 13px/1.4 var(--mono);color:var(--brand);margin-bottom:8px}
+.e-mh h2{font-size:clamp(28px,3vw,42px);line-height:1.2;font-weight:600}
+.e-mh p.d{margin-top:8px;color:var(--ink-2);max-width:46em}
+.e-console{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:0;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);box-shadow:0 18px 40px -30px rgba(15,36,64,.35);overflow:hidden}
+.e-view{display:grid;min-width:0;border-right:1px solid var(--line-2)}
+.e-view .fm-stage{aspect-ratio:16/10;border-bottom:1px solid var(--line-2)}
+.e-view .fm-tag{font-family:var(--mono);font-size:12px;background:var(--glass)}
+/* the subtitle reads in the inspector, not over the drawing */
+.e-view .fm-stage .fm-sub{display:none}
+.e-tl{display:grid;gap:8px;padding:10px 12px}
+.e-tl .fm-prog{position:relative;bottom:auto;height:3px;border-radius:2px}
+.e-tl .fm-shots{display:flex;flex-wrap:wrap;gap:4px}
+.e-tl button.fm-shot{width:auto;min-width:36px;min-height:36px;padding:0;justify-content:center;align-items:center;border:1px solid var(--line-2);border-radius:var(--r);font:500 12.5px/1 var(--mono)}
+.e-tl button.fm-shot .fm-shot-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.e-tl .fm-shot-n{border:0;min-width:0;height:auto}
+.e-tl button.fm-shot.past{background:var(--brand-soft);color:var(--brand)}
+.e-tl button.fm-shot.past .fm-shot-n{background:none;color:var(--brand)}
+.e-tl button.fm-shot.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.e-tl button.fm-shot.on .fm-shot-n{border:0;color:#fff}
+.e-insp{display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-width:0;background:linear-gradient(180deg,#F7FAFD,#fff)}
+.e-insp>h3{display:flex;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);font:600 13px/1.3 var(--mono);color:var(--ink-3)}
+.e-insp>h3 span{color:var(--brand)}
+.e-insp [data-detail]{padding:14px 16px;overflow:auto;max-height:440px}
+.e-insp .fm-dt-n{font-family:var(--mono)}
+.e-insp .fm-dt-t{font:600 19px/1.4 var(--display)}
+.e-insp [data-detail] p{font-size:15px;color:var(--ink-2)}
+.e-insp [data-detail] p b{color:var(--ink)}
+.e-insp .fm-dt-f{font:500 12.5px/1.5 var(--mono);color:var(--brand);padding-top:8px;border-top:1px dashed var(--line-2)}
+.e-insp .fm-ctl{padding:10px 12px;border-top:1px solid var(--line)}
+.e-insp .fm-ctl .fm-play{flex:1}
+@media (max-width:980px){.e-console{grid-template-columns:minmax(0,1fr)}.e-view{border-right:0;border-bottom:1px solid var(--line-2)}.e-insp [data-detail]{max-height:none}}
+@media (max-width:560px){.e-view .fm-stage{aspect-ratio:4/3}}
+
+/* the work order under a module */
+.e-wo{margin-top:18px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface)}
+.e-wo-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.e-wo-h h3{font-size:19px}
+.e-wo-h p{margin:0;color:var(--ink-2);font-size:14.5px}
+.e-wo-h .mono{font-size:12.5px;color:var(--brand)}
+.e-wo-b{padding:18px}
+/* opening */
+.e-open{display:grid;grid-template-columns:minmax(0,.72fr) minmax(0,1.28fr);gap:clamp(24px,3vw,48px);align-items:start;margin-bottom:clamp(48px,7vh,80px)}
+.e-open .pre{font:500 13px/1.4 var(--mono);color:var(--brand);margin-bottom:14px}
+.e-open h1{font-size:clamp(36px,4.4vw,64px);line-height:1.15}
+.e-open p.lede{margin-top:18px;font-size:17.5px;line-height:1.75;color:var(--ink-2);max-width:32em}
+.e-kpi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:24px 0 0;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface)}
+.e-kpi div{padding:12px 14px;border-bottom:1px solid var(--line)}
+.e-kpi div:nth-child(odd){border-right:1px solid var(--line)}
+.e-kpi div:nth-last-child(-n+2){border-bottom:0}
+.e-kpi dt{font-size:13px;color:var(--ink-3)}
+.e-kpi dd{margin:2px 0 0;font:600 22px/1.3 var(--mono);color:var(--ink)}
+.e-kpi dd small{font:500 13px var(--display);color:var(--ink-2)}
+.e-cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.e-cta .v-btn{min-height:50px}
+.e-open .e-console{grid-template-columns:minmax(0,1fr)}
+.e-open .e-view{border-right:0;border-bottom:1px solid var(--line-2)}
+.e-open .e-console .fm-stage{aspect-ratio:16/10}
+.e-open .e-insp [data-detail]{max-height:230px}
+@media (max-width:1240px){.e-open{grid-template-columns:minmax(0,1fr)}}
+
+/* showroom module */
+.e-sr{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);grid-template-areas:"s d" "c d" "p d";gap:16px 28px}
+.e-sr [data-showroom]{display:contents}
+.e-sr .fm-stage{grid-area:s;aspect-ratio:16/10;border:1px solid var(--line-2);border-radius:var(--r)}
+.e-sr [data-sr-ctl]{grid-area:c;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.e-sr .sr-pick{grid-area:p}.e-sr .sr-det{grid-area:d;position:sticky;top:calc(var(--hd,62px) + 16px);align-self:start;padding:18px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface)}
+@media (max-width:1000px){.e-sr{grid-template-columns:minmax(0,1fr);grid-template-areas:"s" "c" "d" "p"}.e-sr .sr-det{position:static}}
+/* repair: concierge */
+.e-ask{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"q s" "r s";gap:20px 28px;align-items:start}
+.e-ask [data-concierge]{display:contents}
+.e-ask .cc-ask{grid-area:q}.e-ask .cc-res{grid-area:r}
+.e-ask .stage{grid-area:s;position:sticky;top:calc(var(--hd,62px) + 16px);aspect-ratio:4/3;border:1px solid var(--line-2);border-radius:var(--r)}
+@media (max-width:900px){.e-ask{grid-template-columns:minmax(0,1fr);grid-template-areas:"q" "s" "r"}.e-ask .stage{position:relative;top:0}}
+.e-book{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:28px;align-items:start}
+.e-book .stage{position:sticky;top:calc(var(--hd,62px) + 16px);aspect-ratio:4/3;border:1px solid var(--line-2);border-radius:var(--r)}
+@media (max-width:900px){.e-book{grid-template-columns:minmax(0,1fr)}.e-book .stage{position:relative;top:0}}
+
+/* footer */
+.e-ft{background:#0F2440;color:#C9D5E6;padding-block:56px calc(56px + env(safe-area-inset-bottom,0px))}
+.e-ft-in{display:grid;grid-template-columns:1.3fr 1fr 1.3fr 1.1fr;gap:32px}
+.e-ft h3{font:600 16px var(--display);color:#fff;margin-bottom:10px}
+.e-ft p,.e-ft li{font-size:14.5px;line-height:1.7}
+.e-ft ul{list-style:none;padding:0;display:grid;gap:6px}
+.e-ft a,.e-ft .v-link{color:#fff;text-underline-offset:3px}
+.e-ft .v-btn.ghost{color:#fff;border-color:rgba(255,255,255,.4)}
+.e-ft .plates{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.e-ft .plate{display:inline-grid;place-items:center;padding:8px 12px;border-radius:var(--r);background:#fff}
+.e-ft .plate img{display:block;height:32px;width:auto}
+@media (max-width:900px){.e-ft-in{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.e-ft-in{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<a class="v-skip" href="#main">ข้ามไปเนื้อหา</a>
+<header class="v-hd">
+  <div class="wrap v-hd-in">
+    <a class="e-brand" href="#top" aria-label="SBP AirCare หน้าแรก"><img src="assets/logos/sbp.png" alt="" width="36" height="26"><span><b>SBP AirCare</b><small>สำหรับองค์กร</small></span></a>
+    <nav class="v-nav" id="v-nav" aria-label="โมดูล" data-spy>
+      <a href="#plan">สัญญารายปี</a><a href="#install">ติดตั้ง</a><a href="#quality">วัสดุ</a><a href="#room">ลมในพื้นที่</a><a href="#repair">ซ่อม</a><a href="#buy">จัดซื้อเครื่อง</a><a href="#area">พื้นที่</a><a href="#booking">นัดสำรวจ</a>
+    </nav>
+    <div class="v-act">
+      <button type="button" class="e-quote" data-cart-btn aria-label="ใบเสนอราคา"><span class="qt">ใบเสนอราคา</span><span data-cart-n>0</span></button>
+      <a class="v-btn go" href="#booking" data-book>นัดสำรวจ</a>
+      <button type="button" class="v-menu" aria-expanded="false" aria-controls="v-nav">เมนู</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap e-main">
+  <nav class="e-rail" aria-label="โมดูลในหน้านี้" data-spy>
+    <p>อาคารของคุณ</p>
+    <ol>
+      <li><a href="#top">ระบบทั้งอาคาร</a></li><li><a href="#plan">แผนดูแลรายปี</a></li><li><a href="#install">ติดตั้ง</a></li><li><a href="#quality">วัสดุ</a></li><li><a href="#room">ลมในพื้นที่</a></li><li><a href="#repair">ตรวจเช็กและซ่อม</a></li><li><a href="#buy">จัดซื้อเครื่อง</a></li><li><a href="#area">พื้นที่บริการ</a></li><li><a href="#booking">นัดสำรวจ</a></li><li><a href="#contact">ติดต่อ</a></li>
+    </ol>
+  </nav>
+  <main id="main">
+    <section class="fm e-open" id="top" data-film='{"kind":"cycle","type":"cassette","drive":"player"}' aria-labelledby="h-open">
+      <div>
+        <p class="pre">ดิจิทัลทวิน · ระบบแอร์ในอาคาร</p>
+        <h1 id="h-open" data-kinetic>ทุกเครื่องในอาคาร ทุกงานในหน้าเดียว</h1>
+        <p class="lede">ดูทุกงานทีละขั้นในภาพจำลอง 3 มิติ ประเมินสัญญาล้างรายปีตามจำนวนเครื่อง เห็นขั้นตอนตามแบบฟอร์มของบริษัทและรายงานที่ได้รับ แล้วนัดสำรวจหน้างาน</p>
+        <dl class="e-kpi">
+          <div><dt>ราคาขั้นบันได</dt><dd>10+ <small>เครื่องในสัญญา</small></dd></div>
+          <div><dt>รายงานรายเครื่อง</dt><dd>3 <small>แพ็กเกจเอกสาร</small></dd></div>
+          <div><dt>รุ่นที่จัดหาได้</dt><dd data-fact="models">705</dd></div>
+          <div><dt>รายการซ่อมพร้อมราคา</dt><dd data-rep-n>86</dd></div>
+        </dl>
+        <div class="e-cta"><a class="v-btn go" href="#plan">ประเมินสัญญารายปี</a><a class="v-btn ghost" href="#booking" data-book="amc">นัดสำรวจหน้างาน</a></div>
+      </div>
+      <div class="e-console">
+        <div class="e-view"><div class="fm-stage"></div><div class="e-tl"><div class="fm-prog" data-prog></div><ol class="fm-shots"></ol></div></div>
+        <div class="e-insp"><h3>วงจรความเย็น <span data-count></span></h3><div data-detail></div><div class="fm-ctl"></div></div>
+      </div>
+    </section>
+
+    <section class="fm e-mod" id="plan" data-film='{"kind":"crew","job":"clean","type":"cassette","level":"C2","pkg":"Corporate Control","drive":"player"}' aria-labelledby="h-plan">
+      <header class="e-mh"><div><p class="code">SBP-SR-ACCL-UNI-001 Rev.07</p><h2 id="h-plan">แผนดูแลรายปี</h2><p class="d">ช่าง 2 คนล้างใหญ่ C2 แอร์สี่ทิศทาง ทีละขั้นตามแบบฟอร์มงานล้าง แพ็กเกจ Corporate Control ได้ทะเบียนทรัพย์สินและรายงานรายเครื่อง</p></div></header>
+      <div class="e-console">
+        <div class="e-view"><div class="fm-stage"></div><div class="e-tl"><div class="fm-prog" data-prog></div><ol class="fm-shots"></ol></div></div>
+        <div class="e-insp"><h3>ขั้นงาน <span data-count></span></h3><div data-detail></div><div class="fm-ctl"></div></div>
+      </div>
+      <div class="e-wo"><div class="e-wo-h"><h3>สัญญาล้างรายปี</h3><p>ใส่จำนวนเครื่องและรอบต่อปี ดูราคาต่อปีตามขั้นบันได ขั้นตอนและรายงาน และงานโครงการ</p></div><div class="e-wo-b" data-sell="business"><p class="d-load">กำลังเตรียมเครื่องประเมินสัญญา…</p></div></div>
+      <div class="e-wo"><div class="e-wo-h"><h3>ราคาต่อครั้ง</h3><p>งานล้างครั้งเดียวหรือจำนวนน้อย ราคาต่อเครื่องจาก Pricebook</p></div><div class="e-wo-b" data-sell="clean"><p class="d-load">กำลังเตรียมราคางานล้าง…</p></div></div>
+    </section>
+
+    <section class="fm e-mod" id="install" data-film='{"kind":"crew","job":"install","type":"ceiling","level":"STANDARD","drive":"player"}' aria-labelledby="h-install">
+      <header class="e-mh"><div><p class="code">SBP-SR-ACIN-UNI-001 Rev.04</p><h2 id="h-install">ติดตั้ง</h2><p class="d">ช่าง 2 คนติดตั้งแอร์แขวนใต้ฝ้าตามแบบฟอร์มงานติดตั้ง ทดสอบรอยรั่วและทำสุญญากาศก่อนเปิดวาล์วทุกงาน</p></div></header>
+      <div class="e-console">
+        <div class="e-view"><div class="fm-stage"></div><div class="e-tl"><div class="fm-prog" data-prog></div><ol class="fm-shots"></ol></div></div>
+        <div class="e-insp"><h3>ขั้นงาน <span data-count></span></h3><div data-detail></div><div class="fm-ctl"></div></div>
+      </div>
+      <div class="e-wo"><div class="e-wo-h"><h3>ค่าติดตั้ง</h3><p>รวมท่อและวัสดุ 4 เมตรแรก รับประกันงานติดตั้ง 3 ปีเมื่อซื้อเครื่องกับบริษัท หรือ 1 ปีเมื่อจัดหาเครื่องเอง ระบบซ่อนในฝ้าประเมินหน้างาน</p></div><div class="e-wo-b" data-sell="install" data-start='{"type":"ceiling"}'><p class="d-load">กำลังเตรียมราคาติดตั้ง…</p></div></div>
+    </section>
+
+    <section class="fm e-mod" id="quality" data-film='{"kind":"materials","drive":"player"}' aria-labelledby="h-quality">
+      <header class="e-mh"><div><p class="code">วัสดุระบุยี่ห้อ · ทองแดง 0.70 มม.</p><h2 id="h-quality">วัสดุ</h2><p class="d">ทุกรายการที่อยู่ในผนังและฝ้าหลังติดตั้งเสร็จ ระบุยี่ห้อและสเปก ขนาดท่อและสายไฟตามรุ่นเครื่อง</p></div></header>
+      <div class="e-console">
+        <div class="e-view"><div class="fm-stage"></div><div class="e-tl"><div class="fm-prog" data-prog></div><ol class="fm-shots"></ol></div></div>
+        <div class="e-insp"><h3>รายการ <span data-count></span></h3><div data-detail></div><div class="fm-ctl"></div></div>
+      </div>
+      <div class="e-wo"><div class="e-wo-h"><h3>วัสดุแต่ละระดับงาน</h3><p>ตารางเดียวกับที่ทีมใช้เตรียมงาน</p></div><div class="e-wo-b" data-sell="quality"><p class="d-load">กำลังเตรียมตารางวัสดุ…</p></div></div>
+    </section>
+
+    <section class="fm e-mod" id="room" data-film='{"kind":"room","type":"cassette","drive":"player"}' aria-labelledby="h-room">
+      <header class="e-mh"><div><p class="code">ระยะลม · ขนาดเครื่อง</p><h2 id="h-room">ลมในพื้นที่</h2><p class="d">ความแรงพัดลม ทิศลม และความสะอาดของเครื่อง เปลี่ยนระยะลมเย็นถึงโต๊ะทำงาน แล้วคำนวณขนาดของพื้นที่คุณ</p></div></header>
+      <div class="e-console">
+        <div class="e-view"><div class="fm-stage"></div><div class="e-tl"><div class="fm-prog" data-prog></div><ol class="fm-shots"></ol></div></div>
+        <div class="e-insp"><h3>สถานการณ์ <span data-count></span></h3><div data-detail></div><div class="fm-ctl"></div></div>
+      </div>
+      <div class="e-wo"><div class="e-wo-h"><h3>ขนาดเครื่องของพื้นที่</h3><p>ค่าประมาณจากพื้นที่ แดด ความสูง และจำนวนคน ช่างยืนยันที่หน้างาน</p></div><div class="e-wo-b" data-sell="room"><p class="d-load">กำลังเตรียมเครื่องคำนวณ…</p></div></div>
+    </section>
+
+    <section class="fm e-mod" id="repair" data-film='{"kind":"story","story":"repair","drive":"player"}' aria-labelledby="h-repair">
+      <header class="e-mh"><div><p class="code">ตรวจ · แจ้งผล · อนุมัติ · ซ่อม</p><h2 id="h-repair">ตรวจเช็กและซ่อม</h2><p class="d">รับแจ้งอาการ ตรวจวัดที่หน้างาน แจ้งผลและราคาเป็นรายรายการ ลงมือเมื่ออนุมัติเท่านั้น อะไหล่ที่เปลี่ยนเก็บไว้ให้ดูทุกชิ้น</p></div></header>
+      <div class="e-console">
+        <div class="e-view"><div class="fm-stage"></div><div class="e-tl"><div class="fm-prog" data-prog></div><ol class="fm-shots"></ol></div></div>
+        <div class="e-insp"><h3>ขั้นงาน <span data-count></span></h3><div data-detail></div><div class="fm-ctl"></div></div>
+      </div>
+      <div class="e-wo"><div class="e-wo-h"><h3>แจ้งอาการ</h3><p>ตอบสามข้อ ดูสาเหตุที่พบบ่อยในภาพ งานที่ควรทำก่อน และราคา ช่างยืนยันสาเหตุจริงที่หน้างาน</p></div>
+        <div class="e-wo-b"><div class="e-ask"><div data-concierge><p class="d-load">กำลังเตรียมคำถาม…</p></div><div class="stage" data-cc-stage data-stage='{"type":"cassette","shot":"close","power":true,"auto":false}'><p class="stage-cap">แบบจำลองเพื่ออธิบาย</p></div></div></div>
+        <div class="e-wo-b" data-sell="repair"></div></div>
+    </section>
+
+    <section class="fm e-mod" id="buy" data-film='{"kind":"unit","drive":"none"}' aria-labelledby="h-buy">
+      <header class="e-mh"><div><p class="code"><span data-fact="models">705</span> รุ่น · <span data-fact="brands">22</span> ยี่ห้อ</p><h2 id="h-buy">จัดซื้อเครื่อง</h2><p class="d">เลือกประเภท ยี่ห้อ และขนาด เปิดเครื่อง ดูทางลม มองทะลุ แยกชิ้นส่วน ราคาเครื่องและค่าติดตั้งมาตรฐานอยู่ข้างรุ่น งานหลายเครื่องขอใบเสนอราคาโครงการได้</p></div></header>
+      <div class="e-sr">
+        <div class="fm-stage stage" data-stage='{"type":"cassette","shot":"hero","power":true,"auto":false}'></div>
+        <div data-sr-ctl></div>
+        <div data-showroom><p class="d-load">กำลังเตรียมรายการรุ่น…</p></div>
+      </div>
+    </section>
+
+    <section class="fm e-mod" id="area" data-film='{"kind":"map","drive":"player"}' aria-labelledby="h-area">
+      <header class="e-mh"><div><p class="code">สำนักงานใหญ่ ถนนพระราม 2</p><h2 id="h-area">พื้นที่บริการ</h2><p class="d">กรุงเทพฯ และปริมณฑลไม่มีค่าเดินทาง จังหวัดใกล้เคียงรับงานถึงประมาณ 150 กม. งานไกลกว่านั้นรับเป็นงานโครงการหรือสัญญา</p></div></header>
+      <div class="e-console">
+        <div class="e-view"><div class="fm-stage"></div><div class="e-tl"><div class="fm-prog" data-prog></div><ol class="fm-shots"></ol></div></div>
+        <div class="e-insp"><h3>มุมมอง <span data-count></span></h3><div data-detail></div><div class="fm-ctl"></div></div>
+      </div>
+      <div class="e-wo"><div class="e-wo-h"><h3>ตรวจพื้นที่และค่าเดินทาง</h3></div><div class="e-wo-b" data-sell="area"><p class="d-load">กำลังเตรียมพื้นที่บริการ…</p></div></div>
+    </section>
+
+    <section class="e-mod" id="booking" aria-labelledby="h-booking">
+      <header class="e-mh"><div><p class="code">คำขอ · เลขที่ติดตามได้</p><h2 id="h-booking">นัดสำรวจหน้างาน</h2><p class="d">เลือกวันที่สะดวก ทีมโทรยืนยันวัน เวลา และราคาก่อนเข้างานทุกครั้ง ใบเสนอราคาที่เก็บไว้ส่งไปพร้อมคำขอ</p></div></header>
+      <div class="e-book">
+        <div class="stage" data-stage='{"type":"cassette","shot":"wide","power":true,"auto":false}'><p class="stage-cap">แบบจำลองเพื่ออธิบาย</p></div>
+        <div id="bookRoot"></div>
+      </div>
+    </section>
+
+    <section class="e-mod" id="contact" aria-labelledby="h-contact">
+      <header class="e-mh"><div><h2 id="h-contact">คำถามที่พบบ่อยและติดต่อ</h2><p class="d">ไม่พบคำตอบ ฝากชื่อและเบอร์ไว้ ทีมติดต่อกลับ หรือโทรหาเราโดยตรง</p></div></header>
+      <div class="d-split">
+        <div class="d-col" id="faqList"></div>
+        <div class="d-col" id="quote">
+          <div class="d-contact">
+            <p><b data-company="th">บริษัท สหบูรพากรุ๊ป จำกัด</b><br><span data-company="addr">593 ถนนพระราม 2 แขวงบางมด เขตจอมทอง กรุงเทพฯ 10150</span></p>
+            <p>โทร <a href="tel:024593291" data-company="tel">02-459-3291-9</a><br>อีเมล <span data-company="email">Sahaburapa.official@gmail.com</span></p>
+          </div>
+          <form id="qform" class="d-form">
+            <label class="d-field">ชื่อ<input id="q-name" autocomplete="name" required></label>
+            <label class="d-field">เบอร์โทร<input id="q-tel" inputmode="tel" autocomplete="tel" required pattern="[0-9\- ]{9,12}"></label>
+            <label class="d-field">อีเมล (ถ้ามี)<input id="q-email" type="email" autocomplete="email"></label>
+            <button class="v-btn go">ส่งให้ทีมติดต่อกลับ</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="e-ft">
+  <div class="wrap e-ft-in">
+    <div><div class="plates"><span class="plate"><img src="assets/logos/sbp.png" alt="SP Quality Brand บริษัท สหบูรพากรุ๊ป จำกัด" width="55" height="40"></span><span class="plate"><img src="assets/logos/fujiva.png" alt="FUJIVA แบรนด์แอร์ของบริษัท" width="110" height="36"></span></div>
+      <p>SBP AirCare บริการล้าง ติดตั้ง ซ่อม และสัญญาดูแลแอร์ของ<span class="nw">บริษัท สหบูรพากรุ๊ป จำกัด</span></p></div>
+    <div><h3>สำหรับองค์กร</h3><ul><li><a href="#plan">สัญญาล้างรายปี</a></li><li><a href="#install">ติดตั้ง</a></li><li><a href="#repair">ตรวจเช็กและซ่อม</a></li><li><a href="#buy">จัดซื้อเครื่อง</a></li><li><button type="button" class="v-link" data-prices="contract">ราคาค่าบริการทั้งหมด</button></li></ul></div>
+    <div><h3>ราคาบนเว็บ</h3><p>ทุกราคาก่อน VAT ปัดเป็นหลักร้อย จาก Pricebook 2569 ของบริษัท นิติบุคคลที่ต้องการใบกำกับภาษีบวก VAT 7% สัญญารายปี 10 เครื่องขึ้นไปมีราคาขั้นบันได รายการประเมินหน้างานแจ้งราคาก่อนเริ่มงาน ภาพ 3 มิติทั้งหมดเป็นแบบจำลองเพื่ออธิบาย</p></div>
+    <div><h3>เว็บไซต์ทดลอง</h3><p>แบบ D2 ดิจิทัลทวิน ของเว็บต้นแบบ SBP AirCare รุ่นที่ 2 ใช้ข้อมูลและระบบจองคิวชุดเดียวกับทุกแบบ</p><p><a href="./">เทียบทุกแบบ</a></p><p><button type="button" class="v-btn ghost" data-feedback>ให้ความเห็นเรื่องเว็บไซต์</button></p></div>
+  </div>
+</footer>
+<div class="drawer" data-drawer id="drawer" hidden><div class="dp" role="dialog" aria-modal="true" aria-label="รายละเอียด"><button type="button" class="x" data-close aria-label="ปิด">×</button><div id="drawerBody"></div></div></div>
+
+<script type="module">
+// r16 แบบ D2 · ดิจิทัลทวิน — every module a 3D job run step by step with an inspector (film.js "player"); B2B first
+import { mountFilmSite } from './assets/filmsite.js';
+import { DATA } from './assets/sbp-core.js';
+await mountFilmSite({ variant: 'D2', theme: 'light', mood: 'atelier', place: 'office', srStart: { type: 'cassette' } });
+const rn = document.querySelector('[data-rep-n]'); if (rn) rn.textContent = DATA.rep.length;
+</script>
+</body>
+</html>

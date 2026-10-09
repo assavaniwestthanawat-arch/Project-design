@@ -1,0 +1,74 @@
+/* A3 "แสงเช้า" — households, condos, small shops; job: see the price, book with confidence.
+   Daylight palette (near-white sky ground, white tiles), FUJIVA blue for links and marks, SP orange only on the primary action
+   (#C4401F carries white text at AA). Type: Noto Sans Thai Looped for reading (friendly, easy for every age), loopless
+   Noto Sans Thai for headings. Signature: the hero's job list with each job's starting price from the Pricebook. */
+:root{
+  --bg:#F6F9FD; --tile:#FFFFFF; --tile-2:#EEF3FA; --ink:#0E1B30; --ink-2:#43536A; --ink-3:#5A687E;
+  --line:rgba(27,81,164,.13); --blue:#163F80; --blue-2:#1B51A4; --blue-l:#E5EDF9; --or:#C4401F; --or-d:#A9361A; --or-l:#FDECE6; --on-or:#FFFFFF;
+  --brand-or:#EF4E2E; --brand-blue:#1B51A4; --plate:transparent; --ok:#166A3B; --warn:#9E4A0B; --bad:#B02A26; --feature:#12305E; --feature-ink:#EEF4FC;
+  --shadow:0 1px 2px rgba(16,34,60,.05),0 10px 28px -16px rgba(16,34,60,.22);
+  --r:20px; --r-s:14px; --r-ph:28px;
+  --sans:'Noto Sans Thai Looped','Noto Sans Thai','Leelawadee UI',Tahoma,sans-serif; --display:'Noto Sans Thai','Leelawadee UI',Tahoma,sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --ease:cubic-bezier(.22,.7,.18,1);
+  --s-card:var(--tile); --s-card-2:var(--tile-2); --s-ink:var(--ink); --s-ink-2:var(--ink-2); --s-ink-3:var(--ink-3); --s-line:var(--line); --s-accent:var(--or); --s-on-accent:var(--on-or); --s-accent-soft:var(--blue-l); --s-ok:var(--ok); --s-warn:var(--warn); --s-bad:var(--bad); --s-r:14px; --s-mono:var(--mono);
+  --hdr-h:76px;
+}
+h1,h2,h3,h4{font-family:var(--display)}
+.proto{background:#E5EDF9;color:#12305E}.proto a{color:#163F80}
+/* header: one row; the page menu is always on screen (wraps to its own scrolling row on narrow screens) */
+.hdr{background:rgba(255,255,255,.9)}
+.hdr .wrap{height:68px;gap:18px}
+.nav{margin-inline:auto}
+.nav a{font-size:15px;padding:8px 12px;color:var(--ink-2)}
+.nav a[data-v="home"]{display:none}
+.nav a[aria-current="page"]{background:var(--blue-l);color:var(--blue);font-weight:600}
+.vsw a[aria-current]{background:var(--blue-2);color:#fff}
+@media (max-width:1240px){.hdr .wrap{flex-wrap:wrap;height:auto;padding-block:8px 0;row-gap:0}.nav{display:flex;order:9;flex:1 0 100%;margin:4px 0 6px}.vsw{margin-left:auto}:root{--hdr-h:118px}}
+@media (max-width:640px){.nav{margin-inline:-6px}.nav a{font-size:14.5px;padding:7px 10px}.logo small{display:none}.vsw a{padding:5px 7px}}
+/* home hero: text + job list beside a tall photo */
+.a3-hero{padding-block:clamp(20px,4vw,48px) 8px}
+.a3-hero-g{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);grid-template-areas:"t ph" "j ph";gap:20px clamp(20px,4vw,56px);align-items:end}
+.a3-hero-g:not(:has(.ph3)){grid-template-areas:"t j";align-items:center}
+.a3-hero-t{grid-area:t;display:flex;flex-direction:column;justify-content:center;gap:18px;min-width:0}
+.a3-jobs{grid-area:j;align-self:start}
+.a3-hero-g>.ph3{grid-area:ph}
+.a3-hero h1{font-size:clamp(34px,4.6vw,58px);line-height:1.18;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
+.a3-hero .lede{font-size:17.5px;line-height:1.75;color:var(--ink-2);max-width:36em}
+.a3-hero .jobs a{box-shadow:var(--shadow);border-color:transparent}
+.a3-hero .jobs a:hover{box-shadow:var(--shadow),0 0 0 1.5px var(--blue-2)}
+.a3-hero-ph{--ar:4/5;min-height:100%}
+@media (max-width:900px){.a3-hero-g,.a3-hero-g:not(:has(.ph3)){grid-template-columns:minmax(0,1fr);grid-template-areas:"t" "ph" "j"}.a3-hero .a3-hero-ph{aspect-ratio:5/4;min-height:0;--ph-pos:50% 15%}}
+/* sections */
+section.sec{padding-block:56px 8px}
+.sec-h h2{font-size:clamp(25px,2.8vw,34px);font-weight:700}
+#start .sx-int{border:0;border-radius:var(--r);box-shadow:var(--shadow);background:var(--tile)}
+#start .sx-ico{width:48px;height:48px;border-radius:14px;background:var(--blue-l);color:var(--blue-2)}
+#start .sx-int-p{color:var(--blue-2)}
+.sx-vh h1{font-weight:700;font-size:clamp(30px,4vw,46px)}
+.sx-vh{padding-block:36px 6px}
+.sx-jump a b{background:var(--blue-l);color:var(--blue)}
+.sx-nc{border:0;box-shadow:var(--shadow);border-radius:var(--r)}
+footer{background:var(--tile)}
+@media (min-width:1241px) and (max-width:1480px){.logo small{display:none}.nav a{padding:8px 10px;font-size:14.5px}.hdr .wrap{gap:12px}}
+@media (min-width:1241px) and (max-width:1480px){.sx-sbtn span,.sx-sbtn kbd{display:none}}
+/* r17 · morning light: photos are warmed from the top-left like the window light in the pictures, sit on a long soft
+   shadow, and the hero and every page heading get pale sun bars falling through a window behind the photo */
+:root{
+  --ph-shadow:0 1px 2px rgba(16,34,60,.06),0 34px 60px -34px rgba(16,34,60,.42);
+  --ph-light:linear-gradient(122deg,rgba(255,214,168,.38) 0%,rgba(255,214,168,0) 46%),linear-gradient(0deg,rgba(14,27,48,.16),rgba(14,27,48,0) 32%);
+  --ph-blend:soft-light;
+  --sun:rgba(255,224,180,.72);
+}
+.a3-hero,.sx-vh.has-ph{position:relative;isolation:isolate}
+.a3-hero{overflow-x:clip}
+.a3-hero::before,.sx-vh.has-ph::before{content:"";position:absolute;z-index:-1;pointer-events:none;
+  background:radial-gradient(46% 40% at 70% 14%,rgba(255,221,176,.55),rgba(255,221,176,0) 70%),repeating-linear-gradient(112deg,transparent 0 64px,var(--sun) 64px 132px,transparent 132px 176px);
+  filter:blur(18px);-webkit-mask:radial-gradient(56% 66% at 48% 42%,#000 26%,transparent 76%);mask:radial-gradient(56% 66% at 48% 42%,#000 26%,transparent 76%)}
+.a3-hero::before{inset:-2% -4% -8% 22%}
+.sx-vh.has-ph::before{inset:0 -40px -10px 28%}
+@media (prefers-reduced-motion:no-preference){.a3-hero::before{animation:a3-sun 26s ease-in-out infinite alternate}@keyframes a3-sun{to{translate:-34px 10px}}}
+.a3-hero-ph{--ph-pos:50% 60%}
+.a3-hero .lede{max-width:33em}
+.sx-vh.has-ph h1{line-height:1.2}
+@media (max-width:900px){.a3-hero::before{inset:34% -12% -4% 8%}}
+@media (max-width:860px){.sx-vh.has-ph::before{inset:auto -16px -10px 0;height:70%}}

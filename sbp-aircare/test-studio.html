@@ -1,0 +1,16 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="assets/fonts.css"><link rel="stylesheet" href="assets/shared.css"><link rel="stylesheet" href="assets/studio.css">
+<style>:root{--s-card:#fff;--s-card-2:#f3f6f9;--s-ink:#10233a;--s-ink-2:#34495e;--s-ink-3:#667789;--s-line:#dbe3ea;--s-accent:#1b5aa8;--s-accent-soft:#e8f0fa;--s-ok:#1f8a4c;--s-warn:#b86e00;--s-bad:#c0392b;--s-r:12px;--s-mono:ui-monospace,monospace}
+body{margin:0;font-family:Anuphan,system-ui;background:#eef2f6;padding:16px}[hidden]{display:none!important}
+body.dk{--s-card:#111a24;--s-card-2:#0c131b;--s-ink:#eaf0f6;--s-ink-2:#c3cfdb;--s-ink-3:#8797a8;--s-line:#223142;--s-accent:#ff8a3d;--s-accent-soft:#132130;background:#070b10}</style></head>
+<body><div id="studio"></div>
+<script type="module">
+import { loadData } from './assets/sbp-core.js';
+import { mountStudio } from './assets/studio.js';
+import { mountCart } from './assets/commerce.js';
+const q = new URLSearchParams(location.search);
+if (q.get('theme') === 'dark') document.body.classList.add('dk');
+await loadData(); mountCart();
+window.ST = await mountStudio(document.getElementById('studio'), { theme: q.get('theme') || 'light', sceneStart: q.get('scene') || 'bedroom', onOpen: (m, i) => console.log('open', m.id, i) });
+window.READY = true;
+</script></body></html>

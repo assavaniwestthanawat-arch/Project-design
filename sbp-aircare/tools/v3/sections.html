@@ -1,0 +1,198 @@
+<!-- ===== ซื้อแอร์ (shop) ===== -->
+  <section class="sec" id="catalog">
+    <div class="sec-h"><div><h2>แอร์ทุกรุ่น พร้อมราคา</h2><p>ราคาเครื่องทุกรุ่นก่อน VAT เลือกขนาดในการ์ด เปิดรายละเอียดเพื่อเลือกแพ็กเกจติดตั้งและอุปกรณ์เพิ่ม ระบบรวมราคาให้ทันที</p></div><p class="count" data-cat-count></p></div>
+    <div class="cat" data-catalog>
+      <aside class="facets-wrap" aria-label="ตัวกรอง"><div data-cat-facets></div></aside>
+      <div style="min-width:0">
+        <div class="cat-top">
+          <label class="search"><span class="vh">ค้นหารุ่น</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input data-cat-search placeholder="ค้นหา: รหัสรุ่น แบรนด์ หรือ “12000”"></label>
+          <button type="button" class="btn-ghost filter-btn" data-cat-sheet-open>ตัวกรอง</button>
+          <select data-cat-sort aria-label="เรียงลำดับ"><option value="rec">แนะนำ</option><option value="price-asc">ราคาต่ำ–สูง</option><option value="price-desc">ราคาสูง–ต่ำ</option><option value="btu">BTU น้อย–มาก</option></select>
+          <div class="seg" role="group" aria-label="มุมมอง"><button type="button" data-cat-view="grid" aria-pressed="true">การ์ด</button><button type="button" data-cat-view="table" aria-pressed="false">ตาราง</button></div>
+        </div>
+        <div class="chips" data-cat-chips></div>
+        <div class="grid" data-cat-grid></div>
+        <button type="button" class="btn-ghost more-btn" data-cat-more>โหลดเพิ่ม</button>
+      </div>
+      <div class="sheet" data-cat-sheet>
+        <div class="panel" role="dialog" aria-label="ตัวกรอง">
+          <div class="ph-h"><b>ตัวกรอง</b><button type="button" class="btn-ghost" data-cat-sheet-close>ปิด</button></div>
+          <div class="body" id="sheetBody"></div>
+          <div class="foot"><button type="button" class="btn-primary" data-cat-sheet-apply>แสดงผลลัพธ์</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sec" id="studio">
+    <div class="sec-h"><div><h2>เลือกห้องที่ใกล้เคียง ดูขนาด BTU ที่เหมาะ</h2><p>ห้องจำลอง 48 ห้องใน 9 กลุ่มสถานที่ ตั้งแต่ห้องนอนจนถึงโรงงาน เลือกประเภทแอร์ ปรับขนาดห้อง แล้วเลื่อน "ไม่ได้ล้างมากี่เดือน" ดูว่าลมและความเย็นเปลี่ยนอย่างไร ระบบแนะนำรุ่นพร้อมราคาและแผนล้างรายปีให้ · ภาพเป็นแบบจำลองเพื่ออธิบาย</p></div></div>
+    <div id="studioRoot"></div>
+  </section>
+  <section class="sec" id="fit">
+    <div class="sec-h"><div><h2>ลองวางแอร์ในห้องของคุณ</h2><p>เลือกรุ่นที่สนใจ ใส่ความกว้าง ยาว สูงของห้อง แล้วเลือกผนังและตำแหน่ง ดูขนาดเครื่องเทียบห้อง ระยะห่างฝ้าและผนัง ทิศทางลม ตำแหน่งคอยล์ร้อน และความยาวท่อโดยประมาณ ก่อนใส่ใบเสนอราคา · ขนาดตามสเปก ภาพเป็นแบบจำลอง</p></div></div>
+    <div class="tile" id="fitRoot"></div>
+  </section>
+  <section class="sec" id="fujiva">
+    <div class="tile fuj3">
+      <div><img class="fuj-logo" src="assets/logos/fujiva.png" alt="FUJIVA" width="104" height="34"><h2 style="margin-top:12px;font-size:clamp(24px,2.6vw,32px)">FUJIVA Inverter แอร์แบรนด์ของบริษัท</h2><p style="color:var(--ink-2);margin-top:8px;max-width:36em">ราคาและรุ่นกำลังจะขึ้นเว็บ สอบถามรุ่น ขนาด และราคาพร้อมติดตั้งกับทีมขายได้เลย</p><p style="margin-top:16px"><a class="btn-primary" href="#quote" data-ask="FUJIVA">สอบถาม FUJIVA</a></p></div>
+      <div class="fuj-art" id="fujArt"></div>
+    </div>
+  </section>
+
+<!-- ===== ล้างแอร์ (cleaning) ===== -->
+  <section class="sec" id="cleanflow">
+    <div class="sec-h"><div><h2>ทีมช่างล้างแอร์ทีละขั้น ทั้งติดผนัง แขวน สี่ทิศทาง และตู้ตั้ง</h2><p>เลือกระดับงานและประเภทแอร์ แล้วกดเล่นทีละขั้น ล้างปกติกับล้างใหญ่ต่างกันตรงไหน ถอดชิ้นไหน ทดสอบอะไรก่อนส่งมอบ พร้อมราคามาตรฐานจาก Pricebook</p><p class="meta">ขั้นตอนตามแบบฟอร์มงานล้าง SBP-SR-ACCL-UNI-001 · ภาพเป็นแบบจำลองเพื่ออธิบาย</p></div></div>
+    <div class="tile" id="cleanRoot"></div>
+  </section>
+  <section class="sec" id="inside">
+    <div class="sec-h"><div><h2>ฝุ่นสะสมตรงไหน และล้างแล้วได้อะไร</h2><p>เลื่อนระดับความสกปรก แล้วกดล้างเสมือนจริง ภาพเป็นแบบจำลองเพื่ออธิบาย ไม่ใช่ผลตรวจเครื่องจริง</p></div></div>
+    <div class="inside" id="insideBox">
+      <div class="tile stage">
+        <div class="cv" data-v-canvas></div><div class="labels" data-v-labels></div>
+        <div class="fb" data-v-fallback hidden>อุปกรณ์นี้เปิดภาพ 3 มิติไม่ได้</div>
+        <div class="dock">
+          <div class="seg" role="group" aria-label="มุมกล้อง"><button type="button" data-v-view="persp" aria-pressed="true">3/4</button><button type="button" data-v-view="front" aria-pressed="false">หน้า</button><button type="button" data-v-view="side" aria-pressed="false">ข้าง</button><button type="button" data-v-view="top" aria-pressed="false">บน</button></div>
+          <button type="button" class="pill" data-v-xray aria-pressed="false">มองทะลุ</button>
+          <button type="button" class="pill" data-v-explode aria-pressed="false">แยกชิ้นส่วน</button>
+          <button type="button" class="pill" data-v-air aria-pressed="true">แสดงลม</button>
+        </div>
+      </div>
+      <div class="side">
+        <div class="tile dirt">
+          <label for="v3-dirt" class="eyebrow">ระดับฝุ่นสะสม (จำลอง)</label>
+          <input type="range" id="v3-dirt" min="0" max="1" step="0.01" value="0.7" data-v-dirt>
+          <p class="lvl" data-v-dirt-out>—</p>
+          <button type="button" class="btn-primary" data-v-clean>ล้างเสมือนจริง</button>
+        </div>
+        <div class="tile info" data-v-info></div>
+        <div class="parts" data-v-parts></div>
+      </div>
+    </div>
+    <div class="tile" style="margin-top:14px">
+      <h3 style="font-size:20px;margin-bottom:12px">ล้างของเรา ทำถึงชิ้นไหน</h3>
+      <ol class="v3-steps">
+        <li><b>ถอดฝาหน้าและแผ่นกรอง</b><span>คลุมพื้นที่และกล่องควบคุมกันน้ำก่อนเริ่มทุกครั้ง</span></li>
+        <li><b>ฉีดล้างคอยล์เย็น</b><span>ใช้ปั๊มแรงดันไล่ฝุ่นที่ติดในครีบตามแนวครีบ ไม่ฉีดเฉียงจนครีบล้ม</span></li>
+        <li><b>ล้างใบพัดลม</b><span>ไล่คราบดำที่ใบพัด ต้นเหตุหนึ่งของกลิ่นอับและลมเบา</span></li>
+        <li><b>ล้างถาดและท่อน้ำทิ้ง</b><span>เคลียร์เมือก เทน้ำทดสอบให้ไหลออกปลายท่อ ไม่ย้อน</span></li>
+        <li><b>ประกอบ ทดสอบ รายงาน</b><span>เดินเครื่องทดสอบ ถ่ายภาพก่อน–หลัง ส่งรายงานรายเครื่อง</span></li>
+      </ol>
+    </div>
+  </section>
+
+<!-- ===== ติดตั้ง ย้าย (install) ===== -->
+  <section class="sec" id="installflow">
+    <div class="sec-h"><div><h2>ทีมช่างติดตั้งแอร์ทีละขั้น มาตรฐานและพรีเมียม</h2><p>เลือกระดับงานและประเภทแอร์ ดูการเจาะ เดินท่อ บานแฟลร์ ทำสุญญากาศ และทดสอบก่อนส่งมอบ เทียบว่าพรีเมียมทดสอบอะไรเพิ่ม พร้อมราคามาตรฐานตามขนาดเครื่อง</p><p class="meta">ขั้นตอนตามแบบฟอร์มงานติดตั้ง SBP-SR-ACIN-UNI-001 · ภาพเป็นแบบจำลองเพื่ออธิบาย</p></div></div>
+    <div class="tile" id="installRoot"></div>
+  </section>
+  <section class="sec" id="quality">
+    <div class="sec-h"><div><h2>ระบุยี่ห้อและสเปกวัสดุทุกแพ็กเกจ ตรวจสอบได้หน้างาน</h2><p>ราคาติดตั้งที่ต่างกันมักมาจากวัสดุที่มองไม่เห็นหลังติดตั้งเสร็จ เราจึงระบุท่อ ฉนวน สายไฟ เบรกเกอร์ และขั้นตอนทดสอบไว้ในแพ็กเกจและในใบเสนอราคา</p></div></div>
+    <div class="tile" id="qualityRoot"></div>
+  </section>
+  <section class="sec" id="projects">
+    <div class="sec-h"><div><h2>สร้างใหม่ รีโนเวต หรือเปลี่ยนแอร์ทั้งชุดพร้อมเทิร์นเครื่องเก่า</h2><p>บ้านและอาคารสร้างใหม่ พื้นที่รีโนเวตที่ยังไม่มีแอร์ หรือเปลี่ยนแอร์เดิมทั้งชุด ดูขั้นตอนงาน เอกสารส่งมอบ และประมาณการค่าติดตั้งทีละห้องจาก Pricebook · ระบบ VRV / VRF ออกแบบเฉพาะโครงการ <a href="#quote" data-ask="ระบบ VRV / VRF">ติดต่อทีมโครงการ</a></p></div></div>
+    <div class="tile" id="projRoot"></div>
+  </section>
+
+<!-- ===== ซ่อม ตรวจเช็ก (repair) ===== -->
+  <section class="sec" id="ask">
+    <div class="sec-h"><div><h2>แอร์เป็นอะไร เลือกอาการที่เห็น</h2><p>ตอบ 3 ข้อ ระบบสรุปสิ่งที่เข้าใจ สาเหตุที่พบบ่อย สิ่งที่เราแนะนำพร้อมเหตุผล และราคาจาก Pricebook สาเหตุจริงยืนยันโดยช่างที่หน้างาน งานซ่อมแจ้งราคาให้อนุมัติก่อนทุกครั้ง</p></div></div>
+    <div class="tile" id="askRoot"></div>
+  </section>
+  <section class="sec" id="howto">
+    <div class="sec-h"><div><h2>แอร์แต่ละแบบทำงานอย่างไร และเราตรวจซ่อมอย่างไร</h2><p>เลือกประเภทแอร์ ดูทางลม ชิ้นส่วนที่ช่างตรวจในแต่ละขั้น สิ่งที่รวมและไม่รวม เอกสารที่ได้รับ และราคามาตรฐาน · สลับดูงานล้างและงานติดตั้งได้ในแท็บเดียวกัน</p></div></div>
+    <div class="tile" id="howRoot" style="margin-bottom:14px"></div>
+    <div class="tile" id="servicesRoot"></div>
+  </section>
+
+<!-- ===== องค์กร (business) ===== -->
+  <section class="sec" id="amc">
+    <div class="sec-h"><div><h2>งานล้างที่ตรวจสอบได้ทุกเครื่อง ราคาขั้นบันไดตามจำนวน</h2><p>ทำไมองค์กรเลือกเรา ราคาขั้นบันไดพร้อมตัวอย่างงบต่อปี และระดับรายงานของแต่ละแพ็กเกจ ทุกราคาก่อน VAT จาก Pricebook ของบริษัท</p></div></div>
+    <div id="amcRoot"></div>
+  </section>
+  <section class="sec" id="b2b">
+    <div class="sec-h"><div><h2>ประเมินงบล้างแอร์ทั้งปี</h2><p>เลือกแบบอาคารที่ใกล้เคียง หรือใส่จำนวนเครื่องเอง ระบบคิดราคาขั้นบันไดตามจำนวนเครื่องให้ทันที ทีมยืนยันหลังสำรวจ</p></div></div>
+    <div class="bld" data-builder>
+      <div>
+        <div class="presets" id="presets"></div>
+        <div class="ucards" id="ucards"></div>
+        <div class="opts">
+          <fieldset><legend>ความถี่</legend>
+            <label class="radio-pill"><input type="radio" name="v3-vis" value="2" data-b-visits><span>2 ครั้ง/ปี</span></label>
+            <label class="radio-pill"><input type="radio" name="v3-vis" value="3" data-b-visits><span>3 ครั้ง/ปี</span></label>
+            <label class="radio-pill"><input type="radio" name="v3-vis" value="4" data-b-visits><span>4 ครั้ง/ปี</span></label>
+          </fieldset>
+          <label class="field" style="flex:1;min-width:200px">ที่ตั้ง (เขต/อำเภอ)<input id="v3-zone" data-b-zone placeholder="เช่น บางนา, ปากเกร็ด"><span class="zr" data-b-zone-result></span></label>
+          <label class="opt" style="padding:0"><input type="checkbox" id="v3-high" data-b-high><span>มีเครื่องติดสูงเกิน 3 ม.</span></label>
+        </div>
+      </div>
+      <aside class="tile sum" aria-live="polite">
+        <p class="eyebrow">ราคาต่อปี (ก่อน VAT)</p>
+        <p class="range tnum"><b data-b-out="low">—</b></p><p style="color:var(--ink-3);font-size:14px;margin-top:-8px" data-b-out="high"></p>
+        <dl>
+          <dt>จำนวนเครื่อง</dt><dd class="tnum"><b data-b-out="count">0</b> เครื่อง</dd>
+          <dt>ความถี่</dt><dd data-b-out="visits">—</dd>
+          <dt>เฉลี่ยต่อเครื่องต่อปี</dt><dd class="tnum" data-b-out="perunit">—</dd>
+          <dt>กำลังคนต่อรอบ</dt><dd data-b-out="teamdays">—</dd>
+          <dt>พื้นที่</dt><dd data-b-out="tier">พื้นที่หลัก</dd>
+        </dl>
+        <p style="font-size:13px;color:var(--ok)" data-b-out="off"></p>
+        <a class="btn-primary" href="#quote" data-quote>ใส่ใบเสนอราคา</a>
+        <a class="btn-ghost" href="#studio">ดูตามห้องในห้องจำลอง</a>
+        <p class="disc">คำนวณจาก Pricebook งานล้าง 2569 รายการงานสูง พื้นที่ควบคุม และเครื่องที่เข้าถึงยากประเมินหน้างานก่อนยืนยัน · ราคาก่อน VAT ปัดหลักร้อย · ราคาขั้นบันไดตามจำนวนเครื่อง 10 เครื่องขึ้นไป · 100 เครื่องขึ้นไปขอราคาโครงการได้ในใบเสนอราคา</p>
+      </aside>
+    </div>
+  </section>
+  <section class="sec" id="sop">
+    <div class="sec-h"><div><h2>ขั้นตอนทั้งสัญญา และรายงานที่ได้หลังทุกรอบ</h2><p>จากวันสำรวจถึงสรุปทั้งปี ขั้นตอนต่อเครื่องตามแบบฟอร์มงานล้างของบริษัท ตัวอย่าง Service Report รายเครื่อง และเงื่อนไขสัญญาโดยสรุป</p></div></div>
+    <div class="tile" id="sopRoot"></div>
+  </section>
+
+<!-- ===== ราคา (pricing) ===== -->
+  <section class="sec" id="prices">
+    <div class="sec-h"><div><h2>ราคาล้าง ติดตั้ง ซ่อม และอุปกรณ์เสริม</h2><p>ราคาทุกรายการดึงจาก Pricebook 2569 ของบริษัท (ใบเสนอราคาติดตั้ง / ล้างและซ่อม) เป็นราคาก่อน VAT ปัดหลักร้อย ต้องการใบกำกับภาษีบวก VAT 7% กด "เพิ่ม" เพื่อรวมยอดในใบเสนอราคาเบื้องต้น</p></div></div>
+    <div class="tile" id="priceCenter"></div>
+  </section>
+
+<!-- ===== ความรู้ (guide) ===== -->
+  <section class="sec" id="learn">
+    <div class="sec-h"><div><h2>ความรู้เรื่องแอร์ ก่อนตัดสินใจ</h2><p>เลือก BTU ประเภทเครื่อง รอบล้าง สิ่งที่รวมในงานติดตั้ง และสัญญาสำหรับองค์กร อ่านสั้น ๆ แล้วกดลองกับเครื่องมือจำลองได้ทันที</p></div></div>
+    <div class="tile" id="learnRoot"></div>
+  </section>
+
+<!-- ===== ติดต่อ (contact) ===== -->
+  <section class="sec" id="booking">
+    <div class="sec-h"><div><h2>จองคิวล้าง ติดตั้ง ซ่อม หรือนัดสำรวจ</h2><p>เลือกงาน วันและช่วงเวลาที่สะดวก แล้วส่งคำขอเข้าระบบของบริษัท ได้เลขที่คำขอไว้ตรวจสถานะ ทีมโทรยืนยันวัน เวลา และราคาก่อนเข้างานทุกครั้ง</p></div></div>
+    <div id="bookRoot"></div>
+  </section>
+  <section class="sec" id="quote">
+    <div class="tile qbox">
+      <div><h2 style="font-size:28px">ให้ทีมโทรกลับ</h2><p style="color:var(--ink-2);margin-top:6px">ฝากชื่อ เบอร์ และจำนวนเครื่อง ทีมขายติดต่อกลับในเวลาทำการ</p><p class="sx-qalt">หรือโทร <a data-co="tel" href="#contact">02</a> · อีเมล <span class="sx-sel" data-co="email"></span></p></div>
+      <form id="qform">
+        <label class="field">ชื่อ<input id="q-name" required></label>
+        <label class="field">เบอร์โทร<input id="q-tel" inputmode="tel" required pattern="[0-9\- ]{9,12}"></label>
+        <label class="field" style="grid-column:1/-1">จำนวนเครื่องโดยประมาณ<input id="q-n" type="number" min="1"></label>
+        <button class="btn-primary" style="grid-column:1/-1">ส่งข้อมูล</button>
+      </form>
+    </div>
+  </section>
+  <section class="sec" id="area">
+    <div class="sec-h"><div><h2>พื้นที่ให้บริการ กรุงเทพฯ และปริมณฑล</h2><p>ไม่มีค่าเดินทางใน 5 จังหวัดนี้ จังหวัดใกล้เคียงรับงานถึงประมาณ 150 กม. จากสำนักงานใหญ่ พระราม 2 ซอย 31 คิดค่าเดินทางต่อเที่ยวตามช่วงระยะ</p></div></div>
+    <div class="area" data-zone>
+      <div class="tile" id="mapRoot"></div>
+      <div class="tile" style="display:grid;gap:12px;align-content:start">
+        <label class="field">ตรวจพื้นที่<input data-z-input placeholder="เขต อำเภอ จังหวัด หรือรหัสไปรษณีย์"></label>
+        <div class="try"><button type="button" data-z-try="บางนา">บางนา</button><button type="button" data-z-try="ปากเกร็ด">ปากเกร็ด</button><button type="button" data-z-try="สามพราน">สามพราน</button><button type="button" data-z-try="ศรีราชา">ศรีราชา</button><button type="button" data-z-try="ระยอง">ระยอง</button></div>
+        <div class="zres" data-z-result hidden></div>
+        <div id="travelTbl"></div>
+        <p style="font-size:13px;color:var(--ink-3)">ระยะทางในต้นแบบคำนวณโดยประมาณ เว็บจริงคำนวณจากที่อยู่ด้วย Google Maps</p>
+      </div>
+    </div>
+  </section>
+  <section class="sec" id="about">
+    <div class="sec-h"><div><h2>บริษัทแอร์ที่มีทั้งอะไหล่ ทีมช่าง และแบรนด์ของตัวเอง</h2><p>ข้อมูลบริษัท ช่องทางติดต่อ และวิธีทำงานกับเรา</p></div></div>
+    <div id="aboutRoot"></div>
+  </section>
+  <section class="sec faq" id="faq">
+    <div class="sec-h"><h2>คำถามที่พบบ่อย</h2></div>
+    <div id="faqList"></div>
+  </section>

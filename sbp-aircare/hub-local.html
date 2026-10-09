@@ -1,0 +1,1224 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0"><title>SBP AirCare Prototypes</title>
+<style>
+@font-face{font-family:'Anuphan';font-weight:400;font-display:swap;src:url(assets/fonts/anuphan-thai-400-normal.woff2) format('woff2');unicode-range:U+0E01-0E5B,U+200C-200D,U+25CC}
+@font-face{font-family:'Anuphan';font-weight:400;font-display:swap;src:url(assets/fonts/anuphan-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+2000-206F}
+@font-face{font-family:'Anuphan';font-weight:600;font-display:swap;src:url(assets/fonts/anuphan-thai-600-normal.woff2) format('woff2');unicode-range:U+0E01-0E5B,U+200C-200D,U+25CC}
+@font-face{font-family:'Anuphan';font-weight:600;font-display:swap;src:url(assets/fonts/anuphan-latin-600-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+2000-206F}
+@font-face{font-family:'IBM Plex Mono';font-weight:500;font-display:swap;src:url(assets/fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2')}
+/* Hub — handoff index: brand blue/orange, one reading column for the plan, cards for the three prototypes. */
+:root{--bg:#F2F5F9;--card:#FFFFFF;--ink:#132033;--ink-2:#4E5E71;--ink-3:#8190A3;--line:#DCE4EE;--blue:#123F7B;--blue-2:#1B5AA8;--blue-l:#E6EEF8;--or:#E2711D;--or-l:#FCEBDD;--ok:#1B7A45;
+  --core:#123F7B;--comp:#2E86D6;--insp:#9CC3EC;--skip:#E3E8EF;--sans:'Anuphan','Noto Sans Thai',Tahoma,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0C121A;--card:#131C27;--ink:#E6EDF5;--ink-2:#A7B5C5;--ink-3:#6F8095;--line:#233246;--blue:#8DB9F2;--blue-2:#8DB9F2;--blue-l:#172A42;--or:#F08A3A;--or-l:#33200F;--core:#8DB9F2;--comp:#3D7FC0;--insp:#28496E;--skip:#1B2533;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0C121A;--card:#131C27;--ink:#E6EDF5;--ink-2:#A7B5C5;--ink-3:#6F8095;--line:#233246;--blue:#8DB9F2;--blue-2:#8DB9F2;--blue-l:#172A42;--or:#F08A3A;--or-l:#33200F;--core:#8DB9F2;--comp:#3D7FC0;--insp:#28496E;--skip:#1B2533;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.72 var(--sans);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:clamp(16px,3vw,32px);padding-block:28px 80px}
+h1,h2,h3{line-height:1.3;margin:0;text-wrap:balance;font-weight:600}
+a{color:var(--blue-2)}
+.mono{font-family:var(--mono)}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:end;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:18px}
+.top h1{font-size:clamp(26px,3.4vw,40px)}
+.top p{color:var(--ink-2);max-width:44em;margin-top:6px}
+.go-test{display:inline-flex;align-items:center;min-height:48px;margin-top:14px;padding:0 20px;border-radius:12px;background:var(--or);color:#fff;font-weight:700;text-decoration:none}
+.doc{font:500 12px var(--mono);border:1.5px solid var(--ink);padding:4px 10px;border-radius:4px;white-space:nowrap}
+nav.toc{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0 8px}
+nav.toc a{font-size:14px;text-decoration:none;border:1px solid var(--line);background:var(--card);color:var(--ink-2);padding:5px 12px;border-radius:999px}
+nav.toc a:hover{border-color:var(--blue-2);color:var(--ink)}
+section{margin-top:44px}
+section>h2{font-size:26px;margin-bottom:6px}
+section>p.lead{color:var(--ink-2);margin-bottom:18px;max-width:46em}
+.vars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.var{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.swatch{height:120px;position:relative;display:flex;align-items:flex-end;padding:14px}
+.swatch .chips{display:flex;gap:6px}
+.swatch .chips i{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.7)}
+.swatch b{position:absolute;right:14px;top:10px;font:600 44px var(--mono);opacity:.9}
+.v-a .swatch{background:linear-gradient(135deg,#EEF2F6,#FFFFFF 60%);color:#123F7B}
+.v-b .swatch{background:#F4F7FA;background-image:linear-gradient(90deg,rgba(18,63,123,.08) 1px,transparent 1px),linear-gradient(rgba(18,63,123,.08) 1px,transparent 1px);background-size:20px 20px;color:#0E2238;border-bottom:1.5px solid #0E2238}
+.v-c .swatch{background:radial-gradient(90% 90% at 70% 30%,#16324A,#090E14);color:#5AD0FF}
+.var .body{padding:16px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.var h3{font-size:20px}
+.var .who{font-size:14px;color:var(--ink-3)}
+.var ul{margin:0;padding-left:18px;font-size:14.5px;color:var(--ink-2)}
+.var .open{margin-top:auto;display:inline-flex;justify-content:center;align-items:center;min-height:44px;border-radius:12px;background:var(--ink);color:var(--bg);font-weight:600;text-decoration:none}
+.var .open:hover{background:var(--blue-2);color:#fff}
+.rec{margin-top:14px;background:var(--or-l);border-left:4px solid var(--or);border-radius:10px;padding:14px 18px}
+.rec b{color:var(--ink)}
+@media (max-width:900px){.vars{grid-template-columns:1fr}}
+.try{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;counter-reset:t}
+.try li{list-style:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:14.5px;color:var(--ink-2)}
+.try li b{color:var(--ink);display:block}
+.try{padding:0;margin:0}
+@media (max-width:700px){.try{grid-template-columns:1fr}}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--ink-2);margin-bottom:12px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.hundred{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;padding:0;margin:0}
+.hundred li{list-style:none;border-radius:6px;padding:5px 6px;min-height:52px;display:flex;flex-direction:column;justify-content:space-between;font-size:11px;line-height:1.25;overflow:hidden;cursor:default;transition:transform .15s}
+.hundred li:hover{transform:scale(1.06);position:relative;z-index:2;box-shadow:0 6px 18px -6px rgba(0,0,0,.35)}
+.hundred li b{font:500 11px var(--mono)}
+.hundred li span{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.t-core{background:var(--core);color:#fff}.t-comp{background:var(--comp);color:#fff}.t-insp{background:var(--insp);color:#0E2238}.t-skip{background:var(--skip);color:var(--ink-3)}
+:root[data-theme="dark"] .t-core{color:#0C121A}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .t-core{color:#0C121A}}
+@media (max-width:760px){.hundred{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.plan{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:clamp(18px,3vw,36px)}
+.plan h2{font-size:22px;margin:34px 0 10px;padding-top:18px;border-top:1px solid var(--line)}
+.plan h2:first-child{margin-top:0;border-top:0;padding-top:0}
+.plan h3{font-size:18px;margin:22px 0 8px}
+.plan p,.plan li{max-width:72ch;color:var(--ink-2)}
+.plan strong{color:var(--ink)}
+.plan hr{border:0;border-top:1px solid var(--line);margin:24px 0}
+.tw{overflow-x:auto;margin:10px 0 16px;border:1px solid var(--line);border-radius:12px}
+.plan table{border-collapse:collapse;width:100%;font-size:14px}
+.plan th,.plan td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.plan th{background:var(--blue-l);color:var(--ink);font-weight:600;white-space:nowrap}
+.plan tr:last-child td{border-bottom:0}
+.plan td:first-child{white-space:nowrap;font-family:var(--mono);font-size:13px;color:var(--ink)}
+.plan pre{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px;overflow-x:auto;font:13px/1.6 var(--mono);color:var(--ink)}
+.plan code{font-family:var(--mono);font-size:.9em;background:var(--blue-l);padding:1px 5px;border-radius:5px;color:var(--ink)}
+.plan pre code{background:none;padding:0}
+.plan li.todo{list-style:none;margin-left:-20px}
+.plan li.todo::before{content:"☐ ";color:var(--or)}
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;padding:0}
+.files li{list-style:none;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;color:var(--ink-2)}
+.files li b{font:500 13px var(--mono);color:var(--ink);display:block}
+footer{margin-top:40px;color:var(--ink-3);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="mono" style="color:var(--ink-3);font-size:13px">บริษัท สหบูรพากรุ๊ป จำกัด · SBP AirCare</p>
+      <h1>ต้นแบบเว็บไซต์ 3 รูปแบบ + แผนส่งมอบทีมพัฒนา</h1>
+      <p>Rev.04 ล็อกข้อมูลตามมาตรฐานแล้ว: เว็บแสดงอัตรามาตรฐานเท่านั้น (อัตราพิเศษ/โครงการไม่ส่งถึงเบราว์เซอร์), แสดงเฉพาะ 705 รุ่นที่ราคาอนุมัติ, ค่าเดินทาง 300 / 800 / 1,500 บาทพร้อมเกณฑ์จำนวนเครื่อง, รอบล้างแนะนำตามแนวปฏิบัติทั่วไป และกำลังทีมล้างจากคู่มือบริษัท ทั้ง 3 แบบพร้อมให้ทดสอบในหน้าเทียบ</p>
+      <a class="go-test" href="./preview.html">เริ่มทดสอบ A · B · C และให้คะแนน →</a>
+    </div>
+    <span class="doc">SBP-WEB-011 · Rev.04 · 29.09.2569</span>
+  </header>
+  <nav class="toc" aria-label="สารบัญ"><a href="#variants">3 ต้นแบบ</a><a href="./preview.html">หน้าทดสอบ A B C</a><a href="#rev2">Rev.04 เปลี่ยนอะไร</a><a href="#try">สิ่งที่ลองได้</a><a href="#hundred">ผลรีวิว 100 เว็บ</a><a href="#plan">แผนสำหรับ Dev</a><a href="#files">ไฟล์ในชุดนี้</a></nav>
+
+  <section id="variants">
+    <h2>เลือกดูต้นแบบ</h2>
+    <p class="lead">โครงหน้าเหมือนกันทั้ง 3 แบบ (หน้าแรก บริการ ศูนย์ราคา สัญญารายปี สินค้า ข้างในแอร์ พื้นที่บริการ) เพื่อให้เทียบกันได้ตรง ๆ ต่างกันที่ภาษาภาพ วิธีเล่าเรื่อง และระดับของ 3D</p>
+    <div class="vars">
+      <article class="var v-a">
+        <div class="swatch"><b>A</b><div class="chips"><i style="background:#EEF2F6"></i><i style="background:#123F7B"></i><i style="background:#1B5AA8"></i><i style="background:#E2711D"></i></div></div>
+        <div class="body"><h3>Bento Clean</h3><p class="who">B2C + องค์กรทั่วไป · อ้างอิง 068, 028, 024, 092</p>
+          <ul><li>หน้าแรกแบบ bento พร้อม 3D ในการ์ด</li><li>เลื่อนลงแล้วแอร์แยกชิ้นส่วนทีละขั้น พร้อมขั้นตอนล้าง</li><li>ตัวช่วยเลือก BTU แบบลากจุด</li></ul>
+          <a class="open" href="./a.html">เปิดแบบ A</a></div>
+      </article>
+      <article class="var v-b">
+        <div class="swatch"><b>B</b><div class="chips"><i style="background:#F4F7FA"></i><i style="background:#0E2238"></i><i style="background:#2C6CB8"></i><i style="background:#E2711D"></i></div></div>
+        <div class="body"><h3>Engineering Sheet</h3><p class="who">ฝ่ายอาคาร จัดซื้อ ผู้รับเหมา · อ้างอิง 056, 052, 036, 060</p>
+          <ul><li>3D แบบพิมพ์เขียว เส้นโยงชื่อชิ้นส่วน title block</li><li>ตารางเครื่องแทนการ์ด + ตัวอย่างรายงานรายเครื่อง</li><li>แผนภาพพื้นที่แบบเส้นทางรถไฟ</li></ul>
+          <a class="open" href="./b.html">เปิดแบบ B</a></div>
+      </article>
+      <article class="var v-c">
+        <div class="swatch"><b>C</b><div class="chips"><i style="background:#090E14"></i><i style="background:#5AD0FF"></i><i style="background:#FF8A3D"></i><i style="background:#EAF0F6"></i></div></div>
+        <div class="body"><h3>Virtual Showroom</h3><p class="who">ลูกค้าที่อยากเห็นก่อนซื้อ · อ้างอิง 039, 022, 014, 095, 083</p>
+          <ul><li>โชว์รูม 3D เต็มจอ ล้างเสมือนจริงได้ทันที</li><li>เลื่อน "ลงลึก" เข้าไปในแอร์ 5 ชั้น</li><li>ห้องจำลองพื้นเปลี่ยนสีตามอุณหภูมิ</li></ul>
+          <a class="open" href="./c.html">เปิดแบบ C</a></div>
+      </article>
+    </div>
+    <div class="rec"><b>คำแนะนำ:</b> ใช้แบบ A เป็นโครงทั้งเว็บ ใช้ภาษาภาพแบบ B ในหน้าสำหรับองค์กร และทำโชว์รูม/ห้องจำลองของแบบ C เป็นหน้าฟีเจอร์แยก 1 หน้า เพราะงานหลักคือปิดสัญญาจำนวนมาก ความเร็วและความชัดของราคาสำคัญกว่าความว้าวทั้งเว็บ</div>
+  </section>
+
+  <section id="rev2">
+    <h2>Rev.04 เปลี่ยนอะไร</h2>
+    <ul class="try">
+      <li><b>ข้อมูลมาตรฐานทั้งหมด</b>อัตรามาตรฐานเท่านั้นบนเว็บ งานปริมาณมากขึ้นข้อความให้ทีมขายเสนออัตราพิเศษในใบเสนอราคา · 9 รุ่นที่ราคายังไม่อนุมัติไม่ขึ้นเว็บ (เหลือ 705 รุ่น) · กำลังทีมล้างต่อวันตามคู่มือบริษัท (ติดผนัง 22 · แขวน/สี่ทิศทาง 14)</li>
+      <li><b>รอบล้างแนะนำ</b>บ้านทุก 6 เดือน (ห้องนั่งเล่น 4) · สำนักงาน คลินิก ร้านค้าทุก 3 เดือน · ครัว ร้านอาหาร โรงงาน คลังทุก 2 เดือน · ห้อง Server ทุก 6 เดือน</li>
+      <li><b>หน้าทดสอบ A B C</b>สลับแบบ สลับจอคอม/แท็บเล็ต/มือถือ เทียบ 3 แบบพร้อมกัน รายการ 8 อย่างที่ควรลอง และตารางให้คะแนน 6 ด้าน คัดลอกผลส่ง LINE ได้</li>
+      <li><b>ห้องจำลอง 16 แบบ</b>บ้าน (ห้องนอน มาสเตอร์ นั่งเล่น ครัว ห้องทำงาน ห้องน้ำ) · สำนักงาน (Open-plan ผู้บริหาร ประชุม Server) · ร้านค้า ร้านอาหาร คลินิก · สายการผลิต คลังสินค้า ห้องควบคุม ใส่แอร์ได้ 5 ประเภท</li>
+      <li><b>เห็นผลของฝุ่นชัด</b>เลื่อน "ไม่ได้ล้างมากี่เดือน" ลมเย็นพุ่งสั้นลง ฝุ่นลอยมากขึ้น เย็นช้าลง ดูข้างในแผ่นกรอง คอยล์ โบลเวอร์ และวงจรน้ำยาแบบเคลื่อนไหว</li>
+      <li><b>จากห้องไปถึงราคา</b>ห้องจำลองแนะนำจำนวนและขนาดเครื่อง รุ่นที่เข้ากันพร้อมราคาติดตั้ง และแผนล้างรายปี ใส่ใบเสนอราคาได้ทันที</li>
+      <li><b>มาตรฐานวัสดุ</b>ตารางเทียบ 3 ระดับ ท่อ ฉนวน ราง สายไฟ เบรกเกอร์ การทดสอบ จาก Pricebook อยู่ทั้งหัวข้อแยกและในหน้าสินค้าทุกรุ่น</li>
+      <li><b>ค่าเดินทางอิงตลาด</b>ไม่เกิน 60 กม. 300 · 61–100 กม. 800 · 101–150 กม. 1,500 บาท/เที่ยว พร้อมขั้นต่ำและยกเว้นตามจำนวนเครื่อง</li>
+      <li><b>Journey ที่แก้แล้ว</b>เมนูหัวข้อบนมือถือ ปุ่มสรุปใบเสนอราคาลอย แท็บสัญญารายปีและงานโครงการ ไม่คิดค่าเดินทางซ้ำกับสัญญา</li>
+    </ul>
+  </section>
+
+  <section id="try">
+    <h2>สิ่งที่ลองได้ในต้นแบบ</h2>
+    <ul class="try">
+      <li><b>ห้องจำลอง</b>เลือกกลุ่ม "โรงงาน" แล้วเลื่อนไม่ได้ล้าง 12 เดือน ดูลมเบาลงและเวลาเย็นช้าลง กด "ล้างเครื่องตอนนี้" แล้วสลับไปแท็บ "ข้างในเครื่อง"</li>
+      <li><b>สินค้า → ใส่ตะกร้า</b>เปิดรุ่นใดก็ได้ เลือกติดตั้งพรีเมียม เปิด "เทียบวัสดุ 3 ระดับ" แล้วใส่ใบเสนอราคา</li>
+      <li><b>ศูนย์ราคา 7 หมวด</b>ล้าง ติดตั้ง ซ่อม สัญญารายปี รื้อย้าย วัสดุ งานโครงการ ค้นหาได้ทุกหมวด</li>
+      <li><b>สัญญารายปี</b>เลือก Preset โรงงาน พิมพ์ "ฉะเชิงเทรา" เห็นยกเว้นค่าเดินทางเพราะจำนวนเครื่องถึงเกณฑ์</li>
+      <li><b>ค่าเดินทาง</b>ในตะกร้าลองพิมพ์ สามพราน, บางปะอิน, ศรีราชา, ระยอง</li>
+      <li><b>มือถือ</b>เปิดบนโทรศัพท์ กด "เมนู" ที่แถบล่างเพื่อไปหัวข้อต่าง ๆ</li>
+    </ul>
+  </section>
+
+  <section id="hundred">
+    <h2>ผลรีวิว 100 เว็บต้นฉบับ</h2>
+    <p class="lead">ตรวจใหม่ทั้ง 100 ชิ้นทั้งคำอธิบายและซอร์สโค้ด ชี้เมาส์ที่ช่องเพื่อดูว่าดึงส่วนไหนมาใช้ รายละเอียดเต็มอยู่ในหัวข้อ 2 ของแผนด้านล่าง</p>
+    <div class="legend"><span><i class="t-core"></i>โครงหลัก 7</span><span><i class="t-comp"></i>ยืมคอมโพเนนต์ 27</span><span><i class="t-insp"></i>แรงบันดาลใจ 8</span><span><i class="t-skip"></i>ตัดทิ้ง 58</span></div>
+    <ul class="hundred"><li class="t-comp" title="001 Aurora Glass — sliding pill สลับรายครั้ง/รายปี ในตารางแพ็กเกจ (ไม่เอา glass บนฉากเคลื่อนไหว)"><b>001</b><span>Aurora Glass</span></li><li class="t-skip" title="002 Neon Rain"><b>002</b><span>Neon Rain</span></li><li class="t-insp" title="003 Swiss Poster"><b>003</b><span>Swiss Poster</span></li><li class="t-skip" title="004 Orrery"><b>004</b><span>Orrery</span></li><li class="t-skip" title="005 Sumi Ink"><b>005</b><span>Sumi Ink</span></li><li class="t-skip" title="006 Brutalist Zine"><b>006</b><span>Brutalist Zine</span></li><li class="t-skip" title="007 Soft Machine"><b>007</b><span>Soft Machine</span></li><li class="t-comp" title="008 The Last Keepers — layout บทความยาว measure ~62 ตัวอักษร, pull quote, marginal note"><b>008</b><span>The Last Keepers</span></li><li class="t-skip" title="009 Asterism"><b>009</b><span>Asterism</span></li><li class="t-skip" title="010 Mercury"><b>010</b><span>Mercury</span></li><li class="t-insp" title="011 Herbarium"><b>011</b><span>Herbarium</span></li><li class="t-comp" title="012 Nimbus Weather — "scene variables" เปลี่ยนสี UI ตามสภาพ, การ์ดค่าสภาพแวดล้อม"><b>012</b><span>Nimbus Weather</span></li><li class="t-skip" title="013 Woolgathering"><b>013</b><span>Woolgathering</span></li><li class="t-comp" title="014 MOVE Manifesto — sticky full-screen scene ขับด้วย scroll progress"><b>014</b><span>MOVE Manifesto</span></li><li class="t-insp" title="015 The Aurelian"><b>015</b><span>The Aurelian</span></li><li class="t-skip" title="016 Plaza Aeterna"><b>016</b><span>Plaza Aeterna</span></li><li class="t-insp" title="017 Harmonia"><b>017</b><span>Harmonia</span></li><li class="t-skip" title="018 Foxglove Hollow"><b>018</b><span>Foxglove Hollow</span></li><li class="t-skip" title="019 HELIOS/OS"><b>019</b><span>HELIOS/OS</span></li><li class="t-insp" title="020 Long Water"><b>020</b><span>Long Water</span></li><li class="t-skip" title="021 Formlehre"><b>021</b><span>Formlehre</span></li><li class="t-comp" title="022 Descent — depth gauge นับชั้นขณะเลื่อนลง"><b>022</b><span>Descent</span></li><li class="t-skip" title="023 Rosette"><b>023</b><span>Rosette</span></li><li class="t-core" title="024 Maison Varenne — Hero แบ่งข้อความ/สินค้า, sticky scroll แยกชิ้นส่วนเป็นชั้น, spec sheet แบบแบบวิศวกรรม, "reservation desk""><b>024</b><span>Maison Varenne</span></li><li class="t-insp" title="025 Pocket Metropolis"><b>025</b><span>Pocket Metropolis</span></li><li class="t-skip" title="026 PULSE"><b>026</b><span>PULSE</span></li><li class="t-insp" title="027 Senbazuru"><b>027</b><span>Senbazuru</span></li><li class="t-core" title="028 Elementa — Grid หนาแน่นพร้อมสีตามหมวด, แผงรายละเอียด, highlight แถว/คอลัมน์, มือถือเลื่อนในกรอบ"><b>028</b><span>Elementa</span></li><li class="t-skip" title="029 Carriage Return"><b>029</b><span>Carriage Return</span></li><li class="t-skip" title="030 Orbital"><b>030</b><span>Orbital</span></li><li class="t-skip" title="031 Nijūshi Sekki"><b>031</b><span>Nijūshi Sekki</span></li><li class="t-comp" title="032 Mythic Card — pointer tilt แบบ spring เบา ๆ"><b>032</b><span>Mythic Card</span></li><li class="t-skip" title="033 Labyrinthos"><b>033</b><span>Labyrinthos</span></li><li class="t-comp" title="034 Currents — side panel ↔ pull-up sheet บนมือถือ"><b>034</b><span>Currents</span></li><li class="t-comp" title="035 Ember & Oak — drag-snap carousel, subscription block"><b>035</b><span>Ember & Oak</span></li><li class="t-core" title="036 Meridian Metro — แผนภาพเส้นทาง 45°/90° + sidebar ตรวจเส้นทาง + service status board"><b>036</b><span>Meridian Metro</span></li><li class="t-skip" title="037 Frost Garden"><b>037</b><span>Frost Garden</span></li><li class="t-skip" title="038 HYPERBRICK"><b>038</b><span>HYPERBRICK</span></li><li class="t-comp" title="039 Galerie Nocturne — สปอตไลต์ + พื้นสะท้อนในโชว์รูม"><b>039</b><span>Galerie Nocturne</span></li><li class="t-comp" title="040 Lemon Tart — sticky checklist + ขั้นตอนตัวเลข"><b>040</b><span>Lemon Tart</span></li><li class="t-skip" title="041 Midnight Window"><b>041</b><span>Midnight Window</span></li><li class="t-skip" title="042 Infinite Coastline"><b>042</b><span>Infinite Coastline</span></li><li class="t-comp" title="043 Atelier Noire — แถบแนวนอนขับด้วย wheel"><b>043</b><span>Atelier Noire</span></li><li class="t-comp" title="044 Selene — ป้าย "illustrative" ชัดเจนบนข้อมูลจำลอง"><b>044</b><span>Selene</span></li><li class="t-skip" title="045 Vitrail"><b>045</b><span>Vitrail</span></li><li class="t-comp" title="046 Tend — heatmap 12 สัปดาห์, rings, streak"><b>046</b><span>Tend</span></li><li class="t-insp" title="047 Vast"><b>047</b><span>Vast</span></li><li class="t-comp" title="048 Squishy — billing switch, FAQ"><b>048</b><span>Squishy</span></li><li class="t-comp" title="049 Riso Lab — แผงควบคุม hairline + mono label"><b>049</b><span>Riso Lab</span></li><li class="t-comp" title="050 Loading, Beautifully — Skeleton shimmer, Download→Done, Ink check"><b>050</b><span>Loading, Beautifully</span></li><li class="t-skip" title="051 Hytte"><b>051</b><span>Hytte</span></li><li class="t-core" title="052 Helix — หมุดตัวเลขบนโมเดล + เส้นโยงไปคำอธิบาย + measurements + legend"><b>052</b><span>Helix</span></li><li class="t-skip" title="053 Arcana"><b>053</b><span>Arcana</span></li><li class="t-skip" title="054 ELASTIC"><b>054</b><span>ELASTIC</span></li><li class="t-skip" title="055 Dune Engine"><b>055</b><span>Dune Engine</span></li><li class="t-core" title="056 Casa Lumen — Drawing sheet: zone letters, title block, room schedule"><b>056</b><span>Casa Lumen</span></li><li class="t-skip" title="057 Hi-Fi Walnut"><b>057</b><span>Hi-Fi Walnut</span></li><li class="t-skip" title="058 Radical Shapes"><b>058</b><span>Radical Shapes</span></li><li class="t-skip" title="059 Karesansui"><b>059</b><span>Karesansui</span></li><li class="t-comp" title="060 QUANTA — grid 6 แผง → tab bar มือถือ, ตารางหนาแน่น"><b>060</b><span>QUANTA</span></li><li class="t-skip" title="061 Dusk Meadow"><b>061</b><span>Dusk Meadow</span></li><li class="t-skip" title="062 GROOVY"><b>062</b><span>GROOVY</span></li><li class="t-comp" title="063 Skyward — timeline ลากแนวนอน"><b>063</b><span>Skyward</span></li><li class="t-skip" title="064 Fridge Verse"><b>064</b><span>Fridge Verse</span></li><li class="t-skip" title="065 Patchwork"><b>065</b><span>Patchwork</span></li><li class="t-comp" title="066 Planet Forge — stage ซ้าย + survey record"><b>066</b><span>Planet Forge</span></li><li class="t-skip" title="067 ASCII Tides"><b>067</b><span>ASCII Tides</span></li><li class="t-core" title="068 Bento Portfolio — Bento grid 4 คอลัมน์ named areas, tile ขาว radius 22–24px, เงา 3 ชั้น, feature tile สีเข้ม 1 ใบ, breakpoint 1080/640"><b>068</b><span>Bento Portfolio</span></li><li class="t-skip" title="069 Apiary"><b>069</b><span>Apiary</span></li><li class="t-skip" title="070 Grandmaster's Study"><b>070</b><span>Grandmaster's Study</span></li><li class="t-comp" title="071 Chroma — WCAG contrast matrix"><b>071</b><span>Chroma</span></li><li class="t-skip" title="072 Somewhere Inside"><b>072</b><span>Somewhere Inside</span></li><li class="t-comp" title="073 Silicon — hover ชิ้นส่วนบนบอร์ด + datasheet panel"><b>073</b><span>Silicon</span></li><li class="t-skip" title="074 Iridescence"><b>074</b><span>Iridescence</span></li><li class="t-skip" title="075 Brush & Ink"><b>075</b><span>Brush & Ink</span></li><li class="t-comp" title="076 ARES VII — panel มุมวงเล็บ, header ตัวเลข, status chip"><b>076</b><span>ARES VII</span></li><li class="t-skip" title="077 The Glass Alibi"><b>077</b><span>The Glass Alibi</span></li><li class="t-skip" title="078 Four Seasons"><b>078</b><span>Four Seasons</span></li><li class="t-skip" title="079 Pulsar Ridges"><b>079</b><span>Pulsar Ridges</span></li><li class="t-skip" title="080 Luminote"><b>080</b><span>Luminote</span></li><li class="t-skip" title="081 SIGNAL/NOISE"><b>081</b><span>SIGNAL/NOISE</span></li><li class="t-comp" title="082 Rosée — สินค้าเอียงตาม pointer, ชั้น pyramid"><b>082</b><span>Rosée</span></li><li class="t-comp" title="083 Connected Globe — dot-matrix + arc เคลื่อนที่"><b>083</b><span>Connected Globe</span></li><li class="t-comp" title="084 Crystalline — แผนภาพที่ลากจุดได้"><b>084</b><span>Crystalline</span></li><li class="t-skip" title="085 Maison Lierre"><b>085</b><span>Maison Lierre</span></li><li class="t-skip" title="086 Rule 30"><b>086</b><span>Rule 30</span></li><li class="t-skip" title="087 Juno's Sketchbook"><b>087</b><span>Juno's Sketchbook</span></li><li class="t-skip" title="088 Tempus"><b>088</b><span>Tempus</span></li><li class="t-skip" title="089 SENTINEL"><b>089</b><span>SENTINEL</span></li><li class="t-skip" title="090 Horologe"><b>090</b><span>Horologe</span></li><li class="t-skip" title="091 Alpenglow"><b>091</b><span>Alpenglow</span></li><li class="t-core" title="092 Ambience — Sticky side panel สรุป + presets คลิกเดียว + grid การ์ดปรับค่า"><b>092</b><span>Ambience</span></li><li class="t-skip" title="093 Windwalker"><b>093</b><span>Windwalker</span></li><li class="t-skip" title="094 Aquarelle"><b>094</b><span>Aquarelle</span></li><li class="t-comp" title="095 Lines of Force — heat map + contour"><b>095</b><span>Lines of Force</span></li><li class="t-comp" title="096 MONOLITH — 12-col grid ที่มองเห็น + ตารางข้อมูลโครงการ"><b>096</b><span>MONOLITH</span></li><li class="t-skip" title="097 Harmonograph"><b>097</b><span>Harmonograph</span></li><li class="t-skip" title="098 Pip & Paper Moon"><b>098</b><span>Pip & Paper Moon</span></li><li class="t-skip" title="099 Droste"><b>099</b><span>Droste</span></li><li class="t-skip" title="100 Organic Wave Lab"><b>100</b><span>Organic Wave Lab</span></li></ul>
+  </section>
+
+  <section id="plan">
+    <h2>แผนโครงสร้างสำหรับทีมพัฒนา</h2>
+    <p class="lead">เนื้อหาเดียวกับไฟล์ SBP-WEB-011_Dev_Handoff_Plan.md ที่ส่งให้ทีม</p>
+    <div class="plan"><h2>0. คำตัดสินของเจ้าของ (29 ก.ย. 2569)</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>เรื่อง</th>
+<th>คำตัดสิน</th>
+<th>ผลต่อระบบ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>ราคาสินค้า</td>
+<td><strong>แสดงราคาแอร์ทุกรุ่นบนเว็บ</strong></td>
+<td>Catalog แสดงราคาเครื่องรวม VAT และราคาพร้อมติดตั้งมาตรฐานทุกรุ่น</td>
+</tr>
+<tr>
+<td>2</td>
+<td>ค่าบริการ</td>
+<td><strong>ต้องครบ พร้อมอุปกรณ์เสริมและรายละเอียด</strong></td>
+<td>หน้าค่าบริการ 5 หมวด + ตัวเลือกอุปกรณ์เสริมในหน้าสินค้า + รายการรวม/ไม่รวม/รับประกันทุกรายการ</td>
+</tr>
+<tr>
+<td>3</td>
+<td>ผลงาน/โลโก้ลูกค้า</td>
+<td><strong>ยังไม่ทำ</strong> เน้นสินค้าและบริการให้ครบก่อน</td>
+<td>ตัดหน้า /works และ section โลโก้/รีวิวออกจากเฟสนี้</td>
+</tr>
+<tr>
+<td>4</td>
+<td>ฟังก์ชัน</td>
+<td><strong>ต้องครบทุกฟังก์ชันการใช้งาน</strong></td>
+<td>ค้นหา กรอง เทียบ เลือกแพ็กเกจ เพิ่มอุปกรณ์ รวมราคา ใบเสนอราคาเบื้องต้น ตรวจพื้นที่ ค่าเดินทาง ส่งคำขอ คัดลอกสรุปไป LINE</td>
+</tr>
+<tr>
+<td>5</td>
+<td>พื้นที่</td>
+<td><strong>กรุงเทพฯ และปริมณฑลเท่านั้น</strong> นอกนั้นจำกัดระยะทางและคิดค่าบริการเพิ่ม</td>
+<td>5 จังหวัดไม่มีค่าเดินทาง นอกพื้นที่คำนวณระยะจากสำนักงานใหญ่และคิดค่าเดินทางต่อเที่ยว เกินระยะสูงสุดไม่รับงานรายเครื่อง</td>
+</tr>
+<tr>
+<td>6</td>
+<td>แบบเว็บ</td>
+<td><strong>ยังไม่เลือก พัฒนาทั้ง 3 แบบไปพร้อมกัน</strong></td>
+<td>ฟีเจอร์ทุกตัวเป็นโมดูลร่วม (studio, commerce, journey) ทั้ง 3 แบบได้ของเหมือนกัน ต่างกันที่ภาษาภาพ</td>
+</tr>
+<tr>
+<td>7</td>
+<td>ห้องจำลอง</td>
+<td><strong>ครอบคลุมทุกรูปแบบห้อง</strong> บ้าน ห้องน้ำ ห้องนั่งเล่น ออฟฟิศ ห้องผู้บริหาร ห้องประชุม โรงงาน</td>
+<td>16 ฉาก 4 กลุ่ม ทุกฉากเห็นลม ฝุ่น ฟิลเตอร์ กลไก และจบที่รุ่น+ราคา+แผนล้าง (6C)</td>
+</tr>
+<tr>
+<td>8</td>
+<td>จุดขาย</td>
+<td><strong>คุณภาพวัสดุระบุครบ</strong></td>
+<td>ตารางเทียบวัสดุ 3 ระดับทั้งในหน้า /quality และในหน้าสินค้าทุกรุ่น (6D)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>ค่าเดินทาง</td>
+<td><strong>ใช้ราคาตลาดเป็นแบบ</strong></td>
+<td>300 / 800 / 1,500 บาทต่อเที่ยวตามช่วงระยะ + ขั้นต่ำจำนวนเครื่อง (6B)</td>
+</tr>
+<tr>
+<td>10</td>
+<td>อัตราพิเศษ / โครงการ</td>
+<td><strong>ใช้ตามมาตรฐาน: เว็บแสดงอัตรามาตรฐานเท่านั้น</strong></td>
+<td>อัตรา sp/pj ถูกตัดออกจากไฟล์ที่ส่งถึงเบราว์เซอร์แล้ว ตั้งแต่ 10 เครื่องขึ้นข้อความ "อาจได้อัตราพิเศษตามเงื่อนไข ทีมขายยืนยันในใบเสนอราคา" ตรงกับ Approval Matrix</td>
+</tr>
+<tr>
+<td>11</td>
+<td>9 รุ่นราคาอ้างอิง</td>
+<td><strong>ไม่ขึ้นเว็บจนกว่าจะอนุมัติ</strong></td>
+<td>เว็บมี 705 รุ่น (จาก 714)</td>
+</tr>
+<tr>
+<td>12</td>
+<td>ค่าเดินทาง: เกณฑ์</td>
+<td><strong>ตามที่เสนอ</strong></td>
+<td>Z1 ยกเว้นเมื่อ ≥4 เครื่อง · Z2 ขั้นต่ำ 3 ยกเว้นเมื่อ ≥8 · Z3 ขั้นต่ำ 5 · สูงสุด 150 กม. · นครปฐมอยู่ Z1 (300 บาท)</td>
+</tr>
+<tr>
+<td>13</td>
+<td>ยอดขั้นต่ำ</td>
+<td><strong>ตาม Pricing Control</strong></td>
+<td>4,500 บาทก่อน VAT ใช้กับงานล้างเท่านั้น</td>
+</tr>
+<tr>
+<td>14</td>
+<td>รอบล้างแนะนำ</td>
+<td><strong>ตามแนวปฏิบัติทั่วไป</strong></td>
+<td>บ้าน 6 เดือน (นั่งเล่น 4) · สำนักงาน/คลินิก/ร้านค้า 3 เดือน · ครัว/ร้านอาหาร/โรงงาน/คลัง 2 เดือน · Server 6 เดือน</td>
+</tr>
+<tr>
+<td>15</td>
+<td>กำลังทีมล้าง</td>
+<td><strong>ตามคู่มือบริษัท §1.9 (SBP-GRW-001)</strong></td>
+<td>ติดผนัง 20–25 → 22 · แขวน/สี่ทิศทาง 12–16 → 14 · ตู้ตั้งใช้ 14 · ท่อลม 12 เครื่อง/ทีม-วัน</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2>1. เป้าหมายของเว็บ</h2>
+<ol>
+<li><strong>ปิดสัญญาล้างรายปี B2B เป็นจำนวน</strong> ลูกค้าเห็นราคาต่อปีจาก Pricebook จริงได้เอง แล้วใส่ใบเสนอราคาได้ทันที</li>
+<li><strong>ขายแอร์ทุกรุ่นพร้อมราคา</strong> ราคาเครื่อง ราคาพร้อมติดตั้ง และราคาอุปกรณ์เพิ่ม รวมยอดให้เองก่อนติดต่อทีม</li>
+<li><strong>ค่าบริการโปร่งใสครบทุกหมวด</strong> ล้าง ติดตั้ง ซ่อม รื้อ/ย้าย วัสดุ พร้อมสิ่งที่รวม ไม่รวม และรับประกัน</li>
+<li>
+<p><strong>ตัดคำถามซ้ำของทีมขาย</strong> ใบเสนอราคาเบื้องต้นส่งรายการ พื้นที่ ค่าเดินทาง และยอดรวมมาให้ครบ</p>
+</li>
+<li>
+<p><strong>ให้ลูกค้าเห็นภาพก่อนตัดสินใจ</strong> เลือกห้องแบบของตัวเอง เห็นลมเย็น ฝุ่น และผลของการไม่ล้าง แล้วได้รุ่นพร้อมราคาและแผนล้างทันที</p>
+</li>
+</ol>
+<p>ยังไม่ทำในเฟสนี้: ชำระเงินออนไลน์ (ยืนยันผ่านใบเสนอราคาอย่างเป็นทางการ), หน้าผลงาน/โลโก้ลูกค้า, รีวิว</p>
+<hr />
+<h2>1A. ข้อมูลราคาที่ใช้ (ของจริง)</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>แหล่ง</th>
+<th>สิ่งที่ดึงมา</th>
+<th>จำนวน</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ใบเสนอราคาติดตั้งแอร์ Final จริง.xlsx › รายการแอร์สำหรับเสนอ + สเปกเครื่อง_ฝ่ายขาย</td>
+<td>รุ่นแอร์ ราคาก่อน VAT ราคาติดตั้งมาตรฐานต่อรุ่น สเปก รับประกัน</td>
+<td><strong>714 รุ่นใน Pricebook → 705 รุ่นที่ราคาอนุมัติขึ้นเว็บ · 22 แบรนด์</strong> (ติดผนัง 360 · แขวน 178 · สี่ทิศทาง 153 · ตู้ตั้ง 23 ก่อนตัด 9 รุ่น)</td>
+</tr>
+<tr>
+<td>ใบเสนอราคาติดตั้งแอร์ Final จริง.xlsx › รายการติดตั้งและเพิ่มเติม</td>
+<td>ติดตั้ง 3 ระดับ ต่อประเภทและช่วง BTU, ชุดท่อส่วนเกิน, ท่อ ฉนวน ราง ไฟ เบรกเกอร์ น้ำทิ้ง รื้อ/ย้าย งานสูง เดินทาง เอกสาร</td>
+<td><strong>194 รายการ</strong> (มีราคา 126 · ประเมินหน้างาน 68)</td>
+</tr>
+<tr>
+<td>ใบเสนอราคาล้างและซ่อม Final จริง.xlsx › Pricebook งานล้าง</td>
+<td>ล้าง 3 แพ็กเกจ (Basic Clean / Standard Care / Corporate Control) × C1 ล้างปกติ / C2 ล้างใหญ่ × 5 ประเภท × ช่วง BTU + AHU + งานเพิ่ม, อัตรามาตรฐาน/พิเศษ/โครงการ</td>
+<td><strong>234 แถว</strong></td>
+</tr>
+<tr>
+<td>ใบเสนอราคาล้างและซ่อม Final จริง.xlsx › Pricebook งานล้าง (Repair Service)</td>
+<td>ค่าตรวจวินิจฉัยและค่าซ่อมตามรายการพร้อมรับประกัน</td>
+<td><strong>86 รายการ</strong> (มีราคา 56)</td>
+</tr>
+<tr>
+<td>Pricing Control</td>
+<td>ยอดขั้นต่ำงานล้างต่อการเข้าหน้างาน</td>
+<td><strong>4,500 บาท ก่อน VAT</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>กฎการแสดงราคา:
+- ราคาใน Pricebook เป็น <strong>ก่อน VAT</strong> เว็บแสดง <strong>ราคารวม VAT 7% เป็นตัวหลัก</strong> และราคาก่อน VAT ตัวเล็กข้างกันทุกจุด ใบเสนอราคาเบื้องต้นแยก ยอดก่อน VAT / VAT / รวม
+- รายการที่ไม่มีราคาใน Pricebook แสดง "ประเมินหน้างาน" ลูกค้าใส่ลงใบเสนอราคาได้ ทีมแจ้งราคาก่อนเริ่มงาน
+- 9 รุ่นที่สถานะ "ราคาอ้างอิงตลาด QA — ตรวจสอบก่อนส่ง" (Carrier 42TVBA 3 รุ่น, Central Air CFW-2IVJS 4 รุ่น, Panasonic CS-XU 2 รุ่น) <strong>ไม่ขึ้นเว็บ</strong> จนกว่าสถานะใน Pricebook จะเป็นอนุมัติ (สคริปต์นำเข้ากรองจากคอลัมน์สถานะ)
+- สถานะสต็อกทุกรุ่นใน Pricebook คือ "ตรวจสอบสต็อกก่อนยืนยัน" เว็บจึงแสดง "ยืนยันสต็อกก่อนสั่ง" จนกว่าจะเชื่อมข้อมูลสต็อกจริง
+- <strong>FUJIVA ยังไม่มีใน Pricebook</strong> ต้นแบบแสดงเป็นแบรนด์ที่รอนำเข้าราคา ต้องเพิ่มรายการก่อนเปิดเว็บ</p>
+<p>ความลับ: ห้ามนำชีต "ต้นทุนภายใน", "Profile ภายใน" และ % ส่วนลดขึ้นเว็บ <strong>อัตรา "พิเศษ/โครงการ" ถูกตัดออกจาก sbp-data.json แล้วใน Rev.04</strong> (ค่าเป็น null) ทีมขายใช้จาก Pricebook ภายในตอนออกใบเสนอราคา</p>
+<hr />
+<h2>2. ผลรีวิวต้นฉบับ 100 เว็บ (รอบที่ 2 — ละเอียดระดับชิ้นส่วน)</h2>
+<p>ตรวจทั้ง 100 ชิ้น อ่านคำอธิบายเต็มและสแกนซอร์สทุกไฟล์ (ขนาด, canvas/WebGL, SVG, scroll-driven, perspective, reduced-motion, จำนวนปุ่ม/ฟอร์ม) ผลสแกน: ไม่มีชิ้นไหนใช้ Three.js (มีเพียง 010 และ 099 ที่ใช้ WebGL shader) ดังนั้น <strong>ระบบ 3D ต้องสร้างเอง</strong> ซึ่งต้นแบบนี้ทำไว้แล้ว</p>
+<p><strong>สรุป:</strong> โครงหลัก 7 · ยืมคอมโพเนนต์ 27 · แรงบันดาลใจ 8 · ตัดทิ้ง 58</p>
+<h3>2.1 ★ โครงหลัก (ใช้เป็นโครงหน้า)</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>ชิ้นงาน</th>
+<th>ดึงอะไรมาใช้</th>
+<th>ใช้ที่</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>068</td>
+<td>Bento Portfolio</td>
+<td>Bento grid 4 คอลัมน์ named areas, tile ขาว radius 22–24px, เงา 3 ชั้น, feature tile สีเข้ม 1 ใบ, breakpoint 1080/640</td>
+<td>ภาษาภาพหลักแบบ A, หน้าแรก</td>
+</tr>
+<tr>
+<td>028</td>
+<td>Elementa</td>
+<td>Grid หนาแน่นพร้อมสีตามหมวด, แผงรายละเอียด, highlight แถว/คอลัมน์, มือถือเลื่อนในกรอบ</td>
+<td>Catalog ทุกแบบ</td>
+</tr>
+<tr>
+<td>024</td>
+<td>Maison Varenne</td>
+<td>Hero แบ่งข้อความ/สินค้า, sticky scroll แยกชิ้นส่วนเป็นชั้น, spec sheet แบบแบบวิศวกรรม, "reservation desk"</td>
+<td>หน้าสินค้า, Story แยกชิ้นส่วน (A)</td>
+</tr>
+<tr>
+<td>092</td>
+<td>Ambience</td>
+<td>Sticky side panel สรุป + presets คลิกเดียว + grid การ์ดปรับค่า</td>
+<td>Contract Builder</td>
+</tr>
+<tr>
+<td>052</td>
+<td>Helix</td>
+<td>หมุดตัวเลขบนโมเดล + เส้นโยงไปคำอธิบาย + measurements + legend</td>
+<td>"ข้างในแอร์" (B)</td>
+</tr>
+<tr>
+<td>056</td>
+<td>Casa Lumen</td>
+<td>Drawing sheet: zone letters, title block, room schedule</td>
+<td>ภาษาภาพแบบ B</td>
+</tr>
+<tr>
+<td>036</td>
+<td>Meridian Metro</td>
+<td>แผนภาพเส้นทาง 45°/90° + sidebar ตรวจเส้นทาง + service status board</td>
+<td>หน้าพื้นที่บริการ (B)</td>
+</tr>
+</tbody>
+</table></div>
+<h3>2.2 ● ยืมคอมโพเนนต์ / interaction</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>ชิ้นงาน</th>
+<th>ดึงเฉพาะส่วนนี้</th>
+<th>ใช้ที่</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>001</td>
+<td>Aurora Glass</td>
+<td>sliding pill สลับรายครั้ง/รายปี ในตารางแพ็กเกจ (ไม่เอา glass บนฉากเคลื่อนไหว)</td>
+<td>หน้าแพ็กเกจล้าง</td>
+</tr>
+<tr>
+<td>008</td>
+<td>The Last Keepers</td>
+<td>layout บทความยาว measure ~62 ตัวอักษร, pull quote, marginal note</td>
+<td>บทความ/ความรู้ (SEO)</td>
+</tr>
+<tr>
+<td>012</td>
+<td>Nimbus</td>
+<td>"scene variables" เปลี่ยนสี UI ตามสภาพ, การ์ดค่าสภาพแวดล้อม</td>
+<td>Virtual Room (C)</td>
+</tr>
+<tr>
+<td>014</td>
+<td>MOVE</td>
+<td>sticky full-screen scene ขับด้วย scroll progress</td>
+<td>Journey (C), Story (A)</td>
+</tr>
+<tr>
+<td>022</td>
+<td>Descent</td>
+<td>depth gauge นับชั้นขณะเลื่อนลง</td>
+<td>"เดินทางเข้าไปในแอร์" (C)</td>
+</tr>
+<tr>
+<td>032</td>
+<td>Mythic Card</td>
+<td>pointer tilt แบบ spring เบา ๆ</td>
+<td>การ์ดสินค้า (C)</td>
+</tr>
+<tr>
+<td>034</td>
+<td>Currents</td>
+<td>side panel ↔ pull-up sheet บนมือถือ</td>
+<td>Filter bottom sheet ทุกแบบ</td>
+</tr>
+<tr>
+<td>035</td>
+<td>Ember &amp; Oak</td>
+<td>drag-snap carousel, subscription block</td>
+<td>แถบแบรนด์/ผลงาน, การ์ดสัญญา</td>
+</tr>
+<tr>
+<td>039</td>
+<td>Galerie Nocturne</td>
+<td>สปอตไลต์ + พื้นสะท้อนในโชว์รูม</td>
+<td>Hero โชว์รูม (C)</td>
+</tr>
+<tr>
+<td>040</td>
+<td>Lemon Tart</td>
+<td>sticky checklist + ขั้นตอนตัวเลข</td>
+<td>หน้าขั้นตอนล้าง</td>
+</tr>
+<tr>
+<td>043</td>
+<td>Atelier Noire</td>
+<td>แถบแนวนอนขับด้วย wheel</td>
+<td>โชว์ FUJIVA / ผลงาน (ใช้จำกัด)</td>
+</tr>
+<tr>
+<td>046</td>
+<td>Tend</td>
+<td>heatmap 12 สัปดาห์, rings, streak</td>
+<td>Portal B2B เฟส 2</td>
+</tr>
+<tr>
+<td>048</td>
+<td>Squishy</td>
+<td>billing switch, FAQ</td>
+<td>toggle ครั้งเดียว/รายปี</td>
+</tr>
+<tr>
+<td>049</td>
+<td>Riso Lab</td>
+<td>แผงควบคุม hairline + mono label</td>
+<td>แผงควบคุมแบบ B</td>
+</tr>
+<tr>
+<td>050</td>
+<td>Loading, Beautifully</td>
+<td>Skeleton shimmer, Download→Done, Ink check</td>
+<td>Loading/สำเร็จ ทุกแบบ</td>
+</tr>
+<tr>
+<td>060</td>
+<td>QUANTA</td>
+<td>grid 6 แผง → tab bar มือถือ, ตารางหนาแน่น</td>
+<td>Portal B2B, ตาราง Catalog (B)</td>
+</tr>
+<tr>
+<td>063</td>
+<td>Skyward</td>
+<td>timeline ลากแนวนอน</td>
+<td>ประวัติบริษัท/ขั้นตอนโครงการ</td>
+</tr>
+<tr>
+<td>066</td>
+<td>Planet Forge</td>
+<td>stage ซ้าย + survey record</td>
+<td>Layout 3D viewer + spec</td>
+</tr>
+<tr>
+<td>073</td>
+<td>Silicon</td>
+<td>hover ชิ้นส่วนบนบอร์ด + datasheet panel</td>
+<td>หน้าซ่อม (อธิบายบอร์ด)</td>
+</tr>
+<tr>
+<td>076</td>
+<td>ARES VII</td>
+<td>panel มุมวงเล็บ, header ตัวเลข, status chip</td>
+<td>แดชบอร์ดทีม/Portal</td>
+</tr>
+<tr>
+<td>082</td>
+<td>Rosée</td>
+<td>สินค้าเอียงตาม pointer, ชั้น pyramid</td>
+<td>Hero สินค้า (C), ชั้นการกรอง</td>
+</tr>
+<tr>
+<td>083</td>
+<td>Connected</td>
+<td>dot-matrix + arc เคลื่อนที่</td>
+<td>แผนที่พื้นที่ (C)</td>
+</tr>
+<tr>
+<td>084</td>
+<td>Crystalline</td>
+<td>แผนภาพที่ลากจุดได้</td>
+<td>BTU pad (A/B)</td>
+</tr>
+<tr>
+<td>095</td>
+<td>Lines of Force</td>
+<td>heat map + contour</td>
+<td>พื้นห้องใน Virtual Room (C)</td>
+</tr>
+<tr>
+<td>096</td>
+<td>Monolith</td>
+<td>12-col grid ที่มองเห็น + ตารางข้อมูลโครงการ</td>
+<td>หน้าผลงานโครงการ (B)</td>
+</tr>
+<tr>
+<td>071</td>
+<td>Chroma</td>
+<td>WCAG contrast matrix</td>
+<td>เครื่องมือ QA token (ภายใน)</td>
+</tr>
+<tr>
+<td>044</td>
+<td>Selene</td>
+<td>ป้าย "illustrative" ชัดเจนบนข้อมูลจำลอง</td>
+<td>หลักการติดป้ายแบบจำลอง</td>
+</tr>
+</tbody>
+</table></div>
+<h3>2.3 ○ แรงบันดาลใจเท่านั้น</h3>
+<p>003 Swiss Poster (กริดโมดูลาร์), 020 Long Water (data-art สัดส่วนจริง สำหรับรายงาน B2B อนาคต), 025 Pocket Metropolis (isometric งานอาคาร), 027 Senbazuru (ขั้นตอนเลขใหญ่ สำหรับคู่มือดูแลแอร์), 047 Vast (scale bar), 015 Aurelian (แนวคิดนำทางเป็นชั้น), 011 Herbarium (sticky index panel), 017 Harmonia (ฟิสิกส์จริงขับ animation)</p>
+<h3>2.4 ✕ ตัดทิ้ง 58 ชิ้น</h3>
+<p>002, 004, 005, 006, 007, 009, 010, 013, 016, 018, 019, 021, 023, 026, 029, 030, 031, 033, 037, 038, 041, 042, 045, 051, 053, 054, 055, 057, 058, 059, 061, 062, 064, 065, 067, 069, 070, 072, 074, 075, 077, 078, 079, 080, 081, 085, 086, 087, 088, 089, 090, 091, 093, 094, 097, 098, 099, 100</p>
+<p>เหตุผลรวม: เป็นงานศิลปะ/เกม/ของเล่นฟิสิกส์ ธีมแรงเกินธุรกิจบริการ (cyberpunk, vaporwave, memphis, radar ทหาร) contrast ต่ำ (neumorphism) หรือใช้ GPU หนักโดยไม่ช่วยขาย</p>
+<h3>2.5 ข้อจำกัดร่วมของทั้ง 100 ชิ้น</h3>
+<ul>
+<li><strong>ไม่มีชิ้นไหนออกแบบให้ภาษาไทย</strong> — ห้ามลอก letter-spacing ติดลบและ line-height ต่ำ</li>
+<li><strong>ไม่มีชิ้นไหนเป็น Three.js / GLB</strong> — ระบบ 3D ใช้ของต้นแบบนี้เป็นฐาน</li>
+<li>ทุกชิ้นเป็นแบรนด์สมมติ ใช้ได้เฉพาะ "โครงสร้าง + interaction" ห้ามลอกเนื้อหา/ภาพ</li>
+</ul>
+<hr />
+<h2>3. ต้นแบบ 3 รูปแบบ</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th></th>
+<th>A · Bento Clean</th>
+<th>B · Engineering Sheet</th>
+<th>C · Virtual Showroom</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>แนวคิด</td>
+<td>แอปพรีเมียม สว่าง สะอาด</td>
+<td>ชุดแบบวิศวกรรม ตรวจสอบได้</td>
+<td>โชว์รูมมืด สินค้าเป็นแหล่งแสง</td>
+</tr>
+<tr>
+<td>กลุ่มหลัก</td>
+<td>B2C + องค์กรทั่วไป</td>
+<td>ฝ่ายอาคาร จัดซื้อ ผู้รับเหมา</td>
+<td>ลูกค้าที่อยากเห็นก่อนซื้อ, งานพรีเมียม</td>
+</tr>
+<tr>
+<td>ต้นฉบับหลัก</td>
+<td>068, 028, 024, 092</td>
+<td>056, 052, 036, 060, 049, 096</td>
+<td>039, 022, 014, 095, 083, 082</td>
+</tr>
+<tr>
+<td>สีหลัก</td>
+<td>พื้น #EEF2F6, น้ำเงิน #123F7B/#1B5AA8, ส้ม CTA #E2711D</td>
+<td>กระดาษ #F4F7FA, หมึก #0E2238, เส้น #2C6CB8, ส้ม safety #E2711D</td>
+<td>พื้น #090E14, ฟ้าเย็น #5AD0FF, ส้มร้อน #FF8A3D</td>
+</tr>
+<tr>
+<td>ฟอนต์</td>
+<td>Anuphan</td>
+<td>IBM Plex Sans Thai + IBM Plex Mono</td>
+<td>Kanit (หัวข้อ) + Anuphan</td>
+</tr>
+<tr>
+<td>3D</td>
+<td>Studio สมจริง, story แยกชิ้นส่วนตาม scroll</td>
+<td>Blueprint เส้นขอบ + leader lines + title block</td>
+<td>Showroom แสงขอบ, depth journey</td>
+</tr>
+<tr>
+<td>ห้องจำลอง 16 ฉาก</td>
+<td>ธีมสว่าง เริ่มที่ห้องนอน</td>
+<td>ธีม blueprint เส้นขอบน้ำเงิน เริ่มที่ออฟฟิศ</td>
+<td>ธีมมืด อนุภาคเรืองแสง เริ่มที่ห้องนั่งเล่น</td>
+</tr>
+<tr>
+<td>Catalog เริ่มต้น</td>
+<td>การ์ด</td>
+<td>ตาราง (สลับการ์ดได้)</td>
+<td>การ์ด + แถบประเภท</td>
+</tr>
+<tr>
+<td>ราคา/ใบเสนอราคา</td>
+<td>ครบเหมือนกันทั้ง 3 แบบ (ใช้โมดูลเดียวกัน)</td>
+<td>ครบ</td>
+<td>ครบ</td>
+</tr>
+<tr>
+<td>จุดแข็ง</td>
+<td>อ่านง่าย โหลดเบาที่สุด ปรับเป็นระบบง่าย</td>
+<td>น่าเชื่อถือสำหรับ B2B มาก เห็นรายงาน/ตารางเครื่อง</td>
+<td>ว้าวที่สุด จำได้ ใช้ทำคอนเทนต์โซเชียลได้</td>
+</tr>
+<tr>
+<td>ความเสี่ยง</td>
+<td>อาจดู "เหมือนเว็บทั่วไป" ถ้าไม่มี 3D</td>
+<td>ลูกค้าบ้านอาจรู้สึกแข็ง</td>
+<td>หนักเครื่อง มือถือรุ่นประหยัดอาจกระตุก, SEO ต้องระวัง</td>
+</tr>
+<tr>
+<td>ต้นทุนพัฒนา (เทียบ)</td>
+<td>1.0×</td>
+<td>1.1×</td>
+<td>1.6×</td>
+</tr>
+</tbody>
+</table></div>
+<h3>3.1 คำแนะนำฝั่งเจ้าของ</h3>
+<p><strong>ใช้ A เป็นโครงหลักของทั้งเว็บ</strong> แล้วยืม 2 อย่างจากแบบอื่น:</p>
+<ol>
+<li>หน้า <strong>สำหรับองค์กร / สัญญารายปี</strong> ใช้ภาษาภาพ B (ตารางเครื่อง, รายงานรายเครื่อง, leader lines) เพราะคนตัดสินใจคือฝ่ายอาคารและจัดซื้อ</li>
+<li>หน้า <strong>Virtual Showroom / ห้องจำลอง</strong> ของ C ทำเป็นหน้าฟีเจอร์แยก 1 หน้า (ใช้ทำคลิปโฆษณาและ Social ได้) ไม่ใช้เป็นธีมทั้งเว็บ</li>
+</ol>
+<p>เหตุผล: งานหลักคือปิดสัญญาจำนวนมาก ความเร็วหน้าเว็บและความชัดของราคาสำคัญกว่าความว้าว ธีมมืดทั้งเว็บเพิ่มต้นทุนและความเสี่ยงด้านประสิทธิภาพบนมือถือ</p>
+<hr />
+<h2>4. สถาปัตยกรรมที่แนะนำ</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>ชั้น</th>
+<th>แนะนำ</th>
+<th>เหตุผล</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Framework</td>
+<td>Next.js (App Router) + TypeScript</td>
+<td>บริษัทมีเว็บ Polar Air บน Next.js อยู่แล้ว, หน้าสินค้า 714 รุ่นทำ SSG ได้ดีต่อ SEO</td>
+</tr>
+<tr>
+<td>สไตล์</td>
+<td>CSS variables (design tokens) + CSS Modules หรือ Tailwind ที่อ่านค่าจาก token</td>
+<td>ต้นแบบใช้ token บน <code>:root</code> และ alias <code>--s-*</code> สำหรับส่วนร่วม</td>
+</tr>
+<tr>
+<td>3D</td>
+<td>three r170 (โมดูล <code>ac3d.js</code>) ห่อเป็น React component หรือย้ายไป react-three-fiber</td>
+<td>API ออกแบบให้ห่อได้ทันที</td>
+</tr>
+<tr>
+<td>ข้อมูลราคา</td>
+<td>ตาราง Pricebook ใน PostgreSQL/Supabase นำเข้าจาก Excel ด้วยสคริปต์ (ต้นแบบมีตัวอย่างการแปลงแล้ว)</td>
+<td>เจ้าของแก้ราคาใน Excel ที่เดิม แล้วนำเข้าใหม่ ไม่ต้องแก้โค้ด</td>
+</tr>
+<tr>
+<td>ใบเสนอราคาเบื้องต้น</td>
+<td>Cart ฝั่ง client + API สร้าง Lead และคำนวณยอดซ้ำฝั่ง server</td>
+<td>กันการแก้ราคาจาก browser</td>
+</tr>
+<tr>
+<td>ระยะทาง</td>
+<td>Google Distance Matrix จากที่อยู่หน้างาน → สำนักงานใหญ่</td>
+<td>ต้นแบบใช้พิกัดอำเภอโดยประมาณ × 1.35</td>
+</tr>
+<tr>
+<td>แจ้งเตือน</td>
+<td>LINE OA / อีเมลทีมขายทันทีที่ส่งคำขอ</td>
+<td>ตอบไวคือหัวใจการปิดงาน</td>
+</tr>
+<tr>
+<td>Analytics</td>
+<td>เพิ่มลงใบเสนอราคา, ส่งคำขอ, ใช้ตัวคำนวณสัญญา, ตรวจพื้นที่</td>
+<td>วัด funnel</td>
+</tr>
+</tbody>
+</table></div>
+<h3>4.1 โค้ดต้นแบบ → ตำแหน่งในโปรเจกต์จริง</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>ไฟล์ต้นแบบ</th>
+<th>หน้าที่</th>
+<th>ย้ายไปเป็น</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>assets/sbp-data.json</code></td>
+<td>Pricebook ที่แปลงจาก Excel (รุ่น ติดตั้ง ล้าง ซ่อม)</td>
+<td>ตารางฐานข้อมูล + สคริปต์นำเข้า</td>
+</tr>
+<tr>
+<td><code>assets/sbp-core.js</code></td>
+<td>Domain logic: โหลดข้อมูล, catalog/facet, installOptions, addonsFor, checkZone + ค่าเดินทาง, estimateContract, BTU</td>
+<td><code>lib/domain/*</code> (TypeScript + unit test)</td>
+</tr>
+<tr>
+<td><code>assets/commerce.js</code></td>
+<td>หน้าสินค้าเต็ม (แพ็กเกจติดตั้ง + อุปกรณ์เสริม + ราคารวม), ศูนย์ค่าบริการ 5 หมวด, ใบเสนอราคาเบื้องต้น</td>
+<td>React components + server actions</td>
+</tr>
+<tr>
+<td><code>assets/proto-ui.js</code></td>
+<td>Catalog, Contract Builder, ตรวจพื้นที่, viewer wiring</td>
+<td>React components + hooks</td>
+</tr>
+<tr>
+<td><code>assets/shared.css</code></td>
+<td>สไตล์ส่วนร่วมผ่าน alias token</td>
+<td>component styles</td>
+</tr>
+<tr>
+<td><code>assets/ac3d.js</code></td>
+<td>ระบบ 3D ตัวเครื่อง (exploded, X-ray, ลม, ล้าง)</td>
+<td><code>packages/viewer3d</code> (client-only)</td>
+</tr>
+<tr>
+<td><code>assets/studio-model.js</code></td>
+<td>ฉาก 16 ห้อง, สูตรขนาด BTU, แนะนำจำนวนเครื่อง, ฝุ่น→ลม/ความเย็น/ไฟ, แบบจำลองอุณหภูมิห้อง, รอบล้างแนะนำ</td>
+<td><code>lib/domain/studio.ts</code> (unit test ได้ไม่ต้องมี DOM)</td>
+</tr>
+<tr>
+<td><code>assets/studio3d.js</code></td>
+<td>ห้อง 3D + เฟอร์นิเจอร์ + แอร์ 5 ประเภท + อนุภาคลม + ฝุ่น + heat map พื้น</td>
+<td><code>packages/viewer3d/studio</code> (lazy)</td>
+</tr>
+<tr>
+<td><code>assets/studio.js</code> + <code>studio.css</code></td>
+<td>UI ห้องจำลอง: เลือกฉาก, ปรับห้อง/เครื่อง/เดือนที่ไม่ได้ล้าง, KPI, ข้างในเครื่อง, วงจรน้ำยา, แนะนำรุ่นและแผนล้าง</td>
+<td>React component <code>&lt;RoomStudio&gt;</code></td>
+</tr>
+<tr>
+<td><code>assets/journey.js</code></td>
+<td>ตารางค่าเดินทาง, ปุ่มสรุปใบเสนอราคาลอย (desktop), เมนูหัวข้อบนมือถือ</td>
+<td>layout components</td>
+</tr>
+<tr>
+<td><code>preview.html</code></td>
+<td>หน้าทดสอบ A/B/C: สลับแบบและขนาดจอ เทียบ 3 แบบพร้อมกัน รายการทดสอบ 8 ข้อ ตารางให้คะแนน 6 ด้าน</td>
+<td>ใช้ภายในช่วงเลือกแบบ ไม่ขึ้นเว็บจริง</td>
+</tr>
+<tr>
+<td><code>a.html</code> / <code>b.html</code> / <code>c.html</code></td>
+<td>Markup + CSS ของแต่ละแบบ</td>
+<td>Layout ของแบบที่เลือก</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2>5. Sitemap และ Routes</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Route</th>
+<th>หน้า</th>
+<th>ที่มาในต้นแบบ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/</code></td>
+<td>หน้าแรก</td>
+<td>A: hero bento</td>
+</tr>
+<tr>
+<td><code>/products</code></td>
+<td>Catalog 714 รุ่นพร้อมราคา + ตัวกรอง (query string ทุกตัวกรอง)</td>
+<td>#catalog</td>
+</tr>
+<tr>
+<td><code>/products/[brand]/[model]</code></td>
+<td>หน้าสินค้า: สเปก ราคา แพ็กเกจติดตั้ง อุปกรณ์เสริม ราคารวม</td>
+<td>drawer รายละเอียด (commerce.productDetail)</td>
+</tr>
+<tr>
+<td><code>/prices</code> และ <code>/prices/[clean|install|repair|contract|move|materials|project]</code></td>
+<td>ศูนย์ค่าบริการ 7 หมวด ค้นหาได้</td>
+<td>#prices (commerce.mountPriceCenter)</td>
+</tr>
+<tr>
+<td><code>/studio</code> และ <code>/studio/[scene]</code></td>
+<td>ห้องจำลอง 16 ฉาก (แชร์ลิงก์ฉากได้)</td>
+<td>#studio / #room</td>
+</tr>
+<tr>
+<td><code>/quality</code></td>
+<td>มาตรฐานวัสดุ 3 ระดับ + 6 คำถามก่อนจ้างติดตั้ง</td>
+<td>#quality</td>
+</tr>
+<tr>
+<td><code>/business</code></td>
+<td>สัญญาล้างรายปี (ตัวคำนวณจาก Pricebook จริง)</td>
+<td>#b2b</td>
+</tr>
+<tr>
+<td><code>/quote</code></td>
+<td>ใบเสนอราคาเบื้องต้น (เปิดเป็น drawer ได้ทุกหน้า)</td>
+<td>ปุ่ม "ใบเสนอราคา"</td>
+</tr>
+<tr>
+<td><code>/area</code> และ <code>/area/[province]/[district]</code></td>
+<td>พื้นที่บริการ ตรวจพื้นที่ ค่าเดินทาง</td>
+<td>#area</td>
+</tr>
+<tr>
+<td><code>/inside</code></td>
+<td>ข้างในแอร์ + ล้างเสมือนจริง</td>
+<td>#inside</td>
+</tr>
+<tr>
+<td><code>/showroom</code></td>
+<td>Virtual Showroom (แบบ C)</td>
+<td>c.html</td>
+</tr>
+<tr>
+<td>~~<code>/btu</code>~~</td>
+<td><del>ช่วยเลือกขนาด</del></td>
+<td><strong>รวมเข้าห้องจำลองแล้ว</strong> (ขนาดห้อง + การใช้งาน → BTU + รุ่น)</td>
+</tr>
+<tr>
+<td><code>/articles/[slug]</code></td>
+<td>บทความความรู้ (SEO)</td>
+<td>เฟสหลัง</td>
+</tr>
+<tr>
+<td>~~<code>/works</code>~~</td>
+<td><del>ผลงาน/โลโก้ลูกค้า</del></td>
+<td><strong>ตัดออกตามคำตัดสินข้อ 3</strong></td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2>6. Data schema</h2>
+<pre><code class="language-ts">Brand        { id, name, isOwnBrand }
+AcModel      { model, brandId, type, series, system, btu, priceExVat, approved, installStdExVat, refrigerant, pipeLiquid, pipeGas,
+               indoorDim, indoorKg, outdoorDim, outdoorKg, power, compressor, warranty, stockStatus, leadTime }
+PriceItem    { code, category, name, unit, priceExVat | null, includes, excludes, warranty, surveyRule }   // ติดตั้ง/วัสดุ/งานพิเศษ 194 รายการ
+CleanRate    { package, level: 'C1'|'C2', type, btuRange, unit, rateStd, rateSpecial, rateProject, warranty, serviceCare, deliverables, includes, excludes }
+RepairItem   { category, name, unit, rateStd | null, warranty, includes, excludes }
+TravelRule   { freeProvinces[], bands: [{ id, maxKm, feeExVat, minUnits, waiveAtUnits }], maxKm, roadFactor, source }
+Scene        { id, group, name, w, d, h, people, equipW, sun, dustRate, btuPerM2, suitableTypes[], note, flags: humid|critical }
+MaterialRow  { level: 'MASS'|'STANDARD'|'PREMIUM', type, btuBand, pipe, insulation, rail, cable, drain, breaker, mount, tests, docs, warranty }   // แยกจาก includes ของ PriceItem
+QuoteLine    { kind: 'product'|'service'|'addon'|'contract'|'survey', refCode, name, detail, qty, unitExVat | null }
+QuoteRequest { id, lines[], zone, km, travelFee, subtotalEx, minBillAdj, vat, total, name, tel, taxName, preferredDate, createdAt, status }
+</code></pre>
+<hr />
+<h2>6A. ฟังก์ชันการขายและราคา (ครบในต้นแบบทั้ง 3 แบบ)</h2>
+<h3>หน้าสินค้า (ต่อรุ่น)</h3>
+<ol>
+<li>ราคาเครื่องรวม VAT + ก่อน VAT, สถานะราคา (อนุมัติ/อ้างอิง), สถานะสต็อก</li>
+<li>สลับขนาด BTU ในซีรีส์เดียวกัน</li>
+<li>แพ็กเกจติดตั้ง: พื้นฐาน / มาตรฐาน / พรีเมียม / ไม่ติดตั้ง (ราคาตามประเภทและช่วง BTU จริง) พร้อม "รวม / ไม่รวม / รับประกัน"</li>
+<li>อุปกรณ์เสริมตามขนาดเครื่อง: ชุดท่อส่วนเกินต่อเมตร (6 ขนาดท่อ), ท่อน้ำทิ้ง, เมนไฟ 3 ขนาดสาย, RCBO 20A/32A, ปั๊มน้ำทิ้ง, กาลักน้ำ, Fire Stop</li>
+<li>งานประเมินหน้างาน: รื้อเครื่องเดิม, ขนย้ายเครื่องเดิม, งานสูง, ฐานรอง, กรีดผนัง, เปิดฝ้า, นอกเวลา, วันหยุด</li>
+<li>จำนวนเครื่อง → ราคารวมสดทันที (ก่อน VAT / VAT / รวม) → ใส่ใบเสนอราคา</li>
+<li>สเปกเครื่องเต็ม: ซีรีส์ ระบบ น้ำยา ขนาดท่อ ขนาด/น้ำหนักคอยล์เย็น-ร้อน ไฟ คอมเพรสเซอร์ รับประกัน</li>
+</ol>
+<h3>ศูนย์ค่าบริการ 5 หมวด</h3>
+<ul>
+<li><strong>ล้างแอร์:</strong> เลือกแพ็กเกจ 3 แบบ × ล้างปกติ C1 / ล้างใหญ่ C2 แสดงเอกสารส่งมอบ รับประกัน Service Care ขอบเขตงาน ตารางราคาตามประเภทและ BTU + งานเพิ่ม/AHU/พื้นที่พิเศษ + ยอดขั้นต่ำ</li>
+<li><strong>ติดตั้ง:</strong> 3 ระดับ × 4 ประเภท × ช่วง BTU + ระบบที่ต้องสำรวจ (VRF, Package, AHU, ซ่อนในฝ้า, ตู้ตั้งใหญ่)</li>
+<li><strong>ซ่อม:</strong> 86 รายการแยกหมวด (ตรวจวินิจฉัย ระบบน้ำทิ้ง ไฟฟ้า น้ำยา ฯลฯ) พร้อมรับประกันต่อรายการ</li>
+<li><strong>รื้อ · ย้าย · น้ำยา · งานพิเศษ:</strong> รื้อ/ย้าย, สารทำความเย็น, งานสูงและอุปกรณ์ยก, เดินทางและนอกเวลา, ฐานรอง, โยธา/ท่อลม, เอกสาร</li>
+<li><strong>วัสดุและอุปกรณ์เสริม:</strong> ชุดท่อเหมา, ท่อทองแดง, ฉนวน, ราง Airpro และข้อต่อ, ระบบไฟ, ระบบน้ำทิ้ง</li>
+<li>ค้นหาได้ทุกหมวด ทุกแถวมีปุ่ม "เพิ่ม" หรือ "ขอประเมิน"</li>
+</ul>
+<h3>ใบเสนอราคาเบื้องต้น (ทุกหน้า)</h3>
+<ul>
+<li>รวมทุกรายการจากหน้าสินค้า ค่าบริการ และสัญญารายปี ปรับจำนวน/ลบได้ เก็บไว้ในเครื่องผู้ใช้</li>
+<li>ใส่พื้นที่ → คำนวณค่าเดินทาง, ถ้างานล้างต่ำกว่าขั้นต่ำเติมส่วนต่างให้เห็นชัด</li>
+<li>แสดงยอดก่อน VAT / VAT / รวม และจำนวนรายการประเมินหน้างาน</li>
+<li>ส่งคำขอพร้อมชื่อ เบอร์ วันที่สะดวก ชื่อออกใบกำกับภาษี → เลขอ้างอิง</li>
+<li>คัดลอกสรุปไปวางใน LINE</li>
+</ul>
+<hr />
+<h2>6B. พื้นที่บริการและค่าเดินทาง</h2>
+<ul>
+<li><strong>ไม่มีค่าเดินทาง:</strong> กรุงเทพมหานคร (50 เขต), นนทบุรี, ปทุมธานี, สมุทรปราการ, สมุทรสาคร</li>
+<li><strong>นอกพื้นที่:</strong> คำนวณระยะทางถนนจากสำนักงานใหญ่ พระราม 2 ซอย 31 แล้วคิดค่าเดินทางต่อเที่ยวตามช่วงระยะ</li>
+<li><strong>เกินระยะสูงสุด:</strong> ไม่รับงานรายเครื่อง รับข้อมูลไว้ประเมินเป็นงานโครงการ/สัญญา</li>
+</ul>
+<p>ค่าเดินทางตั้งตาม <strong>ราคาที่ร้านแอร์ในไทยประกาศบนเว็บ</strong> (สำรวจ 29 ก.ย. 2569, 18 แหล่ง) เพื่อไม่ห่างจากตลาด แล้วใช้ <strong>ขั้นต่ำจำนวนเครื่อง</strong> คุมกำไรแทนการตั้งค่าเดินทางสูง</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>โซน</th>
+<th>ระยะถนนจาก สนญ.</th>
+<th>ค่าเดินทางต่อเที่ยว (ก่อน VAT)</th>
+<th>เงื่อนไข</th>
+<th>หลักฐานตลาด</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>หลัก</td>
+<td>5 จังหวัด</td>
+<td>0</td>
+<td>ขั้นต่ำงานล้าง 4,500 ต่อการเข้าหน้างาน</td>
+<td>ร้านส่วนใหญ่ในกรุงเทพฯ ปริมณฑลประกาศ "ไม่มีค่าเดินทาง"</td>
+</tr>
+<tr>
+<td>Z1</td>
+<td>≤ 60 กม.</td>
+<td><strong>300</strong></td>
+<td>ยกเว้นเมื่อ 4 เครื่องขึ้นไป*</td>
+<td>KSN Air: นครปฐม/สมุทรสาคร +300 · Chonburi Electric Air: 30–45 กม. 300 / 46–60 กม. 500 · SCAIR: 100–300</td>
+</tr>
+<tr>
+<td>Z2</td>
+<td>61–100 กม.</td>
+<td><strong>800</strong></td>
+<td>ขั้นต่ำ 3 เครื่อง, ยกเว้นเมื่อ 8 เครื่องขึ้นไป*</td>
+<td>Chonburi Electric Air: 61–80 กม. 800 · Powerbuy/Air House: 10 บาท/กม. เกินรัศมีฟรี</td>
+</tr>
+<tr>
+<td>Z3</td>
+<td>101–150 กม.</td>
+<td><strong>1,500</strong></td>
+<td>ขั้นต่ำ 5 เครื่อง หรือเป็นงานสัญญา</td>
+<td>ข้อมูลตลาดบาง (5–10 บาท/กม.) — อนุมานจากอัตราต่อ กม.</td>
+</tr>
+<tr>
+<td>นอกระยะ</td>
+<td>&gt; 150 กม.</td>
+<td>เสนอเป็นงาน</td>
+<td>ค่าทีมต่อวัน + ทางด่วน + ที่พักตามจริง (LOG-TRAVEL, LOG-PARK, LOG-HOTEL ใน Pricebook)</td>
+<td>Premier Eastern Air: งานไกล ~3,000/วัน</td>
+</tr>
+</tbody>
+</table></div>
+<p>* เกณฑ์ยกเว้นและขั้นต่ำจำนวนเครื่องไม่มีร้านใดประกาศเป็นตัวเลข ตั้งจากมุมต้นทุน — <strong>เจ้าของให้ใช้ตามนี้ (Rev.04)</strong></p>
+<ul>
+<li>รายการ "ค่าเดินทาง/ต่างจังหวัด/ที่พัก/ขนส่งทีม" 1,250–1,750 บาท/เที่ยว ใน Pricebook งานล้าง เก็บไว้ใช้กับใบเสนอราคางานโครงการนอกพื้นที่ ไม่ใช้เป็นค่าเดินทางหน้าเว็บ (สูงกว่าตลาด 3–5 เท่าในระยะ ≤60 กม.)</li>
+<li>ระยะในต้นแบบ = เส้นตรง × 1.35 (สามพราน ~34, นครปฐม ~60, บางปะอิน ~86, ฉะเชิงเทรา ~90, ศรีราชา ~103, บางละมุง ~128, ระยอง ~191 กม.) เว็บจริงใช้ Google Distance Matrix จากที่อยู่</li>
+<li>ตะกร้า: นับ "จำนวนเครื่องหน้างาน" จากรายการสินค้า/ติดตั้ง/ล้าง/ซ่อม เพื่อยกเว้นค่าเดินทางหรือเตือนขั้นต่ำ สัญญารายปีรวมค่าเดินทางต่อรอบไว้ในราคาต่อปีแล้วจึงไม่คิดซ้ำ</li>
+<li>แหล่งหลัก: chonburielectricair.com/conditions · fastwork.co/user/ksn.airservice_2 · fastwork.co/user/airhouse · premiereasternair.net/servicerate · scair.co.th/price · air24bkk.com/services · homepro.co.th/p/220165 (รัศมี 40 กม.) · ofair.co (รัศมีฟรี 35 กม.)</li>
+</ul>
+<p>สัญญารายปีนอกพื้นที่: คิดค่าเดินทางทุกรอบการเข้าหน้างาน (ต้นแบบรวมไว้ในราคาต่อปีแล้ว)</p>
+<hr />
+<h2>6C. ห้องจำลอง (Room Studio) — ใช้ร่วมกันทั้ง 3 แบบ</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>กลุ่ม</th>
+<th>ฉาก (ขนาดตั้งต้น · ประเภทแนะนำ)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>บ้าน · คอนโด</td>
+<td>ห้องนอน 4×3.5 · ห้องนอนมาสเตอร์ 5.5×4.5 · ห้องนั่งเล่น 6.5×5 · ครัว/ห้องทานอาหาร 5×4 · ห้องทำงานที่บ้าน 3.5×3 · ห้องน้ำ/ห้องแต่งตัว 3.2×2.8 (ติดผนัง, ความชื้นสูง → ต้องสำรวจ)</td>
+</tr>
+<tr>
+<td>สำนักงาน</td>
+<td>ออฟฟิศ Open-plan 14×10 (สี่ทิศทาง) · ห้องผู้บริหาร 6×5 · ห้องประชุม 8×5 · ห้อง Server/ห้องไฟฟ้า 4×4 (N+1, Precision → ต้องสำรวจ)</td>
+</tr>
+<tr>
+<td>ร้านค้า · บริการ</td>
+<td>ร้านค้า/โชว์รูม 10×8 · ร้านอาหาร/คาเฟ่ 10×7 · คลินิก 5×4</td>
+</tr>
+<tr>
+<td>โรงงาน · อุตสาหกรรม</td>
+<td>สายการผลิต 24×16×5 (แขวน/ตู้ตั้ง/ท่อลม → งานโครงการ) · คลังสินค้า 20×14×6 · ห้องควบคุม/QC 8×6</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>สิ่งที่ลูกค้าทำได้:</strong> เลือกฉาก → ปรับกว้าง ลึก สูง คน เครื่องใช้ไฟฟ้า แดด → เลือกประเภทแอร์ 5 แบบ (★ = เหมาะกับห้องนี้) ขนาดต่อเครื่องจาก Pricebook และจำนวน → เลื่อน "ไม่ได้ล้างมากี่เดือน" 0–18 หรือกด "ล้างเครื่องตอนนี้" → สลับมุมมอง ห้อง 3 มิติ / ข้างในเครื่อง (แผ่นกรอง คอยล์ โบลเวอร์) / วงจรทำความเย็น (แตะแต่ละส่วนอ่านคำอธิบายและผลเมื่อสกปรก) → เปิด/ปิดชั้น ลมเย็น อุณหภูมิพื้น ฝุ่นในอากาศ</p>
+<p><strong>ผลที่แสดง:</strong> BTU ที่ห้องต้องการ + ความพอดีของเครื่องที่เลือก · เวลาเย็นถึง 25°C เทียบ "ถ้าเครื่องสะอาด" · ผลของฝุ่น (ลม ความเย็น ไฟต่อความเย็น) · รอบล้างแนะนำของห้อง · รุ่นที่เข้ากัน 4 อันดับราคาต่ำสุดพร้อมราคาติดตั้งมาตรฐาน (ใส่ใบเสนอราคาได้ทันที) · แผนล้างรายปีตามแพ็กเกจ (ใส่ใบเสนอราคาได้) · ปุ่มขอสำรวจเมื่อเป็นห้องชื้น ห้อง Server หรือพื้นที่ใหญ่</p>
+<p><strong>สูตร (studio-model.js):</strong></p>
+<pre><code>BTU = พื้นที่ × BTU/ตร.ม.ของการใช้งาน × (สูง/2.7)^0.8 × แดด(0.93/1/1.1) + (คนเกินค่าตั้งต้น × 600) + (วัตต์เครื่องใช้เกินค่าตั้งต้น × 3.412)
+จำนวนเครื่อง = max(⌈BTU×1.1 / ขนาดใหญ่สุดของประเภท⌉, ⌈พื้นที่ / พื้นที่ครอบคลุมต่อเครื่อง⌉)   ขนาดต่อเครื่อง = ขนาดเล็กสุดใน Pricebook ที่ × จำนวน ≥ BTU×1.1
+ฝุ่น = 1 − e^(−เดือน × อัตราฝุ่นของห้อง / 6)     ลม = 1 − 0.5×ฝุ่น   ความเย็น = 1 − 0.25×ฝุ่น   ไฟต่อความเย็น = 1 + 0.3×ฝุ่น
+รอบล้างแนะนำ = ช่วง {1,2,3,4,6 เดือน} ที่ฝุ่นยังไม่เกิน 0.4
+อุณหภูมิห้อง: C·dT/dt = โหลดภายใน + UA(34−T) − ความเย็นที่ได้ (เร่งเวลา 1 วินาที = 1 นาที)
+</code></pre>
+<p>ทุกค่าเป็น <strong>แบบจำลองเพื่ออธิบาย</strong> มีข้อความกำกับใต้ห้องจำลองทุกแบบ ห้ามสื่อว่าเป็นผลวัดจริงหรือรับประกันประหยัดไฟ อัตราฝุ่นต่อห้องควรปรับจากข้อมูลงานล้างจริงของบริษัทก่อนเปิดใช้ (ข้อ 13)</p>
+<hr />
+<h2>6D. มาตรฐานวัสดุ (จุดขายด้านคุณภาพ)</h2>
+<ul>
+<li>ตารางเทียบ พื้นฐาน / มาตรฐาน / พรีเมียม ตามประเภทและขนาด แยกจากช่อง "รวม" ของแพ็กเกจติดตั้งใน Pricebook: ระยะที่รวม · ท่อทองแดง (0.70 มม.) · ฉนวน (Closed-cell / Aeroflex) · ราง (Airpro) · สายไฟ (มอก. / Yazaki) · ท่อน้ำทิ้ง (PVC / SCG) · เบรกเกอร์ (Nano) · ขาแขวนกันสั่น · การทดสอบ (Vacuum, Nitrogen Leak Test, Torque/Flare) · เอกสาร/ภาพ/ติดตามผล · รับประกัน</li>
+<li>แสดง 2 ที่: หน้า /quality และในหน้าสินค้าทุกรุ่น ("เทียบวัสดุ 3 ระดับ")</li>
+<li>กล่อง "ก่อนจ้างติดตั้ง ไม่ว่าร้านไหน ควรถาม 6 ข้อนี้" — สื่อความต่างด้านคุณภาพโดยไม่พาดพิงคู่แข่ง</li>
+<li>ข้อความต้องตรง Pricebook: ท่อ Type L / เกรดโครงการ ใช้เมื่อระบุใน QTN/BOQ เท่านั้น ห้ามเขียนว่าเป็นมาตรฐานทุกงาน</li>
+</ul>
+<hr />
+<h2>6E. ผลตรวจ Customer Journey (29 ก.ย. 2569)</h2>
+<p>ทดสอบอัตโนมัติด้วยเบราว์เซอร์จริง 5 เส้นทาง × 3 แบบ × 2 ขนาดจอ (1366 และ 390 px) รวม <strong>96 จุดตรวจ ผ่านทั้งหมด</strong> ไม่มี JS error ไม่มีหน้าล้นแนวนอน</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>เส้นทาง</th>
+<th>ผู้ใช้</th>
+<th>ขั้นตอนที่ทดสอบ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>J1 ซื้อแอร์บ้าน</td>
+<td>B2C</td>
+<td>Catalog → หน้าสินค้า → เลือกติดตั้งพรีเมียม + ท่อเกิน 2 ม. → เห็นตารางวัสดุ → ใส่ใบเสนอราคา → พื้นที่สามพราน (ค่าเดินทาง 300) → ศรีราชา (เตือนขั้นต่ำ 5 เครื่อง)</td>
+</tr>
+<tr>
+<td>J2 จากห้องจำลอง</td>
+<td>B2C/B2B</td>
+<td>เลือกกลุ่มสำนักงาน → ปรับไม่ได้ล้าง 12 เดือน → กดล้าง → KPI เปลี่ยน → ใส่รุ่นที่แนะนำ + ติดตั้ง + สัญญาล้าง → พื้นที่บางปะอิน</td>
+</tr>
+<tr>
+<td>J3 สัญญาองค์กร</td>
+<td>ฝ่ายอาคาร</td>
+<td>Preset โรงงาน 46 เครื่อง → ฉะเชิงเทรา (ยกเว้นค่าเดินทาง) → ใส่ใบเสนอราคา → ไม่คิดค่าเดินทางซ้ำ</td>
+</tr>
+<tr>
+<td>J4 ซ่อม/โครงการ</td>
+<td>ทุกกลุ่ม</td>
+<td>ศูนย์ราคา 7 แท็บ → เพิ่มค่าตรวจซ่อม → แท็บงานโครงการ 22 แถว → แท็บสัญญา 3 แพ็กเกจ → ระยอง (เกินระยะ)</td>
+</tr>
+<tr>
+<td>J5 ความน่าเชื่อถือ</td>
+<td>ทุกกลุ่ม</td>
+<td>ตารางวัสดุ ≥ 9 แถว, ตารางค่าเดินทาง 5 แถว, ลิงก์เมนูทุกตัวไปถึงหัวข้อจริง</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>ปัญหาที่พบและแก้แล้ว:</strong> (1) มือถือไม่มีเมนูไปหัวข้อ → เพิ่มปุ่ม "เมนู" ในแถบล่าง (2) สัญญารายปี + สินค้าในใบเดียวคิดค่าเดินทางซ้ำ → สัญญานับค่าเดินทางในราคาต่อปี ตะกร้าคิดเฉพาะรายการครั้งเดียว (3) ตัวคำนวณ BTU ซ้ำกับห้องจำลอง → รวมเป็นเส้นทางเดียว (4) ไม่มีทางจากห้องจำลองไปสู่ราคา → ใส่รุ่น + ติดตั้ง + สัญญาได้จากห้องจำลองโดยตรง (5) ลูกค้าไม่รู้ยอดสะสม → ปุ่มสรุปใบเสนอราคาลอย (desktop) (6) ไม่มีหมวดงานโครงการ/สัญญาในศูนย์ราคา → เพิ่ม 2 แท็บ (7) ตัวอย่าง "เกินระยะ" ผิดหลังเปลี่ยนเป็น 150 กม. → เปลี่ยนเป็นระยอง</p>
+<p><strong>ยังต้องทำในเว็บจริง:</strong> ส่งคำขอจริง + LINE แจ้งเตือน, คำนวณยอดซ้ำฝั่ง server, Distance Matrix, ทดสอบบนมือถือรุ่นประหยัดจริง (ต้นแบบทดสอบบน GPU จำลอง), รูปสินค้าจริงแทนภาพลายเส้น</p>
+<hr />
+<h2>7. สเปกระบบ 3D (ยึด API ของต้นแบบ)</h2>
+<h3>7.1 API</h3>
+<pre><code class="language-js">const v = createACViewer(container, { style: 'studio'|'blueprint'|'showroom', unit: 'indoor'|'outdoor',
+  autoRotate, ghost, targetOffset, onSelect(meta), onFrame(anchors, state) })
+v.setUnit('indoor'|'outdoor')     v.setExplode(0..1, instant?)   v.setXray(bool)
+v.setAirflow(bool)                v.setDirt(0..1)                v.clean()   // สเปรย์น้ำ + ฝุ่นลดลง 2.6 วินาที
+v.view('persp'|'front'|'side'|'top'|'back'|'exploded')          v.select(partId)   v.zoom(f)
+onFrame → anchors[{ id, th, x, y, visible, selected }]  // ใช้วาง label HTML / leader line
+createRoomSim(container, { onStats }) → set({ w, d, h, sun, people, btu }), restart()   // รุ่นเดิม เลิกใช้ใน Rev.03
+
+// ห้องจำลอง (studio3d.js) — UI เรียกผ่าน mountStudio(root, { theme: 'light'|'blueprint'|'dark', sceneStart, onOpen(model, skuIndex) })
+const s = createStudio3D(container, { theme, onFrame(dt) })
+s.setScene(scene, { w, d, h, sun, people })   s.setParams(params)   s.setUnits({ type, n })
+s.setDirt(0..1)   s.setCap(ratio)   s.setTemp(°C)   s.setLayer('air'|'heat'|'dust', bool)   s.zoom(f)   s.resetView()   s.pause(bool)
+</code></pre>
+<h3>7.2 ชิ้นส่วน (part id คงที่ ใช้ตั้งชื่อ node ใน GLB)</h3>
+<p>คอยล์เย็น: <code>front</code> ฝาหน้า · <code>filter</code> แผ่นกรอง · <code>coil</code> คอยล์เย็น · <code>blower</code> โบลเวอร์ · <code>pan</code> ถาดน้ำทิ้ง · <code>louver</code> บานสวิง · <code>motor</code> มอเตอร์ · <code>pcb</code> กล่องควบคุม · <code>chassis</code> โครงหลัง
+คอยล์ร้อน: <code>o-front</code> · <code>o-top</code> · <code>o-side</code> · <code>o-grille</code> · <code>o-fan</code> · <code>o-motor</code> · <code>o-coil</code> · <code>o-comp</code> · <code>o-valve</code> · <code>o-pcb</code></p>
+<h3>7.3 ข้อกำหนดโมเดลจริง (เมื่อเปลี่ยนจาก procedural เป็น GLB)</h3>
+<ul>
+<li>1 GLB ต่อ "แบบตัวเครื่อง" (ไม่ใช่ต่อ SKU) ใช้ร่วมกันหลายรุ่นที่ตัวเครื่องเหมือนกัน</li>
+<li>Node ระดับบนตั้งชื่อตาม part id ข้างบน, pivot ที่จุดหมุนจริง (ฝาหน้า = บานพับ, บานสวิง = แกน)</li>
+<li>ขนาดไฟล์ ≤ 2.5 MB ต่อโมเดล (Draco + KTX2), polygon ≤ 150k</li>
+<li>โหลดแบบ lazy เมื่อ viewer เข้าใกล้หน้าจอ, มีภาพนิ่ง/วิดีโอสำรองเมื่อ WebGL ใช้ไม่ได้ (ต้นแบบมี <code>data-v-fallback</code>)</li>
+<li>ห้ามเกิน 3 WebGL context ต่อหน้า, pause เมื่อออกจากจอ (ต้นแบบทำแล้วด้วย IntersectionObserver) — <strong>ต้นแบบ A มี 4 (hero, story, inside, studio)</strong> เว็บจริงให้แยกห้องจำลองเป็นหน้า /studio หรือใช้ canvas เดียวสลับฉาก; ห้องจำลองสร้าง 3D เมื่อเลื่อนเข้าใกล้เท่านั้น</li>
+<li><code>prefers-reduced-motion</code>: ปิด auto-rotate, explode กระโดดทันที, ไม่มี particle</li>
+</ul>
+<h3>7.4 ป้ายกำกับความถูกต้อง</h3>
+<p>ทุกฉากที่เป็นแบบจำลอง (ฝุ่น, การล้าง, ห้องจำลอง, เวลาทำความเย็น) ต้องมีข้อความ "แบบจำลองเพื่ออธิบาย" ห้ามสื่อว่าเป็นผลตรวจเครื่องจริง หรือรับประกันประหยัดไฟ</p>
+<hr />
+<h2>8. Contract Builder — ใช้อัตรา Pricebook จริง</h2>
+<pre><code>อัตราต่อเครื่อง = CleanRate(แพ็กเกจ, C1 หรือ C2, ประเภท, ช่วง BTU ตาม &quot;ขนาดเครื่องส่วนใหญ่&quot;)
+คอลัมน์อัตรา   = อัตรามาตรฐานเท่านั้นบนเว็บ (≥10 เครื่องแสดงข้อความว่าอาจได้อัตราพิเศษ ทีมขายยืนยันในใบเสนอราคา)
+ต่อรอบ          = max(Σ อัตรา × จำนวน, ยอดขั้นต่ำ 4,500)
+ต่อปี            = รอบล้างปกติ × (ครั้งต่อปี − 1) + รอบล้างใหญ่ × 1 (ถ้าเลือก) + ค่าเดินทาง × ครั้งต่อปี
+แสดงผล          = ราคาต่อปีรวม VAT, ก่อน VAT, เฉลี่ยต่อเครื่องต่อปี, ตารางอัตราต่อประเภท
+</code></pre>
+<ul>
+<li>งานสูงเกิน 3 ม. พื้นที่ควบคุม เครื่องที่เข้าถึงยาก → แสดงเป็นหมายเหตุ "ประเมินหน้างาน"</li>
+<li><strong>ด่านกันขาดทุน (ภายใน ห้ามส่งถึง browser):</strong> ตรวจยอดต่อทีม-วันเทียบพื้นราคาขั้นต่ำตามนโยบาย (Approval Matrix ในคู่มือทีมขาย) และต้นทุนเต็ม (SBP-MGR-001) — ทั้งสองค่าเก็บเป็น config ฝั่ง server เท่านั้น ไม่ระบุตัวเลขในเอกสารที่ส่งออกนอกบริษัท ถ้าต่ำกว่าให้แสดง "ทีมขายประเมิน" แทนตัวเลข</li>
+<li>"กำลังคนต่อรอบ" ใช้กำลังทีมจากคู่มือบริษัท §1.9: ติดผนัง 22 · แขวน/สี่ทิศทาง/ตู้ตั้ง 14 · ท่อลม 12 เครื่อง/ทีม-วัน (งานล้างปกติ C1)</li>
+</ul>
+<hr />
+<h2>9. Catalog — ข้อกำหนด</h2>
+<ul>
+<li>1 การ์ด = 1 ซีรีส์ (139 ซีรีส์) สลับ BTU ในการ์ด แสดงราคาเครื่องรวม VAT และ "พร้อมติดตั้งมาตรฐาน"</li>
+<li>ตัวกรอง: ประเภท, ขนาด BTU, แบรนด์ (FUJIVA อยู่บนสุด), ราคาเครื่องรวม VAT, Inverter/Fixed นับจำนวนที่เหลือทุกตัวเลือก</li>
+<li>มุมมองการ์ด/ตาราง (ตารางมีคอลัมน์ราคาเครื่องและราคาพร้อมติดตั้ง), เทียบได้ 4 รุ่น, ค้นด้วยรหัสรุ่นบางส่วน</li>
+<li>ตัวกรองสะท้อนใน URL, มือถือใช้ bottom sheet</li>
+<li>เมื่อ Pricebook อัปเดต ราคาบนเว็บต้องเปลี่ยนตามอัตโนมัติจากการนำเข้า ไม่มีราคาเขียนตายในโค้ด</li>
+</ul>
+<hr />
+<h2>10. มาตรฐานร่วม</h2>
+<ul>
+<li><strong>ภาษาไทย:</strong> body 16px, line-height 1.65–1.75, หัวข้อ 1.25–1.35, letter-spacing 0 สำหรับไทยเสมอ, <code>text-wrap: balance</code> หัวข้อ</li>
+<li><strong>Accessibility:</strong> WCAG 2.2 AA, focus ring ชัด, touch target ≥ 44px, <code>aria-live</code> บนผลคำนวณและจำนวนผลค้นหา, ทุก input มี id/label</li>
+<li><strong>Performance (มือถือ 4G):</strong> LCP &lt; 2.5s, CLS &lt; 0.1, JS หน้าแรก ≤ 200KB gzip ก่อนโหลด 3D, 3D โหลดหลัง interaction หรือเข้าใกล้จอ</li>
+<li><strong>Theme:</strong> ทุกสีเป็น token มีทั้งสว่าง/มืด (ต้นแบบรองรับ <code>prefers-color-scheme</code> และ <code>data-theme</code>)</li>
+<li><strong>Mobile:</strong> bottom action bar 4 ปุ่ม [เมนู] [โทร] [LINE] [ใบเสนอราคา + จำนวนรายการ] ติดล่างทุกหน้า</li>
+<li><strong>ความจริงของข้อมูล:</strong> ราคาทุกตัวบนเว็บต้องมาจาก Pricebook ที่อนุมัติแล้ว ไม่มีตัวเลขสถิติ รีวิว หรือโลโก้ลูกค้าในเฟสนี้</li>
+</ul>
+<hr />
+<h2>11. แผนงาน (Sprint ละ 2 สัปดาห์)</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Sprint</th>
+<th>งาน</th>
+<th>ส่งมอบ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>เจ้าของเลือกแบบ, ยืนยันค่าเดินทาง/ระยะสูงสุด, เกณฑ์อัตราพิเศษ/โครงการ, ราคา FUJIVA, 9 รุ่นราคาอ้างอิง</td>
+<td>Pricebook v1 พร้อมนำเข้า</td>
+</tr>
+<tr>
+<td>1</td>
+<td>โครง Next.js, layout, header + ปุ่มใบเสนอราคา, สคริปต์นำเข้า Excel → DB</td>
+<td>ข้อมูล 714 รุ่น + 194 + 234 + 86 รายการในฐานข้อมูล</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Catalog + หน้าสินค้า (แพ็กเกจติดตั้ง + อุปกรณ์เสริม + ราคารวม)</td>
+<td>/products ครบทุกรุ่น</td>
+</tr>
+<tr>
+<td>3</td>
+<td>ศูนย์ค่าบริการ 5 หมวด + ใบเสนอราคาเบื้องต้น + Lead API + LINE แจ้งเตือน</td>
+<td>/prices, /quote ใช้งานจริง</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Contract Builder + ด่านกันขาดทุน + ค่าเดินทาง (Distance Matrix)</td>
+<td>/business, /area</td>
+</tr>
+<tr>
+<td>5</td>
+<td>3D viewer + /inside + <strong>ห้องจำลอง /studio 16 ฉาก</strong> + /quality + FAQ + SEO schema สินค้า</td>
+<td>ผ่าน performance budget</td>
+</tr>
+<tr>
+<td>6</td>
+<td>QA มือถือจริง, ทดสอบราคาเทียบ Excel ทุกแถว, accessibility, analytics, launch</td>
+<td>Production</td>
+</tr>
+<tr>
+<td>เฟส 2</td>
+<td>GLB จริง (ตัวเครื่อง + เฟอร์นิเจอร์ฉาก), /showroom, Portal B2B, สต็อกแบบเรียลไทม์</td>
+<td>ตามงบ</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2>12. Acceptance checklist</h2>
+<ul>
+<li>[ ] <strong>ราคาทุกรุ่นและทุกรายการบนเว็บตรงกับ Pricebook ทุกแถว</strong> (สคริปต์เทียบอัตโนมัติ ก่อน VAT และรวม VAT)</li>
+<li>[ ] ทุกราคาแสดงรวม VAT เป็นหลักและก่อน VAT ข้างกัน, ใบเสนอราคาแยก VAT ถูกต้อง</li>
+<li>[ ] รายการไม่มีราคาแสดง "ประเมินหน้างาน" ไม่มีช่องราคาว่าง</li>
+<li>[ ] ยอดขั้นต่ำงานล้าง 4,500 ก่อน VAT ทำงานในใบเสนอราคา</li>
+<li>[ ] ตรวจพื้นที่: 5 จังหวัดไม่มีค่าเดินทาง, นอกพื้นที่แสดงระยะและค่าเดินทาง, เกินระยะแสดงไม่รับงานรายเครื่อง</li>
+<li>[ ] ใบเสนอราคาเบื้องต้นส่งถึงทีมขายครบทุกบรรทัด พร้อมพื้นที่และยอดที่คำนวณซ้ำฝั่ง server</li>
+<li>[ ] ไม่มีข้อมูลต้นทุนภายในหรือส่วนลดภายในในไฟล์ที่ส่งถึง browser</li>
+<li>[ ] ภาษาไทยไม่ชน/ไม่ถูกตัด, WCAG 2.2 AA, Lighthouse มือถือ Performance ≥ 85</li>
+<li>[ ] 3D: ≤ 3 context/หน้า, pause นอกจอ, มี fallback, reduced-motion ถูกต้อง</li>
+<li>[ ] ไม่มีหน้า/section ผลงาน โลโก้ลูกค้า หรือรีวิวในเฟสนี้</li>
+<li>[ ] ห้องจำลอง: 16 ฉากโหลดได้, ทุกฉากมีข้อความ "แบบจำลอง", รุ่นที่แนะนำและราคาตรง Pricebook, ใส่ใบเสนอราคาได้</li>
+<li>[ ] ตารางวัสดุตรงช่อง "รวม" ของแพ็กเกจติดตั้งทุกขนาด</li>
+<li>[ ] ค่าเดินทาง: 300/800/1,500 ตามโซน, ยกเว้นตามจำนวนเครื่อง, เตือนขั้นต่ำ, สัญญาไม่คิดซ้ำ</li>
+<li>[ ] Journey test J1–J5 ผ่านทั้ง desktop และมือถือ</li>
+</ul>
+<hr />
+<h2>13. เรื่องที่ยังค้างก่อน Sprint 1</h2>
+<p>เรื่องราคา พื้นที่ และรอบล้างใช้ค่ามาตรฐานตามตาราง 0 ข้อ 10–15 แล้ว เหลือ 3 เรื่อง</p>
+<ol>
+<li><strong>เลือกแบบ A · B · C</strong> — ทดสอบใน preview.html ให้คะแนน 6 ด้าน (สวยงาม, ใช้ง่าย, น่าเชื่อถือสำหรับองค์กร, เหมาะกับลูกค้าบ้าน, ห้องจำลอง/3D, มือถือ) ทุกแบบใช้โมดูลฟีเจอร์เดียวกัน จึงยืมจุดเด่นข้ามแบบได้</li>
+<li><strong>ราคา FUJIVA ทุกรุ่น</strong> เพื่อนำเข้า Pricebook (เว็บแสดง "ราคาและรุ่นกำลังจะขึ้นเว็บ · สอบถามทีมขาย")</li>
+<li><strong>ห้องน้ำ:</strong> ต้นแบบให้เลือกได้แต่บังคับขึ้นคำแนะนำให้สำรวจก่อน — ยืนยันว่าบริษัทรับติดตั้งในพื้นที่ชื้นหรือไม่</li>
+</ol></div>
+  </section>
+
+  <section id="files">
+    <h2>ไฟล์ในชุดนี้</h2>
+    <ul class="files">
+      <li><b>a.html · b.html · c.html</b>ต้นแบบ 3 แบบ (markup + CSS ของแต่ละแบบ)</li>
+      <li><b>assets/sbp-core.js</b>Domain logic: โหลดราคา, catalog, facet, พื้นที่และค่าเดินทาง, ตัวคำนวณสัญญา, BTU</li>
+      <li><b>assets/sbp-data.json</b>ข้อมูลราคาจริงแบบย่อ (สินค้า ติดตั้ง ล้าง ซ่อม)</li>
+      <li><b>assets/commerce.js · shared.css</b>ตะกร้า ตัวเลือกสินค้า ศูนย์ราคา ตารางวัสดุ</li>
+      <li><b>assets/studio-model.js · studio3d.js · studio.js · studio.css</b>ห้องจำลอง 16 ฉาก: สูตร ภาพ 3 มิติ และหน้าจอ</li>
+      <li><b>assets/journey.js</b>ตารางค่าเดินทาง ปุ่มสรุปใบเสนอราคา เมนูมือถือ</li>
+      <li><b>assets/proto-ui.js</b>พฤติกรรม UI ที่ใช้ร่วมกันทั้ง 3 แบบ</li>
+      <li><b>assets/ac3d.js</b>ระบบ 3D: แอร์ 2 ชุด, exploded, X-ray, ลม, ฝุ่น, ห้องจำลอง</li>
+      <li><b>assets/three.module.min.js</b>Three.js r170 (MIT)</li>
+      <li><b>assets/fonts/</b>Anuphan, IBM Plex Sans Thai, IBM Plex Mono, Kanit (OFL)</li>
+    </ul>
+  </section>
+  <footer>ต้นแบบนี้ไม่ส่งข้อมูลฟอร์มจริง ราคามาจาก Pricebook 2569 (ราคาประเมินเบื้องต้น ต้องยืนยันก่อนออกใบเสนอราคาอย่างเป็นทางการ) สถานะสต็อก คิว และรายงานยังเป็นตัวอย่าง ห้ามแชร์ลิงก์นี้ออกนอกบริษัทเพราะไฟล์ข้อมูลยังมีอัตราพิเศษ/โครงการ</footer>
+</div>
+</body></html>

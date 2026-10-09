@@ -1,0 +1,8 @@
+node_modules/
+dist/
+internal/
+_entry_*.mjs
+*.png
+!assets/logos/*.png
+backoffice/.dev-data.json
+tests/out/

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SBP AirCare เทียบแบบเว็บ</title>
+<link rel="stylesheet" href="assets/fonts.css">
+<style>
+/* r13 beta hub (preview3.html → dist/art/index3.html): every edition — รุ่นที่ 3 A3 · B3 · C3, the originals A · B · C · D, รุ่นที่ 2 A2–D2 —
+   plus six tasks for beta testers.
+   Links only (each edition is its own artifact); nothing is embedded, so the hub stays small. Light only, like the editions. */
+:root{--bg:#F6F8FB;--card:#FFFFFF;--ink:#101C2E;--ink-2:#465467;--ink-3:#5B6779;--line:#DDE3EB;--blue:#1B51A4;--blue-l:#E7EEF9;--or:#C4401F;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'Anuphan','Noto Sans Thai','Leelawadee UI',Tahoma,sans-serif;-webkit-font-smoothing:antialiased}
+.w{max-width:1120px;margin:0 auto;padding:clamp(24px,5vw,56px) clamp(16px,4vw,32px) 64px}
+h1{font-size:clamp(28px,4vw,42px);line-height:1.25;margin:0;text-wrap:balance}
+h2{font-size:22px;margin:0;line-height:1.35}
+p{margin:0}
+.lede{color:var(--ink-2);max-width:44em;margin-top:12px}
+.row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.grp{margin-top:40px}
+.grp>p{color:var(--ink-3);font-size:14.5px;margin-top:4px}
+.ed{display:grid;gap:6px;align-content:start;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--card);text-decoration:none;color:var(--ink);min-height:100%}
+.ed:hover{border-color:var(--blue)}
+.ed:focus-visible{outline:2.5px solid var(--or);outline-offset:2px}
+.ed b{font-size:18px}
+.ed .c{font-weight:600;color:var(--blue)}
+.ed span{color:var(--ink-2);font-size:14.5px;line-height:1.6}
+.ed em{font-style:normal;margin-top:8px;font-weight:600;color:var(--blue);font-size:14.5px}
+.new .ed{border-color:transparent;box-shadow:0 1px 2px rgba(16,28,46,.05),0 12px 28px -18px rgba(16,28,46,.3)}
+table{width:100%;border-collapse:collapse;font-size:14.5px;background:var(--card);border-radius:12px;overflow:hidden}
+.tw{overflow-x:auto;margin-top:14px;border:1px solid var(--line);border-radius:12px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{font-weight:600;background:#EEF2F7}
+tbody tr:last-child td,tbody tr:last-child th{border-bottom:0}
+tbody th{font-weight:600;white-space:nowrap}
+.note{margin-top:28px;font-size:14px;color:var(--ink-3);max-width:60em}
+.row.r4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.tasks{list-style:none;margin:14px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;counter-reset:t}
+.tasks li{counter-increment:t;display:grid;grid-template-columns:32px minmax(0,1fr);gap:2px 12px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.tasks li::before{content:counter(t);grid-row:span 2;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--blue-l);color:var(--blue);font-weight:600}
+.tasks span{color:var(--ink-2);font-size:14.5px;line-height:1.6}
+.ptl{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:14px;color:var(--ink-2);font-size:14.5px}
+.ptl a{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--blue);font-weight:600;text-decoration:none}
+.ptl a:hover{border-color:var(--blue)}
+@media (max-width:1000px){.row.r4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:820px){.row,.row.r4,.tasks{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="w">
+  <h1>SBP AirCare ทดลองใช้งานและเทียบแบบเว็บ</h1>
+  <p class="lede">เว็บต้นแบบทุกแบบในหน้าเดียว เปิดแบบไหนก็ได้ในแท็บใหม่ ทุกแบบใช้ราคา Pricebook 2569 ชุดเดียวกัน จองคิว ใบเสนอราคา และเช็กพื้นที่ได้ ทุกหน้ามีปุ่ม "ให้ความเห็น" ที่แถบบนสุด กดแล้วตอบ 4 ข้อ ไม่ถึง 1 นาที</p>
+
+  <section class="grp new" aria-labelledby="g3">
+    <h2 id="g3">รุ่นที่ 3 · แนะนำให้ทดลองก่อน</h2>
+    <p>ทำใหม่จากความเห็นต่อรุ่นที่ 2: โทนสว่าง 9 หน้าตามงาน เนื้อหาและเครื่องมือครบเท่า A · B · C ทั้ง 3 แบบเนื้อหาเดียวกัน ต่างกันที่การจัดหน้าและตัวอักษร</p>
+    <div class="row">
+      <a class="ed" href="./a3.html"><span class="c">A3</span><b>แสงเช้า</b><span>สำหรับบ้าน คอนโด ร้านเล็ก หน้าแรกเปิดด้วยรายการงานพร้อมราคาเริ่มต้นจาก Pricebook เมนูหน้าอยู่แถบบน</span><em>เปิดแบบ A3</em></a>
+      <a class="ed" href="./b3.html"><span class="c">B3</span><b>คู่มือช่าง</b><span>สำหรับองค์กรและผู้ดูแลอาคาร เมนูหน้าเป็นแถบด้านซ้ายแบบบทของคู่มือ หน้าแรกบอกสิ่งที่ตรวจสอบได้ แบบฟอร์มงาน รายงาน วัสดุ</span><em>เปิดแบบ B3</em></a>
+      <a class="ed" href="./c3.html"><span class="c">C3</span><b>โชว์รูม</b><span>สำหรับผู้เลือกซื้อแอร์ใหม่ หัวเรื่องตัวมีเชิง แถบหน้าอยู่กลางจอใต้หัวเว็บ</span><em>เปิดแบบ C3</em></a>
+    </div>
+  </section>
+
+  <section class="grp" aria-labelledby="g1">
+    <h2 id="g1">ต้นฉบับ A · B · C · D</h2>
+    <p>A · B · C แบ่ง 6 หน้าตามขั้นตอนลูกค้า · D เป็นหน้าเดียวโหลดเร็ว มีใบงานคำนวณราคาแล้วจองคิว</p>
+    <div class="row r4">
+      <a class="ed" href="./a.html"><span class="c">A</span><b>Bento</b><span>ไทล์สีขาวบนพื้นเทาฟ้า ภาพ 3 มิติในหน้าแรก</span><em>เปิดแบบ A</em></a>
+      <a class="ed" href="./b.html"><span class="c">B</span><b>Engineering</b><span>แบบงานวิศวกรรม ภาพตัดและรหัสงาน</span><em>เปิดแบบ B</em></a>
+      <a class="ed" href="./c.html"><span class="c">C</span><b>Showroom</b><span>โชว์รูมเต็มจอ เรื่องเล่า 3 มิติแบบเลื่อน</span><em>เปิดแบบ C</em></a>
+      <a class="ed" href="./d.html"><span class="c">D</span><b>Studio</b><span>หน้าเดียว ใบงานล้าง ติดตั้ง ซ่อม คิดราคาให้ แล้วจองคิวต่อได้ทันที</span><em>เปิดแบบ D</em></a>
+    </div>
+  </section>
+
+  <section class="grp" aria-labelledby="g4">
+    <h2 id="g4">รุ่นที่ 2 · ทำใหม่ทั้งหมด (r16)</h2>
+    <p>4 แบบให้เลือก ทุกหัวข้อมีภาพ 3 มิติที่เล่นทีละขั้นเหมือนหนังและเกม พร้อมราคาจาก Pricebook ใบเสนอราคา และจองคิว</p>
+    <div class="row r4">
+      <a class="ed" href="./a2.html"><span class="c">A2</span><b>ภาพยนตร์</b><span>เลื่อนหน้าแล้วเล่นทีละฉาก</span><em>เปิดแบบ A2</em></a>
+      <a class="ed" href="./b2.html"><span class="c">B2</span><b>ภารกิจ</b><span>เล่นทีละขั้นกับทีมช่าง</span><em>เปิดแบบ B2</em></a>
+      <a class="ed" href="./c2.html"><span class="c">C2</span><b>โชว์รูม</b><span>เลือกเครื่องพร้อมติดตั้ง</span><em>เปิดแบบ C2</em></a>
+      <a class="ed" href="./d2.html"><span class="c">D2</span><b>ดิจิทัลทวิน</b><span>คอนโซลสำหรับองค์กร</span><em>เปิดแบบ D2</em></a>
+    </div>
+  </section>
+
+  <section class="grp" aria-labelledby="g5">
+    <h2 id="g5">ลองทำ 6 อย่างนี้ แล้วกด "ให้ความเห็น"</h2>
+    <p>ใช้ได้กับทุกแบบ ช่วยให้เทียบกันได้ว่าแบบไหนหาของเจอเร็วและใช้ง่ายกว่า</p>
+    <ol class="tasks">
+      <li><b>หาราคาล้างแอร์ติดผนัง 12,000 BTU</b><span>ดูว่าล้างปกติกับล้างใหญ่ต่างกันอย่างไร แล้วใส่ใบเสนอราคา</span></li>
+      <li><b>หาแอร์ใหม่สำหรับห้องนอน 4 × 4 เมตร</b><span>ดูขนาด BTU ที่แนะนำ เลือกรุ่น แล้วดูราคาพร้อมติดตั้ง</span></li>
+      <li><b>แอร์ไม่เย็น ทำอย่างไรดี</b><span>หาสาเหตุที่พบบ่อยและค่าตรวจเช็ก</span></li>
+      <li><b>ประเมินงบล้างแอร์สำนักงาน 30 เครื่อง ปีละ 3 ครั้ง</b><span>ดูราคาต่อปีและเฉลี่ยต่อเครื่อง</span></li>
+      <li><b>ตรวจว่ารับงานที่บ้านคุณไหม</b><span>พิมพ์เขตหรืออำเภอ ดูค่าเดินทาง</span></li>
+      <li><b>จองคิว</b><span>เลือกงาน วัน และช่วงเวลา ช่วงทดลองระบบจะสรุปคำขอให้ส่งเอง ยังไม่ส่งถึงทีมอัตโนมัติ</span></li>
+    </ol>
+  </section>
+
+  <section class="grp" aria-labelledby="g6">
+    <h2 id="g6">ทดสอบความลื่นของภาพ 3 มิติ แสง และภาพเคลื่อนไหว</h2>
+    <p>ทุกแบบมีปุ่ม "ทดสอบความลื่น" ที่แถบทดลองใช้ด้านบน หรือเปิดลิงก์ด้านล่างแล้วแผงทดสอบจะขึ้นเอง ผลวัดจากเครื่องที่ใช้เปิดจริง ควรลองทั้งมือถือและคอมพิวเตอร์</p>
+    <ol class="tasks">
+      <li><b>ดูตัวเลขสด</b><span>เลื่อนดูหน้าเว็บ กดเล่นภาพ 3 มิติ ดูภาพต่อวินาที เฟรมช้าสุด และจำนวนครั้งที่ภาพสะดุด</span></li>
+      <li><b>ทัวร์อัตโนมัติทุกส่วน</b><span>ระบบเปิดทุกหน้า กดปุ่มของภาพ 3 มิติทุกตัว แล้วสรุปว่าส่วนไหนลื่น ส่วนไหนสะดุด</span></li>
+      <li><b>ไล่ดูครบทุกรุ่น 705 รุ่น</b><span>สร้างภาพ 3 มิติของแอร์ทุกรุ่นตามขนาดจริงของรุ่นนั้น ตรวจว่าแสดงได้ครบและใช้เวลาเท่าไร</span></li>
+      <li><b>ลองเปลี่ยนความละเอียด</b><span>อัตโนมัติ (แนะนำ) หรือกำหนดเอง เพื่อเทียบความคมกับความลื่นบนเครื่องนั้น</span></li>
+      <li><b>ดูรุ่นนี้แบบ 3 มิติ</b><span>เปิดรายละเอียดสินค้ารุ่นใดก็ได้ เปิดเครื่อง มองทะลุ แยกชิ้นส่วน ดูการล้าง และเปิดเสียงลม</span></li>
+      <li><b>ส่งผลให้ทีม</b><span>ปุ่มในแผงทดสอบใส่ผลลงฟอร์มความเห็นให้ ตรวจดูก่อนส่ง</span></li>
+    </ol>
+    <p class="ptl">เปิดพร้อมแผงทดสอบ:
+      <a href="./a3.html#perftest">A3</a> <a href="./b3.html#perftest">B3</a> <a href="./c3.html#perftest">C3</a> ·
+      <a href="./a.html#perftest">A</a> <a href="./b.html#perftest">B</a> <a href="./c.html#perftest">C</a> <a href="./d.html#perftest">D</a> ·
+      <a href="./a2.html#perftest">A2</a> <a href="./b2.html#perftest">B2</a> <a href="./c2.html#perftest">C2</a> <a href="./d2.html#perftest">D2</a></p>
+  </section>
+
+  <section class="grp" aria-labelledby="g2">
+    <h2 id="g2">หน้าในรุ่นที่ 3 และเครื่องมือในแต่ละหน้า</h2>
+    <div class="tw"><table>
+      <thead><tr><th scope="col">หน้า</th><th scope="col">มีอะไร</th><th scope="col">ใน A · B · C อยู่ที่</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">หน้าแรก</th><td>รายการงานพร้อมราคาเริ่มต้น ตัวช่วยพาไปทีละขั้น บริการ ขั้นตอนใช้บริการ</td><td>หน้าแรก</td></tr>
+        <tr><th scope="row">ซื้อแอร์</th><td>แคตตาล็อก 705 รุ่นพร้อมราคา ห้องจำลองหาขนาด BTU ลองวางในห้อง FUJIVA</td><td>ซื้อแอร์</td></tr>
+        <tr><th scope="row">ล้างแอร์</th><td>ทีมช่างล้างทีละขั้น C1 / C2 ฝุ่นสะสมตรงไหน ล้างถึงชิ้นไหน</td><td>ล้าง ติดตั้ง ซ่อม</td></tr>
+        <tr><th scope="row">ติดตั้ง ย้าย</th><td>ทีมช่างติดตั้งทีละขั้น มาตรฐาน / พรีเมียม วัสดุในแพ็กเกจ งานโครงการ</td><td>ล้าง ติดตั้ง ซ่อม · สำหรับองค์กร</td></tr>
+        <tr><th scope="row">ซ่อม ตรวจเช็ก</th><td>เช็กอาการ สาเหตุที่พบบ่อย ราคา แอร์ทำงานอย่างไรและขั้นตอนตรวจซ่อม</td><td>ความรู้และทดลอง (เช็กอาการมีในรุ่นที่ 2)</td></tr>
+        <tr><th scope="row">สำหรับองค์กร</th><td>ราคาขั้นบันได ประเมินงบล้างทั้งปี ขั้นตอนสัญญาและรายงาน</td><td>สำหรับองค์กร</td></tr>
+        <tr><th scope="row">ราคา</th><td>ราคาทุกบริการจาก Pricebook กดเพิ่มลงใบเสนอราคา</td><td>ล้าง ติดตั้ง ซ่อม</td></tr>
+        <tr><th scope="row">ความรู้</th><td>คู่มือก่อนตัดสินใจพร้อมปุ่มลองกับเครื่องมือ</td><td>ความรู้และทดลอง</td></tr>
+        <tr><th scope="row">ติดต่อ</th><td>จองคิว ให้ทีมโทรกลับ พื้นที่ให้บริการ ข้อมูลบริษัท คำถามที่พบบ่อย</td><td>ติดต่อเรา</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <p class="note">ภาพถ่ายประกอบในรุ่นที่ 3 เป็นภาพที่สร้างด้วย AI (มีป้าย "ภาพประกอบ" ทุกภาพ) ไม่ใช่ภาพงานหรือทีมงานจริง และไม่มีโลโก้ยี่ห้อบนตัวเครื่อง ภาพ 3 มิติในทุกแบบเป็นแบบจำลองเพื่ออธิบาย ราคาบนเว็บเป็นราคาก่อน VAT ยืนยันอีกครั้งในใบเสนอราคาอย่างเป็นทางการ</p>
+</div>
+</body>
+</html>
