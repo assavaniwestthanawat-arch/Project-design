@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ทดสอบต้นแบบรุ่นที่ 2</title>
+<link rel="stylesheet" href="assets/fonts.css">
+<style>
+:root{--bg:#EEF2F6;--card:#FFFFFF;--card2:#F5F7FA;--ink:#10233A;--ink2:#3A4D62;--ink3:#6A7B8E;--line:#D9E1EA;--acc:#1B5AA8;--or:#E2711D;--ok:#1F8A4C;
+  --A:#B86A1F;--B:#0B7FA8;--C:#8A6A22;--D:#1B51A4;--r:14px;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B1118;--card:#121B26;--card2:#0F1720;--ink:#E8EEF5;--ink2:#C1CCD8;--ink3:#8898AA;--line:#233244;--acc:#5AA2F0;--or:#FF8A3D;--ok:#3CC47C;--A:#F0B87A;--B:#52D1FF;--C:#D9B26A;--D:#8DB2F2;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0B1118;--card:#121B26;--card2:#0F1720;--ink:#E8EEF5;--ink2:#C1CCD8;--ink3:#8898AA;--line:#233244;--acc:#5AA2F0;--or:#FF8A3D;--ok:#3CC47C;--A:#F0B87A;--B:#52D1FF;--C:#D9B26A;--D:#8DB2F2;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 Anuphan,system-ui,sans-serif;display:grid;grid-template-rows:auto 1fr;min-height:100vh}
+[hidden]{display:none!important}
+button,select,textarea{font:inherit;color:inherit}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.top h1{margin:0;font-size:17px;font-weight:700;letter-spacing:0}
+.top h1 small{display:block;font-size:12px;font-weight:400;color:var(--ink3)}
+.grp{display:flex;gap:3px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--card2)}
+.grp button{border:0;background:transparent;min-height:34px;padding:0 13px;border-radius:999px;cursor:pointer;color:var(--ink2);font-size:14px;white-space:nowrap}
+.grp button[aria-pressed=true]{background:var(--ink);color:var(--card)}
+.grp.v button[aria-pressed=true][data-v=a2]{background:var(--A);color:#1A0D08}
+.grp.v button[aria-pressed=true][data-v=b2]{background:var(--B);color:#04131B}
+.grp.v button[aria-pressed=true][data-v=c2]{background:var(--C);color:#140F05}
+.grp.v button[aria-pressed=true][data-v=d2]{background:var(--D);color:#fff}
+.top select{min-height:38px;border-radius:10px;border:1px solid var(--line);background:var(--card);padding:0 10px;max-width:100%}
+.top .sp{flex:1}
+.top a.full{font-size:13.5px;color:var(--acc)}
+main{display:grid;grid-template-columns:minmax(0,1fr) 360px;min-height:0}
+.stage{position:relative;min-width:0;min-height:0;display:grid;padding:14px;gap:14px;overflow:auto}
+.stage.cmp{grid-template-columns:repeat(4,minmax(0,1fr))}
+.dev{position:relative;display:grid;grid-template-rows:auto 1fr;min-width:0;min-height:0}
+.dev .lbl{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;color:var(--ink3);margin-bottom:6px}
+.dev .lbl b{color:var(--ink);font-size:14px}
+.dev .lbl i{font-style:normal;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;color:#fff;font-weight:700;margin-right:6px;font-size:12px}
+.screen{position:relative;overflow:hidden;border-radius:12px;border:1px solid var(--line);background:var(--card);box-shadow:0 20px 40px -28px rgba(0,0,0,.45)}
+.screen.phone{border-radius:28px;border:8px solid #1b232d}
+.screen iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0;background:#fff}
+.loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink3);font-size:14px;pointer-events:none}
+aside{border-left:1px solid var(--line);background:var(--card);overflow:auto;padding:16px;display:grid;gap:18px;align-content:start}
+aside h2{margin:0 0 6px;font-size:16px}
+aside p.n{margin:0;color:var(--ink3);font-size:13px;line-height:1.55}
+.tasks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.tasks li{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:start;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card2)}
+.tasks input{width:18px;height:18px;margin-top:3px;accent-color:var(--ok)}
+.tasks label{font-size:13.5px;line-height:1.5;cursor:pointer}
+.tasks label b{display:block;font-size:14px}
+.tasks li.done{opacity:.6}
+.go{border:1px solid var(--line);background:var(--card);border-radius:8px;min-height:32px;padding:0 10px;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.score{width:100%;border-collapse:collapse;font-size:13.5px}
+.score th,.score td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.score thead th{font-size:12.5px;color:var(--ink3);text-align:center}
+.score td.s{text-align:center}
+.score select{width:100%;min-height:32px;border-radius:8px;border:1px solid var(--line);background:var(--card);padding:0 4px;text-align:center}
+.score tfoot td{font-weight:700;border-bottom:0;text-align:center}
+.bars{display:grid;gap:8px}
+.bar{display:grid;grid-template-columns:28px 1fr 64px;gap:8px;align-items:center;font-size:13.5px}
+.bar i{display:inline-grid;place-items:center;height:24px;border-radius:6px;color:#fff;font-style:normal;font-weight:700}
+.bar .t{height:12px;border-radius:6px;background:var(--card2);border:1px solid var(--line);overflow:hidden}
+.bar .t span{display:block;height:100%;width:0;transition:width .3s}
+.bar b{text-align:right;font-variant-numeric:tabular-nums}
+.verdict{padding:10px 12px;border-radius:10px;background:var(--card2);border:1px solid var(--line);font-size:14px;line-height:1.6}
+textarea{width:100%;min-height:84px;border-radius:10px;border:1px solid var(--line);background:var(--card);padding:8px 10px;resize:vertical}
+.btn{min-height:40px;border-radius:10px;border:1px solid var(--line);background:var(--card);padding:0 14px;cursor:pointer;font-weight:600}
+.btn.p{background:var(--acc);border-color:var(--acc);color:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+.cap{font-size:12px;color:var(--ink3)}
+@media (max-width:1100px){main{display:block}.stage{overflow:visible}aside{border-left:0;border-top:1px solid var(--line)}.stage.cmp{grid-template-columns:1fr}}
+@media (max-width:640px){.top{padding:10px 12px;position:static}.top h1 small{display:none}.stage{padding:10px}.grp button{padding:0 10px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>ต้นแบบเว็บ SBP AirCare รุ่นที่ 2<small>r16 · 4 แบบใหม่ทั้งหมด ภาพยนตร์ ภารกิจ โชว์รูม ดิจิทัลทวิน ทุกหัวข้อมีภาพ 3 มิติที่เล่นทีละขั้น พร้อมราคาและจองคิว — ลองทีละแบบหรือเทียบพร้อมกัน แล้วให้คะแนน</small></h1>
+  <div class="grp" role="group" aria-label="โหมด"><button type="button" data-mode="one" aria-pressed="true">ทีละแบบ</button><button type="button" data-mode="cmp" aria-pressed="false">เทียบ 4 แบบ</button></div>
+  <div class="grp v" role="group" aria-label="แบบ" id="vgrp"><button type="button" data-v="a2" aria-pressed="true">A2 · ภาพยนตร์</button><button type="button" data-v="b2" aria-pressed="false">B2 · ภารกิจ</button><button type="button" data-v="c2" aria-pressed="false">C2 · โชว์รูม</button><button type="button" data-v="d2" aria-pressed="false">D2 · ดิจิทัลทวิน</button></div>
+  <div class="grp" role="group" aria-label="อุปกรณ์" id="dgrp"><button type="button" data-d="desktop" aria-pressed="true">คอม</button><button type="button" data-d="tablet" aria-pressed="false">แท็บเล็ต</button><button type="button" data-d="phone" aria-pressed="false">มือถือ</button></div>
+  <label><span class="cap">ไปที่หัวข้อ</span><br><select id="jump" aria-label="ไปที่หัวข้อ"><option value="">หน้าแรก</option><option value="how">ระบบแอร์ทำงานอย่างไร</option><option value="room">ขนาดห้อง ลมในห้อง</option><option value="buy">ลองแอร์ทุกรุ่น</option><option value="install">ติดตั้ง</option><option value="quality">วัสดุ</option><option value="clean">ล้างแอร์</option><option value="repair">ซ่อม / เล่าอาการ</option><option value="area">พื้นที่บริการ</option><option value="booking">จองคิว</option></select></label>
+  <span class="sp"></span>
+  <a class="full" id="full" href="./a2.html" target="_blank" rel="noopener">เปิดเต็มจอ ↗</a>
+  <a class="full" id="hub" href="./preview.html">ต้นแบบรุ่นแรก A B C D</a>
+</header>
+<main>
+  <section class="stage" id="stage" aria-label="พื้นที่แสดงต้นแบบ"></section>
+  <aside>
+    <div>
+      <h2>ลองทำ 9 อย่างนี้ในแต่ละแบบ</h2>
+      <p class="n">กด "ไปที่" เพื่อพาหน้าจอไปยังจุดนั้น ติ๊กเมื่อทำเสร็จ ติ๊กเก็บแยกตามแบบ</p>
+    </div>
+    <ul class="tasks" id="tasks"></ul>
+    <div>
+      <h2>ให้คะแนน</h2>
+      <p class="n">1 = ไม่ชอบ · 5 = ชอบมาก คะแนนเก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น</p>
+    </div>
+    <table class="score" id="score"></table>
+    <div class="bars" id="bars"></div>
+    <div class="verdict" id="verdict">ยังไม่มีคะแนน</div>
+    <label><span class="cap">บันทึกความเห็น</span><textarea id="note" placeholder="เช่น ชอบความเป็นหนังของ A2 แต่ชอบหน้าราคาของ D2"></textarea></label>
+    <div class="row"><button type="button" class="btn p" id="copy">คัดลอกผลไปส่ง LINE</button><button type="button" class="btn" id="reset">ล้างคะแนน</button></div>
+    <p class="n">ข้อควรรู้: ทุกหัวข้อมีภาพ 3 มิติของตัวเอง สร้างเมื่อเลื่อนมาใกล้ และคืนหน่วยความจำเมื่อเลื่อนไกล โหมด "เทียบ 4 แบบ" เปิดทั้ง 4 หน้าพร้อมกัน อาจช้าบนมือถือ ใช้ทีละแบบจะลื่นกว่า</p>
+  </aside>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const V = { a2: { th: 'A2 · ภาพยนตร์', col: 'var(--A)' }, b2: { th: 'B2 · ภารกิจ', col: 'var(--B)' }, c2: { th: 'C2 · โชว์รูม', col: 'var(--C)' }, d2: { th: 'D2 · ดิจิทัลทวิน', col: 'var(--D)' } };
+const VK = Object.keys(V);
+const DEV = { desktop: { w: 1366, h: 860, th: 'คอม 1366' }, tablet: { w: 820, h: 1180, th: 'แท็บเล็ต 820' }, phone: { w: 390, h: 820, th: 'มือถือ 390' } };
+const TASKS = [
+  { id: 'v1', h: '', b: 'ดูหน้าแรก', d: 'ภาพ 3 มิติขยับเอง ชื่อเรื่องค่อย ๆ ปรากฏทีละคำ (B2 เลือกภารกิจ · D2 ระบบแอร์ทั้งอาคารเล่นเอง)' },
+  { id: 'v2', h: 'how', b: 'ระบบแอร์ทำงานอย่างไร', d: 'A2 เลื่อนหน้าแล้วช็อตเปลี่ยน · B2 / D2 กดเล่นหรือเลือกขั้น · C2 อ่านทีละขั้น ภาพข้าง ๆ เปลี่ยนตาม' },
+  { id: 'v3', h: 'clean', b: 'งานล้างทีละขั้น', d: 'ดูทีมช่างในภาพทำตามแบบฟอร์มงานล้าง ขั้นต่อขั้น (D2 อยู่ในแผนดูแลรายปี)' },
+  { id: 'v4', h: 'clean', b: 'ราคาล้าง', d: 'เลือกประเภท ขนาด วิธีล้าง แพ็กเกจ จำนวนเครื่อง แล้วกด "ใส่ใบเสนอราคา"' },
+  { id: 'v5', h: 'install', b: 'ติดตั้งและราคาติดตั้ง', d: 'ดูขั้นติดตั้งในภาพ แล้วเลือกขนาดและระดับงาน ดูวัสดุที่ใช้' },
+  { id: 'v6', h: 'room', b: 'ขนาดที่พอดีห้อง', d: 'ใส่ขนาดห้อง แล้วกด "ดูติดผนัง …" ไปที่รุ่นขนาดนั้นในโชว์รูม' },
+  { id: 'v7', h: 'buy', b: 'ลองแอร์ทุกรุ่น', d: 'เลือกประเภท ยี่ห้อ ขนาด ปิด/เปิดเครื่อง มุมกล้อง มองทะลุ และ "ดูการล้าง"' },
+  { id: 'v8', h: 'repair', b: 'เล่าอาการ', d: 'เลือกอาการ ดูสาเหตุในภาพพร้อมป้ายชิ้นส่วน ราคาที่แนะนำ แล้วกดจองคิว' },
+  { id: 'v9', h: '', b: 'ใบเสนอราคาและจองคิว', d: 'ปุ่ม "ใบเสนอราคา" ดูรายการที่ใส่ไว้ สลับบุคคลทั่วไป / นิติบุคคล แล้วจองคิว' },
+];
+const CRIT = [
+  { id: 'look', th: 'ความสวยงาม / ภาพลักษณ์' }, { id: 'ease', th: 'ใช้ง่าย หาของเจอ' }, { id: 'trust', th: 'น่าเชื่อถือสำหรับองค์กร' },
+  { id: 'home', th: 'เหมาะกับลูกค้าบ้าน' }, { id: 'sim', th: 'ภาพ 3 มิติ / ความเพลิดเพลิน' }, { id: 'mobile', th: 'ใช้บนมือถือดี' },
+];
+const KEY = 'sbp-preview-v2';
+const ALIAS = { d2: { how: 'top', clean: 'plan' } };   // D2: the whole-building system is the hero, cleaning lives in the annual plan
+const hashFor = (v, h) => (ALIAS[v] && ALIAS[v][h]) || h;
+let S = { mode: 'one', v: 'a2', d: innerWidth < 700 ? 'phone' : 'desktop', hash: '', done: {}, score: { a2: {}, b2: {}, c2: {}, d2: {} }, note: '' };
+try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+VK.forEach(v => { S.score[v] = S.score[v] || {}; });
+if (innerWidth < 700 && S.d === 'desktop') S.d = 'phone';
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const el = (t, a = {}, ...k) => { const e = document.createElement(t); for (const [x, y] of Object.entries(a)) { if (y == null) continue; if (x === 'class') e.className = y; else if (x.startsWith('on')) e.addEventListener(x.slice(2), y); else e.setAttribute(x, y); } k.flat().forEach(c => c != null && e.append(c.nodeType ? c : document.createTextNode(c))); return e; };
+const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2200); };
+
+// Single-file build: the three variants are embedded below as gzip+base64 packs and shown with srcdoc
+// (no page-to-page navigation needed). The multi-file prototype falls back to ./a.html etc.
+const PACKED = !!document.getElementById('pack-a2');
+const URLS = window.SBP_URLS || {};
+const cache = {};
+async function srcFor(v) {
+  if (cache[v]) return cache[v];
+  const b = atob(document.getElementById('pack-' + v).textContent.trim());
+  const u8 = Uint8Array.from(b, c => c.charCodeAt(0));
+  const ds = new Response(new Blob([u8]).stream().pipeThrough(new DecompressionStream('gzip')));
+  return (cache[v] = await ds.text());
+}
+const fullHref = (v, hash) => PACKED ? (URLS[v] || '#') : `./${v}.html${hash ? '#' + hashFor(v, hash) : ''}`;
+function scrollInFrame(f, hash) { try { const w = f.ifr.contentWindow, de = w.document.documentElement; const t = hash && w.document.getElementById(hashFor(f.v, hash)); if (!t && hash) return false; if (de.classList.contains('sx-on')) { if (t) t.scrollIntoView({ block: 'start' }); else { const a = w.document.querySelector('header nav a[data-v="home"]'); a && a.click(); } return true; } const sb = de.style.scrollBehavior; de.style.scrollBehavior = 'auto'; w.scrollTo(0, t ? t.getBoundingClientRect().top + w.scrollY - 70 : 0); de.style.scrollBehavior = sb; return true; } catch (e) { return false; } }
+addEventListener('message', e => { const g = e.data && e.data.sbpGo; if (!g) return; if (g === 'hub') { if (URLS.hub) open(URLS.hub, '_blank'); return; } if (V[g]) { S.v = g; S.mode = 'one'; save(); build(); renderTasks(); } });
+if (PACKED) { const hb = document.getElementById('hub'); if (URLS.hub) { hb.href = URLS.hub; hb.target = '_blank'; } else hb.remove(); }
+
+let frames = [];
+function build() {
+  const st = $('#stage'); st.innerHTML = ''; frames = [];
+  st.classList.toggle('cmp', S.mode === 'cmp');
+  const list = S.mode === 'cmp' ? VK : [S.v];
+  const dev = DEV[S.mode === 'cmp' && S.d === 'desktop' ? 'phone' : S.d];
+  list.forEach(v => {
+    const ifr = el('iframe', { title: `ต้นแบบ ${V[v].th}`, src: PACKED ? null : `./${v}.html${S.hash ? '#' + hashFor(v, S.hash) : ''}`, loading: PACKED ? null : 'lazy' });
+    const scr = el('div', { class: 'screen' + (dev === DEV.phone ? ' phone' : '') }, el('div', { class: 'loading' }, 'กำลังโหลด…'), ifr);
+    ifr.addEventListener('load', () => { if (PACKED && !ifr.srcdoc) return; scr.querySelector('.loading')?.remove(); if (PACKED && S.hash) { const f = frames.find(x => x.ifr === ifr); let n = 0; const t = setInterval(() => { if (scrollInFrame(f, S.hash) || ++n > 20) clearInterval(t); }, 300); } });
+    if (PACKED) srcFor(v).then(html => { ifr.srcdoc = html; }).catch(() => { scr.querySelector('.loading').textContent = 'เบราว์เซอร์นี้แตกไฟล์ไม่ได้ กรุณากด "เปิดเต็มจอ"'; });
+    const box = el('div', { class: 'dev' }, el('div', { class: 'lbl' }, el('span', {}, el('i', { style: `background:${V[v].col}` }, v.toUpperCase()), el('b', {}, V[v].th)), el('span', {}, dev.th)), scr);
+    st.append(box); frames.push({ v, ifr, scr, dev });
+  });
+  fit(); $('#full').href = fullHref(S.v, S.hash);
+  $$('[data-mode]').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === S.mode));
+  $$('#vgrp [data-v]').forEach(b => b.setAttribute('aria-pressed', S.mode === 'one' && b.dataset.v === S.v));
+  $$('#dgrp [data-d]').forEach(b => b.setAttribute('aria-pressed', b.dataset.d === S.d));
+  $('#jump').value = S.hash;
+}
+function fit() {
+  frames.forEach(f => {
+    const box = f.scr.parentElement; const bw = box.clientWidth - (f.dev === DEV.phone ? 16 : 2);
+    const availH = Math.max(420, innerHeight - (innerWidth < 1100 ? 160 : 150));
+    const k = Math.min(1, bw / f.dev.w);
+    const hh = Math.min(f.dev.h * k, availH);
+    f.ifr.style.width = f.dev.w + 'px'; f.ifr.style.height = (hh / k) + 'px'; f.ifr.style.transform = `scale(${k})`;
+    f.scr.style.width = (f.dev.w * k + (f.dev === DEV.phone ? 16 : 2)) + 'px'; f.scr.style.height = (hh + (f.dev === DEV.phone ? 16 : 2)) + 'px';
+    f.scr.style.margin = '0 auto';
+  });
+}
+addEventListener('resize', () => { clearTimeout(fit._t); fit._t = setTimeout(fit, 120); });
+function jump(hash) {
+  S.hash = hash; save();
+  frames.forEach(f => { if (scrollInFrame(f, hash)) return; if (!PACKED) f.ifr.src = `./${f.v}.html${hash ? '#' + hashFor(f.v, hash) : ''}`; });
+  $('#jump').value = hash; $('#full').href = fullHref(S.v, hash);
+}
+$$('[data-mode]').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; save(); build(); renderTasks(); }));
+$$('#vgrp [data-v]').forEach(b => b.addEventListener('click', () => { S.v = b.dataset.v; S.mode = 'one'; save(); build(); renderTasks(); }));
+$$('#dgrp [data-d]').forEach(b => b.addEventListener('click', () => { S.d = b.dataset.d; save(); build(); }));
+$('#jump').addEventListener('change', e => jump(e.target.value));
+
+function renderTasks() {
+  const ul = $('#tasks'); ul.innerHTML = '';
+  const v = S.mode === 'cmp' ? 'all' : S.v; const done = S.done[v] || (S.done[v] = {});
+  TASKS.forEach(t => {
+    const id = `tk-${t.id}`; const cb = el('input', { type: 'checkbox', id }); cb.checked = !!done[t.id];
+    cb.addEventListener('change', () => { done[t.id] = cb.checked; li.classList.toggle('done', cb.checked); save(); });
+    const li = el('li', { class: done[t.id] ? 'done' : '' }, cb, el('label', { for: id }, el('b', {}, t.b), t.d), el('button', { type: 'button', class: 'go', onclick: () => t.h ? jump(t.h) : openCart() }, t.h ? 'ไปที่' : 'เปิด'));
+    ul.append(li);
+  });
+}
+function openCart() { frames.forEach(f => { try { f.ifr.contentWindow.document.querySelector('[data-cart-btn]').click(); } catch (e) {} }); }
+
+function renderScore() {
+  const t = $('#score'); t.innerHTML = '';
+  t.append(el('thead', {}, el('tr', {}, el('th', {}, ''), ...VK.map(v => el('th', {}, v.toUpperCase())))));
+  const tb = el('tbody');
+  CRIT.forEach(c => tb.append(el('tr', {}, el('th', { scope: 'row' }, c.th), ...VK.map(v => {
+    const s = el('select', { 'aria-label': `${c.th} แบบ ${v.toUpperCase()}` }, el('option', { value: '' }, '–'), ...[1, 2, 3, 4, 5].map(n => el('option', { value: n }, String(n))));
+    s.value = S.score[v][c.id] || '';
+    s.addEventListener('change', () => { S.score[v][c.id] = +s.value || 0; save(); totals(); });
+    return el('td', { class: 's' }, s);
+  }))));
+  t.append(tb, el('tfoot', {}, el('tr', {}, el('td', {}, 'รวม (เต็ม 30)'), ...VK.map(v => el('td', { id: `tot-${v}` }, '0')))));
+  totals();
+}
+function sum(v) { return CRIT.reduce((n, c) => n + (S.score[v][c.id] || 0), 0); }
+function totals() {
+  const bars = $('#bars'); bars.innerHTML = '';
+  VK.forEach(v => { const n = sum(v); $(`#tot-${v}`).textContent = n; bars.append(el('div', { class: 'bar' }, el('i', { style: `background:${V[v].col}` }, v.toUpperCase()), el('div', { class: 't' }, el('span', { style: `width:${n / 30 * 100}%;background:${V[v].col}` })), el('b', {}, `${n} / 30`))); });
+  const rated = VK.filter(v => sum(v) > 0);
+  const vd = $('#verdict');
+  if (!rated.length) { vd.textContent = 'ยังไม่มีคะแนน ลองใช้งานแล้วให้คะแนนครบทั้ง 4 แบบ'; return; }
+  const best = rated.sort((x, y) => sum(y) - sum(x));
+  const top = best[0]; const tie = best[1] && sum(best[1]) === sum(top);
+  const strong = v => CRIT.filter(c => (S.score[v][c.id] || 0) >= 4).map(c => c.th);
+  vd.innerHTML = '';
+  vd.append(el('b', {}, tie ? `คะแนนเท่ากัน ${best.filter(v => sum(v) === sum(top)).map(v => v.toUpperCase()).join(' และ ')}` : `คะแนนนำ: แบบ ${top.toUpperCase()} (${sum(top)}/30)`),
+    el('br'), strong(top).length ? `จุดเด่นที่ให้ 4–5: ${strong(top).join(' · ')}` : 'ยังไม่มีข้อที่ให้ 4–5',
+    el('br'), el('span', { class: 'cap' }, 'ทุกฟีเจอร์ใช้โมดูลเดียวกัน เลือกแบบไหนก็ได้ฟีเจอร์ครบ ยืมจุดเด่นของแบบอื่นมาใส่ได้'));
+}
+$('#note').value = S.note || ''; $('#note').addEventListener('input', e => { S.note = e.target.value; save(); });
+$('#reset').addEventListener('click', () => { S.score = { a2: {}, b2: {}, c2: {}, d2: {} }; S.done = {}; S.note = ''; $('#note').value = ''; save(); renderScore(); renderTasks(); toast('ล้างคะแนนแล้ว'); });
+$('#copy').addEventListener('click', async () => {
+  const lines = ['ผลทดสอบต้นแบบเว็บ SBP AirCare รุ่นที่ 2', ...VK.map(v => `${V[v].th}: ${sum(v)}/30 — ` + CRIT.map(c => `${c.th} ${S.score[v][c.id] || '-'}`).join(', ')), S.note ? `ความเห็น: ${S.note}` : ''].filter(Boolean);
+  try { await navigator.clipboard.writeText(lines.join('\n')); toast('คัดลอกแล้ว วางใน LINE ได้เลย'); } catch (e) { toast('คัดลอกไม่ได้ในหน้านี้'); }
+});
+build(); renderTasks(); renderScore();
+</script>
+</body>
+</html>

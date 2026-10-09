@@ -1,0 +1,213 @@
+<title>SBP AirCare Prototypes</title>
+<style>
+@font-face{font-family:'Anuphan';font-weight:400;font-display:swap;src:url(assets/fonts/anuphan-thai-400-normal.woff2) format('woff2');unicode-range:U+0E01-0E5B,U+200C-200D,U+25CC}
+@font-face{font-family:'Anuphan';font-weight:400;font-display:swap;src:url(assets/fonts/anuphan-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+2000-206F}
+@font-face{font-family:'Anuphan';font-weight:600;font-display:swap;src:url(assets/fonts/anuphan-thai-600-normal.woff2) format('woff2');unicode-range:U+0E01-0E5B,U+200C-200D,U+25CC}
+@font-face{font-family:'Anuphan';font-weight:600;font-display:swap;src:url(assets/fonts/anuphan-latin-600-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+2000-206F}
+@font-face{font-family:'IBM Plex Mono';font-weight:500;font-display:swap;src:url(assets/fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2')}
+/* Hub — handoff index: brand blue/orange, one reading column for the plan, cards for the three prototypes. */
+:root{--bg:#F2F5F9;--card:#FFFFFF;--ink:#132033;--ink-2:#4E5E71;--ink-3:#8190A3;--line:#DCE4EE;--blue:#123F7B;--blue-2:#1B5AA8;--blue-l:#E6EEF8;--or:#E2711D;--or-l:#FCEBDD;--ok:#1B7A45;
+  --core:#123F7B;--comp:#2E86D6;--insp:#9CC3EC;--skip:#E3E8EF;--sans:'Anuphan','Noto Sans Thai',Tahoma,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0C121A;--card:#131C27;--ink:#E6EDF5;--ink-2:#A7B5C5;--ink-3:#6F8095;--line:#233246;--blue:#8DB9F2;--blue-2:#8DB9F2;--blue-l:#172A42;--or:#F08A3A;--or-l:#33200F;--core:#8DB9F2;--comp:#3D7FC0;--insp:#28496E;--skip:#1B2533;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0C121A;--card:#131C27;--ink:#E6EDF5;--ink-2:#A7B5C5;--ink-3:#6F8095;--line:#233246;--blue:#8DB9F2;--blue-2:#8DB9F2;--blue-l:#172A42;--or:#F08A3A;--or-l:#33200F;--core:#8DB9F2;--comp:#3D7FC0;--insp:#28496E;--skip:#1B2533;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.72 var(--sans);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:clamp(16px,3vw,32px);padding-block:28px 80px}
+h1,h2,h3{line-height:1.3;margin:0;text-wrap:balance;font-weight:600}
+a{color:var(--blue-2)}
+.mono{font-family:var(--mono)}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:end;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:18px}
+.top h1{font-size:clamp(26px,3.4vw,40px)}
+.top p{color:var(--ink-2);max-width:44em;margin-top:6px}
+.go-test{display:inline-flex;align-items:center;min-height:48px;margin-top:14px;padding:0 20px;border-radius:12px;background:var(--or);color:#fff;font-weight:700;text-decoration:none}
+.doc{font:500 12px var(--mono);border:1.5px solid var(--ink);padding:4px 10px;border-radius:4px;white-space:nowrap}
+nav.toc{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0 8px}
+nav.toc a{font-size:14px;text-decoration:none;border:1px solid var(--line);background:var(--card);color:var(--ink-2);padding:5px 12px;border-radius:999px}
+nav.toc a:hover{border-color:var(--blue-2);color:var(--ink)}
+section{margin-top:44px}
+section>h2{font-size:26px;margin-bottom:6px}
+section>p.lead{color:var(--ink-2);margin-bottom:18px;max-width:46em}
+.vars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.var{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.swatch{height:120px;position:relative;display:flex;align-items:flex-end;padding:14px}
+.swatch .chips{display:flex;gap:6px}
+.swatch .chips i{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.7)}
+.swatch b{position:absolute;right:14px;top:10px;font:600 44px var(--mono);opacity:.9}
+.v-a .swatch{background:linear-gradient(135deg,#EEF2F6,#FFFFFF 60%);color:#123F7B}
+.v-b .swatch{background:#F4F7FA;background-image:linear-gradient(90deg,rgba(18,63,123,.08) 1px,transparent 1px),linear-gradient(rgba(18,63,123,.08) 1px,transparent 1px);background-size:20px 20px;color:#0E2238;border-bottom:1.5px solid #0E2238}
+.v-c .swatch{background:radial-gradient(90% 90% at 70% 30%,#16324A,#090E14);color:#5AD0FF}
+.var .body{padding:16px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.var h3{font-size:20px}
+.var .who{font-size:14px;color:var(--ink-3)}
+.var ul{margin:0;padding-left:18px;font-size:14.5px;color:var(--ink-2)}
+.var .open{margin-top:auto;display:inline-flex;justify-content:center;align-items:center;min-height:44px;border-radius:12px;background:var(--ink);color:var(--bg);font-weight:600;text-decoration:none}
+.var .open:hover{background:var(--blue-2);color:#fff}
+.rec{margin-top:14px;background:var(--or-l);border-left:4px solid var(--or);border-radius:10px;padding:14px 18px}
+.rec b{color:var(--ink)}
+@media (max-width:900px){.vars{grid-template-columns:1fr}}
+.try{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;counter-reset:t}
+.try li{list-style:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:14.5px;color:var(--ink-2)}
+.try li b{color:var(--ink);display:block}
+.try{padding:0;margin:0}
+@media (max-width:700px){.try{grid-template-columns:1fr}}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--ink-2);margin-bottom:12px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.hundred{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;padding:0;margin:0}
+.hundred li{list-style:none;border-radius:6px;padding:5px 6px;min-height:52px;display:flex;flex-direction:column;justify-content:space-between;font-size:11px;line-height:1.25;overflow:hidden;cursor:default;transition:transform .15s}
+.hundred li:hover{transform:scale(1.06);position:relative;z-index:2;box-shadow:0 6px 18px -6px rgba(0,0,0,.35)}
+.hundred li b{font:500 11px var(--mono)}
+.hundred li span{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.t-core{background:var(--core);color:#fff}.t-comp{background:var(--comp);color:#fff}.t-insp{background:var(--insp);color:#0E2238}.t-skip{background:var(--skip);color:var(--ink-3)}
+:root[data-theme="dark"] .t-core{color:#0C121A}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .t-core{color:#0C121A}}
+@media (max-width:760px){.hundred{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.plan{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:clamp(18px,3vw,36px)}
+.plan h2{font-size:22px;margin:34px 0 10px;padding-top:18px;border-top:1px solid var(--line)}
+.plan h2:first-child{margin-top:0;border-top:0;padding-top:0}
+.plan h3{font-size:18px;margin:22px 0 8px}
+.plan p,.plan li{max-width:72ch;color:var(--ink-2)}
+.plan strong{color:var(--ink)}
+.plan hr{border:0;border-top:1px solid var(--line);margin:24px 0}
+.tw{overflow-x:auto;margin:10px 0 16px;border:1px solid var(--line);border-radius:12px}
+.plan table{border-collapse:collapse;width:100%;font-size:14px}
+.plan th,.plan td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.plan th{background:var(--blue-l);color:var(--ink);font-weight:600;white-space:nowrap}
+.plan tr:last-child td{border-bottom:0}
+.plan td:first-child{white-space:nowrap;font-family:var(--mono);font-size:13px;color:var(--ink)}
+.plan pre{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px;overflow-x:auto;font:13px/1.6 var(--mono);color:var(--ink)}
+.plan code{font-family:var(--mono);font-size:.9em;background:var(--blue-l);padding:1px 5px;border-radius:5px;color:var(--ink)}
+.plan pre code{background:none;padding:0}
+.plan li.todo{list-style:none;margin-left:-20px}
+.plan li.todo::before{content:"☐ ";color:var(--or)}
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;padding:0}
+.files li{list-style:none;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;color:var(--ink-2)}
+.files li b{font:500 13px var(--mono);color:var(--ink);display:block}
+footer{margin-top:40px;color:var(--ink-3);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="mono" style="color:var(--ink-3);font-size:13px">บริษัท สหบูรพากรุ๊ป จำกัด · SBP AirCare</p>
+      <h1>ต้นแบบเว็บไซต์ 3 รูปแบบ + แผนส่งมอบทีมพัฒนา</h1>
+      <p>Rev.07 ครบกลไกจริงของแอร์ติดผนัง แขวนใต้ฝ้า สี่ทิศทาง (โมเดลละเอียดเท่ากันทั้ง 3 ประเภท ภาพตัด ป้ายไม่ทับกัน) · ห้องจำลอง 48 ห้อง 9 กลุ่มพร้อมป้ายความเสี่ยง · ข้างในเครื่อง 0–18 เดือน + ค่าไฟหลายขนาด · วงจรทำความเย็นใหม่ · แพ็กเกจล้างตามเอกสารบริษัท · โชว์รูมวัสดุติดตั้ง 3 มิติ 7 รายการ</p>
+      <a class="go-test" href="https://claude.ai/artifact/F4Qk4dFAQn4RwGSgZnt656" target="_blank" rel="noopener">เริ่มทดสอบ A · B · C และให้คะแนน →</a>
+    </div>
+    <span class="doc">SBP-WEB-011 · Rev.07 · 30.09.2569</span>
+  </header>
+  <nav class="toc" aria-label="สารบัญ"><a href="#variants">3 ต้นแบบ</a><a href="https://claude.ai/artifact/F4Qk4dFAQn4RwGSgZnt656" target="_blank" rel="noopener">หน้าทดสอบ A B C</a><a href="#rev2">Rev.07 เปลี่ยนอะไร</a><a href="#try">สิ่งที่ลองได้</a><a href="#hundred">ผลรีวิว 100 เว็บ</a><a href="#plan">แผนสำหรับ Dev</a><a href="#files">ไฟล์ในชุดนี้</a></nav>
+
+  <section id="variants">
+    <h2>เลือกดูต้นแบบ</h2>
+    <p class="lead">โครงหน้าเหมือนกันทั้ง 3 แบบ (หน้าแรก บริการ ศูนย์ราคา สัญญารายปี สินค้า ข้างในแอร์ พื้นที่บริการ) เพื่อให้เทียบกันได้ตรง ๆ ต่างกันที่ภาษาภาพ วิธีเล่าเรื่อง และระดับของ 3D</p>
+    <div class="vars">
+      <article class="var v-a">
+        <div class="swatch"><b>A</b><div class="chips"><i style="background:#EEF2F6"></i><i style="background:#123F7B"></i><i style="background:#1B5AA8"></i><i style="background:#E2711D"></i></div></div>
+        <div class="body"><h3>Bento Clean</h3><p class="who">B2C + องค์กรทั่วไป · อ้างอิง 068, 028, 024, 092</p>
+          <ul><li>หน้าแรกแบบ bento พร้อม 3D ในการ์ด</li><li>แอร์ 3 ประเภททำงานอย่างไร: 3 มิติในห้องจริง ผ่ากลางเครื่องทีละขั้น</li><li>แผนที่ประเทศไทย 3 มิติ ระบุจังหวัดที่ให้บริการ</li></ul>
+          <a class="open" href="https://claude.ai/artifact/EymM19Ff1MDrV5w94kq8Jz" target="_blank" rel="noopener">เปิดแบบ A</a></div>
+      </article>
+      <article class="var v-b">
+        <div class="swatch"><b>B</b><div class="chips"><i style="background:#F4F7FA"></i><i style="background:#0E2238"></i><i style="background:#2C6CB8"></i><i style="background:#E2711D"></i></div></div>
+        <div class="body"><h3>Engineering Sheet</h3><p class="who">ฝ่ายอาคาร จัดซื้อ ผู้รับเหมา · อ้างอิง 056, 052, 036, 060</p>
+          <ul><li>3D แบบพิมพ์เขียว เส้นโยงชื่อชิ้นส่วน title block</li><li>แบบวิศวกรรมภาพตัดแอร์ 3 ประเภท กดลำดับ 1–7</li><li>แผนที่ประเทศไทย 3 มิติแบบพิมพ์เขียว</li></ul>
+          <a class="open" href="https://claude.ai/artifact/Ljne7eUGxzXs1Fbf3VAyj4" target="_blank" rel="noopener">เปิดแบบ B</a></div>
+      </article>
+      <article class="var v-c">
+        <div class="swatch"><b>C</b><div class="chips"><i style="background:#090E14"></i><i style="background:#5AD0FF"></i><i style="background:#FF8A3D"></i><i style="background:#EAF0F6"></i></div></div>
+        <div class="body"><h3>Virtual Showroom</h3><p class="who">ลูกค้าที่อยากเห็นก่อนซื้อ · อ้างอิง 039, 022, 014, 095, 083</p>
+          <ul><li>แอร์โชว์รูมพรีเมียม 3D + Exploded view เลือกสีตัวเครื่อง 3 แบบ</li><li>ขั้นตอนช่างล้างแบบเคลื่อนไหว C1 11 ขั้น / C2 14 ขั้น</li><li>ห้องจำลองพื้นเปลี่ยนสีตามอุณหภูมิ</li></ul>
+          <a class="open" href="https://claude.ai/artifact/WmbTyh3x5xz3jci7tq6zF5" target="_blank" rel="noopener">เปิดแบบ C</a></div>
+      </article>
+    </div>
+    <div class="rec"><b>คำแนะนำ:</b> ใช้แบบ A เป็นโครงทั้งเว็บ ใช้ภาษาภาพแบบ B ในหน้าสำหรับองค์กร และทำโชว์รูม/ห้องจำลองของแบบ C เป็นหน้าฟีเจอร์แยก 1 หน้า เพราะงานหลักคือปิดสัญญาจำนวนมาก ความเร็วและความชัดของราคาสำคัญกว่าความว้าวทั้งเว็บ</div>
+  </section>
+
+  <section id="rev2">
+    <h2>Rev.07 เปลี่ยนอะไร</h2>
+    <ul class="try">
+      <li><b>Rev.07.2 ตัวเครื่องเต็ม + แนวท่อเรียบร้อย</b>เลิกภาพผ่าครึ่งเครื่อง ใช้ตัวเครื่องเต็มแบบมองทะลุ · ท่อน้ำยาและน้ำทิ้งเดินในรางครอบท่อสีขาว มีข้องอแบน ข้องอฉาก ข้องอ 45° ฝาครอบผนัง ฝาปิดปลาย ไปจนถึงวาล์วคอยล์ร้อน ทั้ง 3 ประเภท</li>
+      <li><b>Rev.07.1 ตรวจละเอียด</b>ตรวจทุกโมเดล 3 มิติทีละมุม แก้คอยล์แอร์แขวนทะลุฝาบน บานสวิงตอนภาพนิ่ง ป้ายหลุดขอบ · ขนาดเครื่องแนะนำไม่เผื่อซ้ำ (ห้อง 20 ตร.ม. ได้ 18,000 ไม่ใช่ 24,000) · สีตัวอักษรและปุ่มผ่านเกณฑ์อ่านง่าย WCAG AA · ปุ่มบนมือถือ 44 px · เลิกเอฟเฟกต์ลอยขึ้นทีละหัวข้อ</li>
+      <li><b>กลไกจริง 3 ประเภท</b>โมเดลแอร์แขวนใต้ฝ้า (ซีร็อกโค 4 ตัวในโข่ง คอยล์เอียง ถาดหุ้มฉนวน บานสวิงใหญ่) และสี่ทิศทาง (ปากแตร พัดลมเทอร์โบ คอยล์ล้อม 4 ด้าน ปั๊มน้ำทิ้ง + ลูกลอย ช่องลม 4 ด้าน) ละเอียดเท่าแอร์ติดผนัง · ภาพตัดผ่ากลางเครื่องจริง ป้ายชื่อไม่ทับกันทั้งจอคอมและมือถือ · แบบ B มีภาพ 3 มิติคู่กับแบบวิศวกรรม</li>
+      <li><b>ห้องจำลอง 48 ห้อง 9 กลุ่ม</b>บ้าน คอนโด สำนักงาน ร้านค้า บริการ โรงแรม โรงเรียน โรงพยาบาล โรงงาน · คัดห้องที่ใช้งานหนัก สกปรกเร็ว เสี่ยงกลิ่นอับ หรือเสี่ยงเครื่องเสีย พร้อมป้ายความเสี่ยงและเหตุผล · แอร์ทุกห้องเป็นโมเดลละเอียด วางตามรูปห้อง ลมหยุดที่ผนัง</li>
+      <li><b>ข้างในเครื่อง 0–18 เดือน</b>แผ่นกรอง คอยล์ ใบพัด ถาดน้ำทิ้ง สกปรกตามเดือนจริงของห้อง + กราฟลม ความเย็น ไฟ · <b>ค่าไฟหลายขนาด</b> Inverter/ธรรมดา ปรับชั่วโมงและค่าไฟได้ เทียบราคาล้าง (ค่าประมาณ)</li>
+      <li><b>วงจรทำความเย็นวาดใหม่</b>ท่อน้ำยาเคลื่อนไหว อุณหภูมิแต่ละช่วง และ "ผลกับคุณ" ทุกส่วน</li>
+      <li><b>แพ็กเกจล้างตามเอกสารบริษัท</b>Basic Clean / Standard Care / Corporate Control × ล้างปกติ / ล้างใหญ่ / ตัดล้าง ได้อะไร เหมาะกับใคร ราคาเริ่มต้นและตารางราคาจาก Pricebook</li>
+      <li><b>โชว์รูมวัสดุติดตั้ง 3 มิติ</b>แท่นหมุน 7 วัสดุ O-TWO · Aeroflex · Airpro · Yazaki · SCG · ขาแขวน+ยางกันสั่น · NANO RCBO แต่ละชิ้นเคลื่อนไหวโชว์จุดเด่น (ท่อตัดเห็นความหนา ฝารางเปิด ข้อต่อเลื่อน คอยล์ร้อนยกโชว์ยาง) · รับประกันสูงสุด 3 ปีตามเงื่อนไข · ระดับติดตั้งบนเว็บเหลือ มาตรฐาน / พรีเมียม</li>
+    </ul>
+    <h2 style="margin-top:28px">Rev.06</h2>
+    <ul class="try">
+      <li><b>แบบ A · แอร์ทำงานอย่างไร 3 มิติ</b>ห้องจริงมีผนัง ฝ้า คน คอยล์ร้อนนอกอาคาร ท่อน้ำยาและท่อน้ำทิ้งเดินตามจริง แต่ละประเภทมีพัดลมตามของจริง (กรงกระรอกยาว / ซีร็อกโคในโข่ง / เทอร์โบใต้ปากแตร + ปั๊มน้ำทิ้ง) กดเล่น 7 ขั้น กล้องบินไปชิ้นส่วนและผ่ากลางเครื่องให้เห็นข้างใน</li>
+      <li><b>แบบ B · แบบวิศวกรรมภาพตัด</b>3 แผ่นพร้อมกรอบชื่อแบบ เลขกำกับชิ้นส่วน เส้นลมเคลื่อนที่ ท่อน้ำทิ้งเส้นประ กดลำดับ 1–7 ไฮไลต์ทีละขั้น</li>
+      <li><b>แบบ C · โชว์รูมพรีเมียม</b>เครื่องขอบโค้ง แถบไฟ จอแสดงผล Exploded view เลือกสี ขาวมุก / กราไฟต์ / แชมเปญ · มีช่องใส่ไฟล์ 3 มิติทางการของผู้ผลิต (.glb) เมื่อได้รับสิทธิ์</li>
+      <li><b>แบบ C · ขั้นตอนช่างล้างเคลื่อนไหว</b>ตัดเบรกเกอร์ ปูผ้า ติดถุงล้าง ถอดฝา คลุมแผงวงจร พ่นน้ำยา ฉีดน้ำแรงดัน ไล่ท่อน้ำทิ้ง ล้างคอยล์ร้อน ทดสอบวัดค่า · C2 ยกเครื่องลงจากแผ่นยึด ถอดใบพัดและถาดล้าง · แต่ละขั้นบอก ทำอะไร / ทำไม / ลูกค้าได้อะไร</li>
+      <li><b>แผนที่ประเทศไทย 3 มิติ</b>ทุกแบบ ชื่อจังหวัดชัด สีตามพื้นที่หลัก / 300 / 800 / 1,500 บาท แตะจังหวัดเพื่อเช็กค่าเดินทาง พิมพ์ที่อยู่แล้วแผนที่บินไปพร้อมเส้นจากสำนักงาน</li>
+    </ul>
+    <h2 style="margin-top:28px">Rev.05</h2>
+    <ul class="try">
+      <li><b>เปิดได้ทุกเครื่อง</b>แต่ละแบบเป็นไฟล์เดียว (3D ข้อมูลราคา ฟอนต์ อยู่ในไฟล์) ไม่ต้องกดลิงก์ข้ามหน้า และมีชุดไฟล์ให้ดาวน์โหลดเปิดจากเครื่องได้ด้วยการดับเบิลคลิก</li>
+      <li><b>การทำงานของแอร์ 3 ประเภทหลัก</b>ภาพตัดแอร์ติดผนัง แขวน สี่ทิศทาง เห็นทางลม ฟิลเตอร์ คอยล์ พัดลม ถาดและปั๊มน้ำทิ้ง ลองกด "ฟิลเตอร์ตัน"</li>
+      <li><b>ขั้นตอนล้าง ติดตั้ง ซ่อม</b>ตามแบบฟอร์มงานบริการของบริษัท แตะแต่ละขั้นเพื่อไฮไลต์ชิ้นส่วน พร้อมราคา รับประกัน เอกสาร สิ่งที่รวม/ไม่รวม</li>
+      <li><b>ห้องจำลอง 20 ห้อง</b>เพิ่มห้องทานอาหาร ห้องพักโรงแรม ห้องเรียน ห้องพักผู้ป่วย</li>
+      <li><b>แดดและอาคาร</b>ทิศผนังรับแดด ขนาดกระจก ชั้นใต้หลังคา ห้องปิดทึบ มีผลต่อ BTU รอบล้าง และภาพ 3 มิติ พร้อมแถบที่มาของ BTU</li>
+      <li><b>คนและสัญลักษณ์</b>คน 3 มิติท่ายืน นั่ง นอน ป้ายแดด แหล่งความร้อน จำนวนคน ขนาด BTU ของเครื่องแต่ละตัว</li>
+      <li><b>ขั้นตอนใช้บริการ 6 ขั้น</b>ติ๊กถูกตามที่ลูกค้าทำจริง บอกขั้นต่อไปตลอด</li>
+      <li><b>ราคาตรง Pricebook</b>กระทบยอดทุกรายการ ไม่พบค่าผิด</li>
+    </ul>
+    <h2 style="margin-top:28px">Rev.04</h2>
+    <ul class="try">
+      <li><b>ข้อมูลมาตรฐานทั้งหมด</b>อัตรามาตรฐานเท่านั้นบนเว็บ งานปริมาณมากขึ้นข้อความให้ทีมขายเสนออัตราพิเศษในใบเสนอราคา · 9 รุ่นที่ราคายังไม่อนุมัติไม่ขึ้นเว็บ (เหลือ 705 รุ่น) · กำลังทีมล้างต่อวันตามคู่มือบริษัท (ติดผนัง 22 · แขวน/สี่ทิศทาง 14)</li>
+      <li><b>รอบล้างแนะนำ</b>บ้านทุก 6 เดือน (ห้องนั่งเล่น 4) · สำนักงาน คลินิก ร้านค้าทุก 3 เดือน · ครัว ร้านอาหาร โรงงาน คลังทุก 2 เดือน · ห้อง Server ทุก 6 เดือน</li>
+      <li><b>หน้าทดสอบ A B C</b>สลับแบบ สลับจอคอม/แท็บเล็ต/มือถือ เทียบ 3 แบบพร้อมกัน รายการ 8 อย่างที่ควรลอง และตารางให้คะแนน 6 ด้าน คัดลอกผลส่ง LINE ได้</li>
+      <li><b>ห้องจำลอง 16 แบบ</b>บ้าน (ห้องนอน มาสเตอร์ นั่งเล่น ครัว ห้องทำงาน ห้องน้ำ) · สำนักงาน (Open-plan ผู้บริหาร ประชุม Server) · ร้านค้า ร้านอาหาร คลินิก · สายการผลิต คลังสินค้า ห้องควบคุม ใส่แอร์ได้ 5 ประเภท</li>
+      <li><b>เห็นผลของฝุ่นชัด</b>เลื่อน "ไม่ได้ล้างมากี่เดือน" ลมเย็นพุ่งสั้นลง ฝุ่นลอยมากขึ้น เย็นช้าลง ดูข้างในแผ่นกรอง คอยล์ โบลเวอร์ และวงจรน้ำยาแบบเคลื่อนไหว</li>
+      <li><b>จากห้องไปถึงราคา</b>ห้องจำลองแนะนำจำนวนและขนาดเครื่อง รุ่นที่เข้ากันพร้อมราคาติดตั้ง และแผนล้างรายปี ใส่ใบเสนอราคาได้ทันที</li>
+      <li><b>มาตรฐานวัสดุ</b>โชว์รูม 3 มิติ 7 วัสดุ (O-TWO · Aeroflex · Airpro · Yazaki · SCG · ขาแขวน+ยางกันสั่น · NANO RCBO) + ตารางเทียบมาตรฐาน / พรีเมียม จาก Pricebook อยู่ทั้งหัวข้อแยกและในหน้าสินค้าทุกรุ่น</li>
+      <li><b>ค่าเดินทางอิงตลาด</b>ไม่เกิน 60 กม. 300 · 61–100 กม. 800 · 101–150 กม. 1,500 บาท/เที่ยว พร้อมขั้นต่ำและยกเว้นตามจำนวนเครื่อง</li>
+      <li><b>Journey ที่แก้แล้ว</b>เมนูหัวข้อบนมือถือ ปุ่มสรุปใบเสนอราคาลอย แท็บสัญญารายปีและงานโครงการ ไม่คิดค่าเดินทางซ้ำกับสัญญา</li>
+    </ul>
+  </section>
+
+  <section id="try">
+    <h2>สิ่งที่ลองได้ในต้นแบบ</h2>
+    <ul class="try">
+      <li><b>แอร์ทำงานอย่างไร</b>เลือก "แอร์สี่ทิศทาง" กดเล่นทีละขั้น ดูลมเข้าตรงกลาง ผ่านพัดลมเทอร์โบ ออก 4 ทิศ และปั๊มยกน้ำทิ้ง แล้วลอง "แขวนใต้ฝ้า"</li>
+      <li><b>ห้องจำลอง</b>เลือกกลุ่ม "บริการ" → ร้านซัก–อบผ้า เลื่อนไม่ได้ล้าง 12 เดือน ดูลมเบาลง สลับไป "ข้างในเครื่อง" ดูแผ่นกรอง คอยล์ ใบพัด ถาดน้ำทิ้ง และการ์ดค่าไฟ แล้วเปิด "วงจรทำความเย็น"</li>
+      <li><b>มาตรฐานวัสดุ</b>ดูแท่นหมุนวัสดุ 7 ชิ้น กด "Airpro" เพื่อเปิดฝาราง กด "O-TWO" ดูความหนาท่อ</li>
+      <li><b>สินค้า → ใส่ตะกร้า</b>เปิดรุ่นใดก็ได้ เลือกติดตั้งพรีเมียม เปิด "เทียบวัสดุ มาตรฐาน / พรีเมียม" แล้วใส่ใบเสนอราคา</li>
+      <li><b>ศูนย์ราคา 7 หมวด</b>ล้าง ติดตั้ง ซ่อม สัญญารายปี รื้อย้าย วัสดุ งานโครงการ ค้นหาได้ทุกหมวด</li>
+      <li><b>สัญญารายปี</b>เลือก Preset โรงงาน พิมพ์ "ฉะเชิงเทรา" เห็นยกเว้นค่าเดินทางเพราะจำนวนเครื่องถึงเกณฑ์</li>
+      <li><b>ค่าเดินทาง</b>ในตะกร้าลองพิมพ์ สามพราน, บางปะอิน, ศรีราชา, ระยอง</li>
+      <li><b>มือถือ</b>เปิดบนโทรศัพท์ กด "เมนู" ที่แถบล่างเพื่อไปหัวข้อต่าง ๆ</li>
+    </ul>
+  </section>
+
+  <section id="hundred">
+    <h2>ผลรีวิว 100 เว็บต้นฉบับ</h2>
+    <p class="lead">ตรวจใหม่ทั้ง 100 ชิ้นทั้งคำอธิบายและซอร์สโค้ด ชี้เมาส์ที่ช่องเพื่อดูว่าดึงส่วนไหนมาใช้ รายละเอียดเต็มอยู่ในหัวข้อ 2 ของแผนด้านล่าง</p>
+    <div class="legend"><span><i class="t-core"></i>โครงหลัก 7</span><span><i class="t-comp"></i>ยืมคอมโพเนนต์ 27</span><span><i class="t-insp"></i>แรงบันดาลใจ 8</span><span><i class="t-skip"></i>ตัดทิ้ง 58</span></div>
+    <ul class="hundred">{{CELLS}}</ul>
+  </section>
+
+  <section id="plan">
+    <h2>แผนโครงสร้างสำหรับทีมพัฒนา</h2>
+    <p class="lead">เนื้อหาเดียวกับไฟล์ SBP-WEB-011_Dev_Handoff_Plan.md ที่ส่งให้ทีม</p>
+    <div class="plan">{{PLAN}}</div>
+  </section>
+
+  <section id="files">
+    <h2>ไฟล์ในชุดนี้</h2>
+    <ul class="files">
+      <li><b>a.html · b.html · c.html</b>ต้นแบบ 3 แบบ (markup + CSS ของแต่ละแบบ)</li>
+      <li><b>assets/sbp-core.js</b>Domain logic: โหลดราคา, catalog, facet, พื้นที่และค่าเดินทาง, ตัวคำนวณสัญญา, BTU</li>
+      <li><b>assets/sbp-data.json</b>ข้อมูลราคาจริงแบบย่อ (สินค้า ติดตั้ง ล้าง ซ่อม)</li>
+      <li><b>assets/commerce.js · shared.css</b>ตะกร้า ตัวเลือกสินค้า ศูนย์ราคา ตารางวัสดุ</li>
+      <li><b>assets/studio-model.js · studio3d.js · studio.js · studio.css</b>ห้องจำลอง 16 ฉาก: สูตร ภาพ 3 มิติ และหน้าจอ</li>
+      <li><b>assets/journey.js</b>ตารางค่าเดินทาง ปุ่มสรุปใบเสนอราคา เมนูมือถือ</li>
+      <li><b>assets/proto-ui.js</b>พฤติกรรม UI ที่ใช้ร่วมกันทั้ง 3 แบบ</li>
+      <li><b>assets/ac3d.js</b>ระบบ 3D: แอร์ 2 ชุด, exploded, X-ray, ลม, ฝุ่น, ห้องจำลอง</li>
+      <li><b>assets/three.module.min.js</b>Three.js r170 (MIT)</li>
+      <li><b>assets/fonts/</b>Anuphan, IBM Plex Sans Thai, IBM Plex Mono, Kanit (OFL)</li>
+    </ul>
+  </section>
+  <footer>ต้นแบบนี้ไม่ส่งข้อมูลฟอร์มจริง ราคามาจาก Pricebook 2569 (ราคาประเมินเบื้องต้น ต้องยืนยันก่อนออกใบเสนอราคาอย่างเป็นทางการ) สถานะสต็อก คิว และรายงานยังเป็นตัวอย่าง ห้ามแชร์ลิงก์นี้ออกนอกบริษัทเพราะไฟล์ข้อมูลยังมีอัตราพิเศษ/โครงการ</footer>
+</div>

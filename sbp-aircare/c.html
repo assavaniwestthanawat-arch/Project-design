@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SBP AirCare · แบบ C Virtual Showroom</title>
+<meta name="description" content="โชว์รูมแอร์ออนไลน์ ทุกรุ่นดูแบบ 3 มิติได้ ราคาเครื่องพร้อมติดตั้ง ล้าง ซ่อม จองคิวออนไลน์ — SBP AirCare โดย บริษัท สหบูรพากรุ๊ป จำกัด">
+<meta name="theme-color" content="#090E17">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="th_TH">
+<meta property="og:site_name" content="SBP AirCare">
+<meta property="og:title" content="SBP AirCare · แบบ C Virtual Showroom">
+<meta property="og:description" content="โชว์รูมแอร์ออนไลน์ ทุกรุ่นดูแบบ 3 มิติได้ ราคาเครื่องพร้อมติดตั้ง ล้าง ซ่อม จองคิวออนไลน์ — SBP AirCare โดย บริษัท สหบูรพากรุ๊ป จำกัด">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/shared.css">
+<link rel="stylesheet" href="assets/business.css">
+<link rel="stylesheet" href="assets/booking.css">
+<link rel="stylesheet" href="assets/studio.css">
+<link rel="stylesheet" href="assets/services.css">
+<style>
+/* Layout concept C — "Virtual showroom": a dark stage where the product is the light source. Cool air = cyan, heat = orange, used as meaning, not decoration. Full-bleed 3D first, content in solid panels below. */
+:root{
+  /* Rev.09 r9 brand: navy-black ground from FUJIVA blue · cool = light FUJIVA blue · heat = SP / FUJIVA orange */
+  --bg:#090E17; --stage:#0C1320; --panel:#111A28; --panel-2:#172234; --line:rgba(140,180,240,.14); --ink:#EAF0F7; --ink-2:#A6B4C6; --ink-3:#8B9AAE; --on-heat:#0F1C2B;
+  --cool:#7FA8F5; --cool-d:#4D86E8; --heat:#F26A3D; --heat-d:#F15A2B; --brand-or:#F15A2B; --plate:#F4F7FC; --ok:#4ED39A; --warn:#FFB35C; --bad:#FF6B6B;
+  --display:'Kanit','Anuphan',Tahoma,sans-serif; --sans:'Anuphan','Noto Sans Thai',Tahoma,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --r:18px; --ease:cubic-bezier(.2,.75,.2,1); color-scheme:dark;
+  --s-card:var(--panel); --s-card-2:var(--panel-2); --s-ink:var(--ink); --s-ink-2:var(--ink-2); --s-ink-3:var(--ink-3); --s-line:var(--line); --s-accent:var(--heat-d); --s-on-accent:var(--on-heat); --s-accent-soft:color-mix(in oklab,var(--cool) 12%,var(--panel)); --s-ok:var(--ok); --s-warn:var(--warn); --s-bad:var(--bad); --s-r:12px; --s-mono:var(--mono);
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#EEF2F8; --stage:#E3EAF4; --panel:#FFFFFF; --panel-2:#F3F6FB; --line:rgba(27,81,164,.12); --ink:#0F1C2E; --ink-2:#4B5B70; --ink-3:#586477; --on-heat:#FFFFFF;
+  --cool:#1B51A4; --cool-d:#163F80; --heat:#C4401F; --heat-d:#C4401F; --brand-or:#EF4E2E; --plate:transparent; --ok:#1B7A45; --warn:#B4560D; --bad:#B02A26; color-scheme:light;}}
+:root[data-theme="light"]{
+  --bg:#EEF2F8; --stage:#E3EAF4; --panel:#FFFFFF; --panel-2:#F3F6FB; --line:rgba(27,81,164,.12); --ink:#0F1C2E; --ink-2:#4B5B70; --ink-3:#586477; --on-heat:#FFFFFF;
+  --cool:#1B51A4; --cool-d:#163F80; --heat:#C4401F; --heat-d:#C4401F; --brand-or:#EF4E2E; --plate:transparent; --ok:#1B7A45; --warn:#B4560D; --bad:#B02A26; color-scheme:light;}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 var(--sans);-webkit-font-smoothing:antialiased}
+body.lock{overflow:hidden}
+h1,h2,h3,h4{font-family:var(--display);font-weight:500;line-height:1.25;margin:0;text-wrap:balance}p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}a{color:inherit}
+:focus-visible{outline:2px solid var(--cool);outline-offset:2px;border-radius:8px}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:clamp(16px,3vw,32px)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font:500 13px var(--sans);color:var(--cool);letter-spacing:.02em}
+.btn-primary,.btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border-radius:12px;font-weight:600;text-decoration:none;border:1px solid transparent;transition:transform .15s,background .2s,box-shadow .2s}
+.btn-primary{background:var(--heat-d);color:var(--on-heat);box-shadow:0 8px 24px -10px var(--heat)}
+.btn-primary:hover{background:var(--heat)}
+.btn-ghost{border-color:var(--line);background:color-mix(in oklab,var(--panel) 70%,transparent);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--cool)}
+.btn-primary:active,.btn-ghost:active{transform:scale(.97)}
+.proto{font-size:12.5px;text-align:center;padding:6px 16px;color:var(--ink-2);background:var(--panel);border-bottom:1px solid var(--line)}
+.proto a{color:var(--cool)}
+
+.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:color-mix(in oklab,var(--bg) 78%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.hdr .wrap{display:flex;align-items:center;gap:20px;height:60px}
+.logo{font:500 19px var(--display);text-decoration:none;display:flex;align-items:center;gap:8px;white-space:nowrap;flex:0 0 auto}
+.logo-mk{height:30px;width:auto;flex:none;filter:drop-shadow(0 0 10px rgba(241,90,43,.25))}   /* Rev.09 r9: company mark (owner-supplied SP logo) */
+.fuj-logo{display:block;height:32px;width:auto;max-width:100%;background:var(--plate);border-radius:8px;padding:2px 6px;box-sizing:content-box}
+.nav{display:flex;gap:0;margin-inline:auto;min-width:0;overflow-x:auto;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}
+.nav a{padding:7px 9px;border-radius:10px;text-decoration:none;color:var(--ink-2);font-size:14.5px;white-space:nowrap}
+.nav a:hover{color:var(--ink);background:var(--panel)}
+.vsw{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px}
+.vsw a{font:600 12px var(--mono);padding:4px 9px;border-radius:7px;text-decoration:none;color:var(--ink-3)}
+.vsw a[aria-current]{background:var(--cool);color:#04121C}
+.hdr .btn-primary{min-height:38px;padding:0 14px;font-size:14.5px}
+@media (max-width:1080px){.nav{display:none}.vsw{margin-left:auto}}
+@media (max-width:379px){.vsw{display:none}}
+@media (max-width:640px){.hdr .btn-primary{display:none}}
+
+/* stage */
+.stage{position:relative;height:min(86vh,820px);min-height:560px;background:radial-gradient(120% 90% at 60% 40%,color-mix(in oklab,var(--cool) 10%,var(--stage)) 0%,var(--stage) 45%,var(--bg) 100%);overflow:hidden;border-bottom:1px solid var(--line)}
+.stage .cv{position:absolute;inset:0}
+.stage::after{content:"";position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(transparent,color-mix(in oklab,var(--bg) 80%,transparent));pointer-events:none}
+.labels{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
+.hs{position:absolute;left:0;top:0;pointer-events:auto;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;border:0;background:transparent;opacity:0;transition:opacity .25s}
+.hs::before{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--cool);box-shadow:0 0 0 4px color-mix(in oklab,var(--cool) 25%,transparent),0 0 18px var(--cool);animation:glow 2.2s var(--ease) infinite}
+.hs span{position:absolute;left:30px;top:3px;white-space:nowrap;font-size:12.5px;background:color-mix(in oklab,var(--panel) 88%,transparent);border:1px solid var(--line);padding:2px 9px;border-radius:8px;opacity:0;transform:translateX(-4px);transition:.2s}
+.hs:hover span,.hs.sel span,.hs:focus-visible span{opacity:1;transform:none}
+.hs.sel::before{background:var(--heat);box-shadow:0 0 0 5px color-mix(in oklab,var(--heat) 30%,transparent),0 0 22px var(--heat)}
+.hs.on{opacity:1}
+@keyframes glow{50%{box-shadow:0 0 0 8px color-mix(in oklab,var(--cool) 0%,transparent),0 0 18px var(--cool)}}
+.hero-copy{position:absolute;left:0;right:0;bottom:36px;z-index:3;pointer-events:none}
+.hero-copy .wrap{display:flex;justify-content:space-between;align-items:end;gap:24px}
+.hero-copy .t{max-width:640px;pointer-events:auto}
+.hero-copy h1{font-size:clamp(34px,5vw,66px);font-weight:500;letter-spacing:-.005em;line-height:1.14}
+.hero-copy h1 em{font-style:normal;background:linear-gradient(90deg,var(--cool),#A8F0FF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-copy p{color:var(--ink-2);margin-top:10px;font-size:17px;max-width:34em}
+.hero-copy .ctas{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.dock{position:absolute;right:clamp(16px,3vw,32px);top:22px;z-index:3;width:300px;display:grid;gap:10px}
+.glass{background:color-mix(in oklab,var(--panel) 82%,transparent);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--panel-2);border-radius:12px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;border-radius:9px;padding:7px 6px;font-size:13.5px;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tog{display:flex;justify-content:space-between;align-items:center;border:0;background:transparent;width:100%;padding:6px 2px;font-size:14.5px}
+.tog i{width:38px;height:22px;border-radius:11px;background:var(--panel-2);position:relative;transition:.2s;border:1px solid var(--line)}
+.tog i::after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:var(--ink-3);transition:.2s var(--ease)}
+.tog[aria-pressed="true"] i{background:color-mix(in oklab,var(--cool) 35%,var(--panel-2))}
+.tog[aria-pressed="true"] i::after{left:18px;background:var(--cool)}
+.dirt{display:grid;gap:6px}
+.dirt input{width:100%;accent-color:var(--heat)}
+.dirt .lvl{font-size:13.5px;color:var(--ink-2)}
+.info{font-size:14px;color:var(--ink-2)}
+.info small{color:var(--cool);font-family:var(--mono)}
+.info :is(h3,h4){font-size:19px;color:var(--ink);margin:2px 0 4px}
+.info .tag-dirty{color:var(--warn);margin-top:6px;font-size:13px}
+.parts{display:none}
+@media (max-width:900px){
+  .stage{height:auto;min-height:0;display:flex;flex-direction:column}
+  .stage .cv{position:relative;height:62vh;min-height:380px}.labels{height:62vh;min-height:380px}
+  .stage::after{display:none}
+  .hero-copy{position:relative;bottom:auto;padding-block:18px 0}.hero-copy .wrap{flex-direction:column;align-items:stretch}
+  .dock{position:relative;right:auto;top:auto;width:auto;margin:14px 16px 20px;grid-template-columns:1fr 1fr}
+  .dock .info{grid-column:1/-1}
+}
+@media (max-width:520px){.dock{grid-template-columns:1fr}}
+
+section.sec{padding-block:80px 0}
+.sec-h{margin-bottom:26px;max-width:720px}
+.sec-h h2{font-size:clamp(28px,3.4vw,44px);margin-top:6px}
+.sec-h p{color:var(--ink-2);margin-top:10px}
+
+/* depth journey (022) */
+.journey{height:460vh;position:relative}
+.journey .stick{position:sticky;top:60px;height:calc(100vh - 60px);display:grid;grid-template-columns:260px minmax(0,1fr) 340px;gap:20px;align-items:center}
+.gauge{position:relative;padding-left:26px}
+.gauge::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.gauge .fill{position:absolute;left:8px;top:6px;width:2px;height:calc(var(--p,0)*100% - 12px);background:linear-gradient(var(--heat),var(--cool));box-shadow:0 0 12px var(--cool)}
+.gauge li{list-style:none;padding:10px 0;color:var(--ink-3);position:relative;transition:color .3s}
+.gauge li::before{content:"";position:absolute;left:-23px;top:18px;width:10px;height:10px;border-radius:50%;background:var(--bg);border:2px solid var(--line);transition:.3s}
+.gauge li.on{color:var(--ink)}
+.gauge li.on::before{border-color:var(--cool);background:var(--cool);box-shadow:0 0 12px var(--cool)}
+.gauge li small{display:block;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.gauge ol{margin:0;padding:0}
+.jstage{position:relative;height:min(76vh,680px);border-radius:24px;background:radial-gradient(100% 80% at 50% 40%,var(--panel-2),var(--stage));border:1px solid var(--line);overflow:hidden}
+.jstage .cv{position:absolute;inset:0}
+.jcopy{display:grid;gap:10px}
+.jcopy .step{display:none}.jcopy .step.on{display:block;animation:rise .5s var(--ease)}
+@keyframes rise{from{transform:translateY(12px)}}
+.jcopy .n{font:500 64px/1 var(--display);color:color-mix(in oklab,var(--cool) 60%,transparent)}
+.jcopy h3{font-size:28px;margin-top:6px}
+.jcopy p{color:var(--ink-2);margin-top:8px}
+.jcopy .sym{margin-top:12px;font-size:14px;border-left:2px solid var(--heat);padding-left:10px;color:var(--ink-2)}
+@media (max-width:1100px){.journey .stick{grid-template-columns:200px minmax(0,1fr)}.jcopy{grid-column:1/-1}}
+@media (max-width:760px){.journey{height:auto}.journey .stick{position:relative;top:0;height:auto;grid-template-columns:1fr}.gauge{display:none}.jstage{height:360px}.jcopy .step{display:block;padding:12px 0;border-bottom:1px solid var(--line)}.jcopy .n{font-size:34px}}
+
+/* virtual room */
+.room{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px}
+.rstage{position:relative;height:560px;border-radius:24px;background:radial-gradient(90% 90% at 50% 30%,var(--panel-2),var(--stage));border:1px solid var(--line);overflow:hidden}
+.rstage .cv{position:absolute;inset:0}
+.hud{position:absolute;left:16px;top:16px;display:grid;gap:8px;z-index:2}
+.hud .glass{padding:10px 14px}
+.hud .t{font:500 34px var(--display);line-height:1}
+.hud small{color:var(--ink-3);font-size:12.5px}
+.scale{position:absolute;left:16px;right:16px;bottom:16px;z-index:2;display:flex;align-items:center;gap:10px;font:500 12px var(--mono);color:var(--ink-2)}
+.scale i{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#2973F2,#33CCE6,#F2E68C,#F58C40,#D93833)}
+.rpanel{display:grid;gap:12px;align-content:start}
+.rpanel .glass{display:grid;gap:10px}
+.rng{display:grid;gap:2px;font-size:14px}
+.rng div{display:flex;justify-content:space-between;color:var(--ink-2)}
+.rng b{color:var(--ink);font-family:var(--mono);font-weight:500}
+.rng input{width:100%;accent-color:var(--cool)}
+.chips3{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.chips3 input{position:absolute;opacity:0}
+.chips3 span{display:block;text-align:center;padding:7px;border-radius:10px;background:var(--panel-2);font-size:13.5px;border:1px solid transparent}
+.chips3 input:checked+span{border-color:var(--heat);color:var(--heat)}
+.chips3 input:focus-visible+span{outline:2px solid var(--cool)}
+.fit{font-weight:600}.fit[data-fit="ok"]{color:var(--ok)}.fit[data-fit="low"]{color:var(--bad)}.fit[data-fit="high"]{color:var(--warn)}
+.cool-bar{height:6px;border-radius:3px;background:var(--panel-2);overflow:hidden}
+.cool-bar i{display:block;height:100%;width:calc(var(--p,0)*100%);background:linear-gradient(90deg,var(--heat),var(--cool));transition:width .3s}
+.note{font-size:12.5px;color:var(--ink-3)}
+@media (max-width:980px){.room{grid-template-columns:1fr}.rstage{height:440px}}
+
+/* builder (dark numeric) */
+.bld{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.presets button{border:1px solid var(--line);background:var(--panel-2);border-radius:14px;padding:12px;text-align:left;line-height:1.3}
+.presets button small{display:block;color:var(--ink-3);font-size:12px}
+.presets button[aria-pressed="true"]{border-color:var(--cool);box-shadow:0 0 0 1px var(--cool),0 0 24px -8px var(--cool)}
+.urows{display:grid;gap:8px}
+.urow{display:grid;grid-template-columns:70px 1fr 150px;gap:14px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--panel-2)}
+.urow .art{width:70px;height:auto;color:var(--ink-2)}
+.urow .bar{height:4px;border-radius:2px;background:var(--bg);margin-top:6px;overflow:hidden}
+.urow .bar i{display:block;height:100%;width:var(--w,0%);background:var(--cool);box-shadow:0 0 8px var(--cool);transition:width .4s var(--ease)}
+.stp{display:flex;align-items:center;gap:4px}
+.stp button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-size:18px}
+.stp input{width:100%;min-width:0;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);text-align:center;font:500 16px var(--mono)}
+.bopts{display:flex;gap:14px;flex-wrap:wrap;align-items:end;margin-top:14px}
+.field{display:grid;gap:4px;font-size:13.5px;color:var(--ink-3)}
+.field input,.field select{height:42px;border-radius:12px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);padding:0 12px;font:400 15px var(--sans)}
+.zr{font-size:13px}.zr[data-tier="core"]{color:var(--ok)}.zr[data-tier="extended"]{color:var(--warn)}.zr[data-tier="out"]{color:var(--bad)}
+.chk{display:flex;gap:8px;align-items:center;font-size:14px}.chk input{accent-color:var(--cool);width:16px;height:16px}
+.sum{display:grid;gap:14px;align-content:start;position:sticky;top:80px}
+.sum .num{font:500 38px/1.1 var(--display);background:linear-gradient(90deg,var(--ink),var(--cool));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sum dl{display:grid;grid-template-columns:1fr auto;gap:6px 12px;margin:0;font-size:14px}
+.sum dt{color:var(--ink-3)}.sum dd{margin:0;text-align:right;font-family:var(--mono)}
+.disc{font-size:12px;color:var(--ink-3);border-top:1px solid var(--line);padding-top:10px}
+@media (max-width:1080px){.bld{grid-template-columns:1fr}.sum{position:static}.presets{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.urow{grid-template-columns:48px 1fr}.urow .art{width:48px}.urow .stp{grid-column:1/-1}}
+
+/* catalog */
+.rail{display:flex;gap:8px;overflow:auto;padding-bottom:6px;margin-bottom:14px;scrollbar-width:thin}
+.rail button{flex:0 0 auto;display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:8px 14px 8px 8px;font-size:14.5px}
+.rail button .art{width:56px;height:auto;color:var(--ink-2)}
+.rail button[aria-pressed="true"]{border-color:var(--cool);color:var(--cool)}
+.cat{display:grid;grid-template-columns:250px minmax(0,1fr);gap:16px}
+.facets-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;position:sticky;top:76px;align-self:start;max-height:calc(100vh - 90px);overflow:auto}
+.facet{border:0;padding:0;margin:0 0 14px}
+.facet legend{font-size:13.5px;color:var(--ink-3);margin-bottom:4px}
+.opt{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:8px;font-size:14.5px;cursor:pointer}
+.opt:hover{background:var(--panel-2)}
+.opt input{accent-color:var(--cool);margin:0;width:15px;height:15px}
+.opt .n{margin-left:auto;font:400 12px var(--mono);color:var(--ink-3)}
+.opt .dot{width:8px;height:8px;border-radius:50%}
+.opt.more{display:none}.facet.open .opt.more{display:flex}
+.own-tag{font-size:10.5px;background:color-mix(in oklab,var(--heat) 22%,transparent);color:var(--heat);padding:0 6px;border-radius:6px;margin-left:4px}
+.facet-more{border:0;background:none;color:var(--cool);font-size:13px}
+.ctop{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.search{flex:1;min-width:220px}
+.search input{width:100%;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:0 16px;font:400 15.5px var(--sans)}
+.ctop select{height:46px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:0 12px;font:400 14.5px var(--sans)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:3px 10px;font-size:13px}
+.chip.clear{color:var(--cool);border-color:transparent}
+.count{font-size:14px;color:var(--ink-2);margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.card{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:8px;animation:rise .45s var(--ease) both;transition:border-color .2s,transform .25s var(--ease);transform-style:preserve-3d}
+.card:hover{border-color:color-mix(in oklab,var(--cool) 50%,var(--line))}
+.card .ph{position:relative;aspect-ratio:4/3;border-radius:12px;background:radial-gradient(80% 70% at 50% 45%,color-mix(in oklab,var(--cool) 12%,var(--panel-2)),var(--panel));display:grid;place-items:center;color:var(--ink)}
+.card .ph .art{width:74%;height:auto;filter:drop-shadow(0 0 10px color-mix(in oklab,var(--cool) 40%,transparent))}
+.card .br{font-size:13px;color:var(--ink-3)}
+.card h3{font-size:17px}
+.btu-chips{display:flex;gap:4px;flex-wrap:wrap}
+.bchip{border:1px solid var(--line);background:transparent;border-radius:8px;padding:2px 8px;font:500 12px var(--mono)}
+.bchip[aria-checked="true"]{border-color:var(--cool);color:var(--cool);box-shadow:0 0 12px -4px var(--cool)}
+.card .pr{display:flex;justify-content:space-between;align-items:baseline;margin-top:auto}
+.card .pr b{font:500 20px var(--display)}
+.card .st{font-size:12px;color:var(--ok)}.card .st.o{color:var(--ink-3)}
+.card .inst{font-size:12.5px;color:var(--cool);margin-top:-4px}
+.card .acts{display:flex;gap:6px}.card .acts button{flex:1;min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-size:14px}
+.card .acts .open{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+.card .acts [aria-pressed="true"]{color:var(--cool);border-color:var(--cool)}
+.skel{border-radius:var(--r);background:var(--panel);border:1px solid var(--line);padding:14px;display:grid;gap:10px}
+.skel i{display:block;border-radius:10px;background:linear-gradient(90deg,var(--panel-2) 25%,color-mix(in oklab,var(--cool) 10%,var(--panel-2)) 50%,var(--panel-2) 75%);background-size:200% 100%;animation:sh 1.3s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.more-btn{display:block;margin:16px auto 0}
+.empty{grid-column:1/-1;text-align:center;padding:40px;display:grid;gap:8px;justify-items:center;background:var(--panel);border-radius:var(--r)}
+.filter-btn{display:none}
+@media (max-width:1080px){.cat{grid-template-columns:1fr}.facets-wrap{display:none}.filter-btn{display:inline-flex}}
+@media (max-width:560px){.grid{grid-template-columns:1fr 1fr;gap:8px}.card{padding:10px}.card .acts{flex-direction:column}}
+.sheet{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .25s}
+.sheet.open{opacity:1;pointer-events:auto}
+.sheet .sp{position:absolute;left:0;right:0;bottom:0;max-height:86vh;background:var(--panel);border-radius:22px 22px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s var(--ease);border-top:1px solid var(--line)}
+.sheet.open .sp{transform:none}
+.sheet .ph-h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.sheet .body{overflow:auto;padding:14px 16px}.sheet .foot{padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}.sheet .foot button{width:100%}
+
+/* coverage dot map */
+.cov{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px}
+.dotmap{position:relative;border-radius:24px;background:radial-gradient(80% 80% at 45% 55%,var(--panel-2),var(--stage));border:1px solid var(--line);overflow:hidden;padding:10px}
+.dotmap svg{width:100%;height:auto;display:block}
+.dotmap .dot{fill:var(--line)}
+.dotmap .p-core{fill:color-mix(in oklab,var(--cool) 55%,transparent)}
+.dotmap .p-ext{fill:color-mix(in oklab,var(--warn) 45%,transparent)}
+.dotmap .hit{fill:var(--heat)}
+.dotmap .arc{fill:none;stroke:var(--cool);stroke-width:1.5;stroke-dasharray:4 6;animation:flow 1.6s linear infinite;opacity:.8}
+@keyframes flow{to{stroke-dashoffset:-20}}
+.dotmap .lbl{font:500 13px var(--sans);fill:var(--ink)}
+.dotmap .hq{fill:var(--heat)}
+.zres{border-radius:14px;padding:14px;background:var(--panel-2)}
+.zres[data-tier="core"] strong{color:var(--ok)}.zres[data-tier="extended"] strong{color:var(--warn)}.zres[data-tier="out"] strong{color:var(--bad)}
+.zres p{font-size:14px;color:var(--ink-2)}
+.try{display:flex;gap:6px;flex-wrap:wrap}.try button{border:1px solid var(--line);background:var(--panel-2);border-radius:10px;padding:3px 10px;font-size:13px}
+@media (max-width:900px){.cov{grid-template-columns:1fr}}
+
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{padding:18px 0;font:500 18px var(--display);cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:10px}
+.faq summary::after{content:"+";color:var(--cool)}
+.faq details[open] summary::after{content:"−"}
+.faq details p{padding:0 0 18px;color:var(--ink-2)}
+footer{margin-top:90px;border-top:1px solid var(--line);padding-block:36px calc(96px + env(safe-area-inset-bottom,0px));color:var(--ink-2);font-size:14px}
+footer .cols{display:grid;grid-template-columns:2fr 1fr 1fr;gap:20px}
+@media (max-width:760px){footer .cols{grid-template-columns:1fr}}
+.mbar{display:none}
+@media (max-width:640px){.mbar{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:50;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));background:color-mix(in oklab,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-top:1px solid var(--line)}.mbar a{min-height:46px}}
+.tray{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:45;background:var(--panel);border:1px solid var(--cool);border-radius:16px;padding:8px 8px 8px 14px;display:flex;gap:10px;align-items:center;max-width:calc(100% - 32px);box-shadow:0 0 40px -12px var(--cool)}
+.tray ul{display:flex;gap:4px;margin:0;padding:0;list-style:none;overflow:auto}
+.tray li{font-size:12.5px;background:var(--panel-2);border-radius:8px;padding:2px 2px 2px 8px;white-space:nowrap;display:flex;align-items:center}
+.tray li button{border:0;background:none;width:22px}
+@media (max-width:640px){.tray{bottom:calc(76px + env(safe-area-inset-bottom,0px))}}
+.drawer{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.5);opacity:0;transition:opacity .25s}
+.drawer.open{opacity:1}
+.drawer .dp{position:absolute;right:0;top:0;bottom:0;width:min(470px,100%);background:var(--panel);border-left:1px solid var(--line);padding:22px;overflow:auto;transform:translateX(100%);transition:transform .32s var(--ease)}
+.drawer.open .dp{transform:none}
+.drawer .x{position:absolute;right:14px;top:14px;width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--panel-2)}
+.pd{display:grid;gap:12px}
+.pd-art{border-radius:16px;padding:18px;background:radial-gradient(80% 70% at 50% 45%,color-mix(in oklab,var(--cool) 14%,var(--panel-2)),var(--panel))}.pd-art .art{width:100%;height:auto}
+.pd-brand{color:var(--ink-3);font-size:14px}.pd-title{font-size:26px}.pd-meta{color:var(--ink-2);font-size:14px}
+.pd-spec{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:14.5px;background:var(--panel-2);border-radius:14px;padding:14px}
+.pd-spec dt{color:var(--ink-3)}.pd-spec dd{margin:0}.pd-spec small{color:var(--ink-3)}
+.pd-include :is(h3,h4){font-size:15px;margin:8px 0 4px}.pd-include ul{margin:0;padding-left:20px;font-size:14px;color:var(--ink-2)}.pd-include ul.extra li::marker{color:var(--heat)}
+.pd-cta{display:flex;gap:8px;flex-wrap:wrap}.pd-cta>*{flex:1}.pd-note{font-size:12px;color:var(--ink-3)}
+table.cmp{border-collapse:collapse;font-size:14px;width:100%}.cmp th,.cmp td{padding:9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.cmp tr.diff td{background:color-mix(in oklab,var(--heat) 14%,transparent)}.cmp-wrap{overflow:auto}
+#toast{position:fixed;left:50%;top:76px;transform:translate(-50%,-16px);background:var(--panel);border:1px solid var(--cool);padding:10px 18px;border-radius:12px;opacity:0;transition:.25s;z-index:90;pointer-events:none}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+.rv{opacity:0;transform:translateY(20px)}.rv.in{opacity:1;transform:none;transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.fb{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);text-align:center;padding:20px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.demo{font-size:11px;color:var(--ink-3);border:1px dashed var(--line);border-radius:6px;padding:0 6px}
+.field input,.field select{min-width:0;width:100%}
+@media (max-width:760px){#quote>div,#quote>.tile,#quote .sheet,#quote .panel{grid-template-columns:1fr!important}#qform{grid-template-columns:1fr!important}}
+/* Rev.09 r5 views: the 6-item menu stays visible on tablets as a second header row */
+@media (max-width:1080px) and (min-width:641px){html.sx-on .hdr .wrap{flex-wrap:wrap;height:auto;padding-block:8px 0;row-gap:0}html.sx-on .hdr .nav{display:flex;order:9;flex:1 0 100%;margin:0 0 6px}html.sx-on{scroll-padding-top:120px}}
+.sx-vh h1,.sx-next h2{font-family:var(--display);font-weight:500}
+/* r6 · home paths as showroom zones: dark glass lit from the top edge in cool light; price in heat */
+#start .sx-ints{gap:14px}
+#start .sx-int{border-radius:var(--r);border:1px solid var(--line);border-top-color:color-mix(in oklab,var(--cool) 42%,transparent);background:linear-gradient(180deg,color-mix(in oklab,var(--cool) 7%,var(--panel)) 0%,var(--panel) 55%);padding:22px}
+#start .sx-ico{border-radius:14px;background:color-mix(in oklab,var(--cool) 13%,transparent);color:var(--cool);box-shadow:0 0 28px -8px color-mix(in oklab,var(--cool) 70%,transparent)}
+#start .sx-int h3{font-family:var(--display);font-weight:500;font-size:21px;letter-spacing:.005em}
+#start .sx-int-p{margin-top:14px;font-size:17px;color:var(--heat)}
+#start .sx-int:hover{border-color:color-mix(in oklab,var(--cool) 48%,transparent);box-shadow:0 22px 44px -26px color-mix(in oklab,var(--cool) 60%,transparent)}
+#start .sx-int:focus-within{box-shadow:0 0 0 2px var(--cool)}
+#start .sx-int-go{border-radius:12px}
+
+/* ---- r18 · showroom entrance (owner 7 ต.ค. 2569: C leads — sharper, more detail, every part checked) ----
+   Each page opens like a display plinth: the page name is the largest type on the page and stands in a cone of cool light;
+   the facts sit on one placard (information, not buttons); the section links are numbered zones and every section carries
+   the same number; a floor line closes the entrance. */
+html.sx-on .sx-vh{position:relative;isolation:isolate;padding-block:clamp(34px,4.6vw,60px) 0;gap:12px}
+html.sx-on .sx-vh::before{content:"";position:absolute;z-index:-1;top:-30px;bottom:0;left:-8%;width:min(900px,100%);pointer-events:none;background:radial-gradient(46% 72% at 32% 0%,color-mix(in oklab,var(--cool) 16%,transparent) 0%,color-mix(in oklab,var(--cool) 5%,transparent) 48%,transparent 76%)}
+html.sx-on .sx-vh::after{content:"";height:1px;margin-top:clamp(22px,3vw,38px);background:linear-gradient(90deg,transparent,color-mix(in oklab,var(--cool) 42%,transparent) 22%,color-mix(in oklab,var(--cool) 42%,transparent) 64%,transparent)}
+html.sx-on .sx-vh h1{font-size:clamp(40px,5.4vw,68px);line-height:1.12;letter-spacing:-.012em;text-shadow:0 0 46px color-mix(in oklab,var(--cool) 24%,transparent)}
+html.sx-on .sx-crumb{font-size:13.5px}
+html.sx-on .sx-lead{font-size:17.5px;line-height:1.7;max-width:40em}
+html.sx-on .sx-facts{gap:0;margin-top:8px;width:fit-content;max-width:100%;border:1px solid var(--line);border-radius:14px;background:color-mix(in oklab,var(--panel) 70%,transparent);overflow:hidden}
+html.sx-on .sx-facts li{flex:1 1 auto;min-height:42px;padding:8px 16px;border:0;border-radius:0;background:none;box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line);font-size:14px;color:var(--ink-2)}
+html.sx-on .sx-facts li::before{background:var(--cool);box-shadow:0 0 8px var(--cool)}
+html.sx-on .sx-jump{gap:8px;margin-top:12px}
+html.sx-on .sx-jump a{min-height:44px;padding:0 16px 0 7px;border-radius:12px;border-color:var(--line);background:transparent;font-size:14.5px;transition:border-color .2s,background .2s}
+html.sx-on .sx-jump a b{width:30px;height:30px;border-radius:9px;background:color-mix(in oklab,var(--cool) 14%,transparent);color:var(--cool);font:500 14.5px var(--display);box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--cool) 32%,transparent)}
+html.sx-on .sx-jump a:hover{border-color:color-mix(in oklab,var(--cool) 55%,transparent);background:color-mix(in oklab,var(--cool) 6%,transparent)}
+html.sx-on .sx-jump a:hover b{background:var(--cool);color:#04121C}
+/* section heads: the zone number of the jump link that opens it, lit like the tab · headings a step below the page name */
+.sec-h .eyebrow[data-sec-n]{font-size:13.5px}
+.sec-h .eyebrow[data-sec-n]::before{content:attr(data-sec-n);content:attr(data-sec-n) / "";display:inline-grid;place-items:center;vertical-align:middle;margin-right:10px;width:28px;height:28px;border-radius:9px;font:500 14px var(--display);color:var(--cool);background:color-mix(in oklab,var(--cool) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--cool) 32%,transparent),0 0 20px -6px var(--cool)}
+html.sx-on .sec-h h2{font-size:clamp(28px,3vw,40px);line-height:1.22}
+/* legibility floor (Thai below 12px is unreadable on a dark ground) */
+.own-tag{font-size:12px}.demo{font-size:12.5px}.gauge li small{font-size:12.5px}.opt .n{font-size:12.5px}.vsw a{font-size:12.5px}
+/* touch: hotspot hit areas and the edition switch reach 44 px on phones; the dot itself stays small */
+@media (pointer:coarse){
+  .hs{width:44px;height:44px;margin:-22px 0 0 -22px}.hs::before{inset:16px}.hs span{left:40px;top:10px}
+  .vsw a{display:inline-grid;place-items:center;min-width:44px;min-height:44px;padding:0 8px}
+}
+/* hero while the 3D boots or compiles: a lit silhouette of the unit instead of an empty dark box */
+.stage .cv:is(:empty,:has(>canvas[style*="opacity: 0"]))::before{content:"";position:absolute;left:50%;top:44%;width:min(56%,460px);aspect-ratio:3.5/1;transform:translate(-50%,-50%);border-radius:20px 20px 30px 30px;background:linear-gradient(180deg,color-mix(in oklab,var(--ink) 14%,transparent),color-mix(in oklab,var(--ink) 5%,transparent));box-shadow:0 0 70px -12px color-mix(in oklab,var(--cool) 55%,transparent);pointer-events:none}
+@media (prefers-reduced-motion:no-preference){.stage .cv:is(:empty,:has(>canvas[style*="opacity: 0"]))::before{animation:cvwait 1.6s ease-in-out infinite alternate}@keyframes cvwait{to{opacity:.45}}}
+/* phones: the headline comes first, then the product, then its controls (the copy used to sit below a full screen of 3D) */
+@media (max-width:900px){
+  .stage{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"copy" "cv" "dock"}
+  .stage .hero-copy{grid-area:copy;padding-block:22px 6px}
+  .stage .cv,.stage .labels,.stage .fb{grid-area:cv;position:relative;inset:auto;height:50vh;min-height:320px}
+  .stage .dock{grid-area:dock}
+  .hero-copy h1{font-size:clamp(34px,9vw,48px)}
+}
+/* the page name's halo belongs to the dark showroom; on the light theme the type stands on its own */
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .sx-vh h1{text-shadow:none}}
+:root[data-theme="light"] .sx-vh h1{text-shadow:none}
+/* r18: between 1081 and 1239 px the six-item menu did not fit beside the logo and tools (clipped, scrolled) — it takes the second header row there too */
+@media (min-width:1081px) and (max-width:1239px){html.sx-on .hdr .vsw{margin-left:auto}html.sx-on .hdr .wrap{flex-wrap:wrap;height:auto;padding-block:8px 0;row-gap:0}html.sx-on .hdr .nav{order:9;flex:1 0 100%;margin:0 0 6px}html.sx-on{scroll-padding-top:120px}}
+</style>
+</head>
+<body>
+<aside class="proto" aria-label="สถานะต้นแบบ">ต้นแบบแบบ C · ราคาสินค้าและค่าบริการจาก Pricebook 2569 ของบริษัท · ฉาก 3 มิติและห้องจำลองเป็นแบบจำลองเพื่ออธิบาย · ฟอร์มยังไม่ส่งข้อมูลจริง · <a href="./">กลับหน้ารวม</a></aside>
+<header class="hdr"><div class="wrap">
+  <a class="logo" href="#top"><img class="logo-mk" src="assets/logos/sbp.png" alt="" width="41" height="30">SBP AirCare</a>
+  <nav class="nav" aria-label="เมนูหลัก"><a href="#learn">ความรู้</a><a href="#journey">แอร์ทำงาน</a><a href="#room">ห้องจำลอง</a><a href="#fit">ลองวางในห้อง</a><a href="#cleanflow">ล้าง·ติดตั้ง</a><a href="#howto">งานช่าง</a><a href="#catalog">สินค้า</a><a href="#prices">ค่าบริการ</a><a href="#quality">วัสดุ</a><a href="#b2b">สัญญารายปี</a><a href="#area">พื้นที่</a></nav>
+  <div class="vsw" aria-label="สลับต้นแบบ"><a href="./a.html">A</a><a href="./b.html">B</a><a href="./c.html" aria-current="page">C</a></div>
+  <button type="button" data-cart-btn>ใบเสนอราคา <span data-cart-n>0</span></button>
+</div></header>
+
+<section class="stage" id="top" aria-label="โชว์รูมเสมือน">
+  <div class="cv" data-v-canvas><img class="v-poster" src="assets/posters/hero-c.webp" alt="" aria-hidden="true" decoding="async"></div>
+  <div class="labels" data-v-labels></div>
+  <div class="fb" data-v-fallback hidden>อุปกรณ์นี้เปิดภาพ 3 มิติไม่ได้ เวอร์ชันจริงจะแสดงวิดีโอแทน</div>
+  <div class="dock">
+    <div class="glass" style="display:grid;gap:8px">
+      <div class="seg" role="group" aria-label="ชุดเครื่อง"><button type="button" data-v-unit="indoor" aria-pressed="true">คอยล์เย็น</button><button type="button" data-v-unit="outdoor" aria-pressed="false">คอยล์ร้อน</button></div>
+      <div class="seg" role="group" aria-label="สีตัวเครื่อง"><button type="button" data-v-finish="pearl" aria-pressed="true">ขาวมุก</button><button type="button" data-v-finish="graphite" aria-pressed="false">กราไฟต์</button><button type="button" data-v-finish="champagne" aria-pressed="false">แชมเปญ</button></div>
+      <button type="button" class="tog" data-v-explode aria-pressed="false">แยกชิ้นส่วน <i></i></button>
+      <button type="button" class="tog" data-v-xray aria-pressed="false">มองทะลุ X-ray <i></i></button>
+      <button type="button" class="tog" data-v-air aria-pressed="true">แสดงทิศทางลม <i></i></button>
+    </div>
+    <div class="glass dirt">
+      <label for="vc-dirt" style="font-size:14px">ฝุ่นสะสม (จำลอง)</label>
+      <input type="range" id="vc-dirt" min="0" max="1" step="0.01" value="0.6" data-v-dirt>
+      <p class="lvl" data-v-dirt-out></p>
+      <button type="button" class="btn-primary" data-v-clean>ล้างเสมือนจริง</button>
+    </div>
+    <div class="glass info" data-v-info></div>
+    <div class="parts" data-v-parts></div>
+  </div>
+  <div class="hero-copy"><div class="wrap"><div class="t">
+    <p class="eyebrow">SBP AirCare · Virtual Showroom</p>
+    <h1>เห็นทุกชิ้นในแอร์<br><em>ก่อนตัดสินใจ</em></h1>
+    <p>หมุนดู แยกชิ้นส่วน และลองล้างแบบเสมือนจริง จากนั้นเลือกรุ่น หรือให้ทีมวางแผนล้างทั้งองค์กรในสัญญาเดียว</p>
+    <div class="ctas"><a class="btn-primary" href="#b2b">สัญญาล้างรายปี</a><a class="btn-ghost" href="#room">ลองห้องจำลอง</a></div>
+  </div></div></div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="sec wrap" id="journey" aria-label="แอร์ทำงานอย่างไร">
+  <div class="sec-h"><p class="eyebrow">How it works · 3 ประเภทหลัก</p><h2>แอร์ติดผนัง แขวน สี่ทิศทาง ทำงานอย่างไร</h2><p>ภาพตัด 3 มิติในห้องจริง เห็นลมอุ่นถูกดูดเข้า ผ่านแผ่นกรองและคอยล์เย็น น้ำกลั่นตัวลงถาด และความร้อนถูกพาไปทิ้งที่คอยล์ร้อน กดตัวเลขเพื่อดูทีละขั้น</p></div>
+  <div class="panel" id="howRoot"></div>
+</section>
+
+<main class="wrap">
+  <!-- START: WHAT DO YOU NEED (Rev.09 r5) -->
+  <!-- r20 QUICK QUOTE: the job card priced from the Pricebook, straight to booking or the quote -->
+  <section class="sec" id="quick">
+    <div class="sec-h"><p class="eyebrow">ประเมินราคาทันที</p><h2>รู้ราคาก่อนนัดช่าง</h2><p>เลือกงาน ประเภทแอร์ ขนาด และจำนวนเครื่อง ระบบคิดจาก Pricebook ของบริษัททันที จากนั้นเลือกวันที่สะดวกหรือเก็บไว้ในใบเสนอราคา</p></div>
+    <div class="qk"><div class="qk-card" id="quickRoot"></div><ul class="qk-why" id="quickWhy"></ul></div>
+  </section>
+
+  <section class="sec" id="start">
+    <div class="sec-h"><p class="eyebrow">เริ่มต้นที่นี่</p><h2>วันนี้ต้องการอะไร</h2><p>เลือกสิ่งที่ตรงกับคุณ ระบบพาไปทีละขั้นจนส่งคำขอ ทำต่อจากเดิมได้เมื่อกลับมา</p></div>
+    <div id="startRoot"></div>
+  </section>
+
+  <!-- WORKFLOW -->
+  <section class="sec" id="flow">
+    <div class="panel" id="flowRoot"></div>
+  </section>
+
+  <!-- KNOWLEDGE HUB (Rev.09) -->
+  <section class="sec" id="learn" data-reveal>
+    <div class="sec-h"><p class="eyebrow">ศึกษาก่อน ลองเอง</p><h2>รู้จักแอร์ให้ครบ ก่อนเลือก</h2><p>อ่านสั้น ๆ เรื่อง BTU ประเภทเครื่อง อินเวอร์เตอร์ รอบล้าง และงานติดตั้ง แล้วกดลองในโชว์รูมและห้องจำลองได้ทันที</p></div>
+    <div class="panel" id="learnRoot"></div>
+  </section>
+
+  <!-- CATALOG -->
+  <section class="sec" id="catalog" data-reveal>
+    <div class="sec-h"><p class="eyebrow">สินค้า</p><h2>โชว์รูมแอร์ทุกรุ่น พร้อมราคา</h2><p>ราคาเครื่องทุกรุ่น (ก่อน VAT) เปิดรายละเอียดเพื่อเลือกแพ็กเกจติดตั้งและอุปกรณ์เพิ่ม</p></div>
+    <div class="rail" id="rail" role="group" aria-label="ประเภทแอร์"></div>
+    <div class="cat" data-catalog>
+      <aside class="facets-wrap" aria-label="ตัวกรอง"><div data-cat-facets></div></aside>
+      <div style="min-width:0">
+        <div class="ctop"><label class="search"><span class="vh">ค้นหา</span><input data-cat-search placeholder="ค้นหารุ่น แบรนด์ หรือ BTU"></label><button type="button" class="btn-ghost filter-btn" data-cat-sheet-open>ตัวกรอง</button><select data-cat-sort aria-label="เรียง"><option value="rec">แนะนำ</option><option value="price-asc">ราคาต่ำ–สูง</option><option value="price-desc">ราคาสูง–ต่ำ</option><option value="btu">BTU</option></select></div>
+        <div class="chips" data-cat-chips></div>
+        <p class="count" data-cat-count></p>
+        <div class="grid" data-cat-grid></div>
+        <button type="button" class="btn-ghost more-btn" data-cat-more>โหลดเพิ่ม</button>
+      </div>
+      <div class="sheet" data-cat-sheet><div class="sp" role="dialog" aria-label="ตัวกรอง"><div class="ph-h"><b>ตัวกรอง</b><button type="button" class="btn-ghost" data-cat-sheet-close>ปิด</button></div><div class="body" id="sheetBody"></div><div class="foot"><button type="button" class="btn-primary" data-cat-sheet-apply>แสดงผล</button></div></div></div>
+    </div>
+  </section>
+
+  <!-- VIRTUAL ROOM -->
+  <section class="sec" id="room" data-reveal>
+    <div class="sec-h"><p class="eyebrow">ห้องจำลอง 48 ห้อง</p><h2>ลองแอร์ในห้องแบบของคุณ</h2><p>ห้องนอน ห้องนั่งเล่น ห้องน้ำ ออฟฟิศ ห้องผู้บริหาร ห้องประชุม ร้านค้า จนถึงสายการผลิต เลือกประเภทแอร์ ดูทิศทางลม พื้นห้องเย็นลง และฝุ่นที่สะสมเมื่อไม่ได้ล้าง</p></div>
+    <div id="studioRoot"></div>
+  </section>
+
+  <!-- ROOM FIT (Rev.09) -->
+  <section class="sec" id="fit">
+    <div class="sec-h"><p class="eyebrow">จำลองการติดตั้ง · ขนาดจริงตามสเปก</p><h2>วางแอร์รุ่นที่ชอบในห้องของคุณ</h2><p>ใส่ความกว้าง ยาว สูงของห้อง เลือกผนังและตำแหน่ง แล้วดูขนาดเครื่องเทียบห้อง ระยะห่างฝ้า ทิศทางลมเย็น คอยล์ร้อน และความยาวท่อโดยประมาณ ก่อนตัดสินใจ</p></div>
+    <div class="panel" id="fitRoot"></div>
+  </section>
+
+  <!-- CREW AT WORK: CLEANING C1 / C2 + INSTALLATION (Rev.09 r3 → r4) -->
+  <section class="sec" id="cleanflow">
+    <div class="sec-h"><p class="eyebrow">ทีมช่างของเรา · งานล้างและงานติดตั้ง</p><h2>ทีมช่าง 2 คน ล้างและติดตั้งแอร์ทีละขั้น ในบ้าน ร้านค้า คาเฟ่ และห้องประชุม</h2><p>เลือกงานและประเภทแอร์ แล้วกดเล่นทีละขั้น เห็นช่างส่งต่อชิ้นส่วนกันอย่างไร ล้างปกติกับล้างใหญ่ต่างกันตรงไหน ติดตั้งมาตรฐานกับพรีเมียมทดสอบอะไรเพิ่ม พร้อมราคามาตรฐานจาก Pricebook</p></div>
+    <div class="panel" id="cleanRoot"></div>
+  </section>
+
+  <!-- SERVICE WORKFLOW -->
+  <section class="sec" id="howto">
+    <div class="sec-h"><p class="eyebrow">ช่างทำอะไรบ้าง · ล้าง ติดตั้ง ซ่อม</p><h2>ทุกขั้นตอนที่ช่างทำ ดูเป็นภาพ 3 มิติทีละขั้น</h2><p>ล้างปกติ ล้างใหญ่ ติดตั้ง และตรวจเช็ก/ซ่อม แสดงในบ้านจำลองพร้อมช่างและเครื่องมือจริงตามแบบฟอร์มงานบริการของบริษัท ท่อทุกเส้นเดินในรางครอบท่อ ด้านล่างเป็นราคามาตรฐาน สิ่งที่รวม/ไม่รวม และเอกสารที่ได้รับ</p></div>
+    <div class="panel" id="storyRoot" style="margin-bottom:16px"></div>
+    <div class="panel" id="servicesRoot"></div>
+  </section>
+
+  <!-- B2B -->
+  <section class="sec" id="amc">
+    <div class="sec-h"><p class="eyebrow">สำหรับองค์กร · สัญญาล้างรายปี</p><h2>งานล้างที่ตรวจสอบได้ทุกเครื่อง ราคาขั้นบันไดตามจำนวน</h2><p>ทำไมองค์กรเลือกเรา ราคาขั้นบันไดพร้อมตัวอย่างงบต่อปี และระดับรายงานของแต่ละแพ็กเกจ ทุกราคาก่อน VAT จาก Pricebook ของบริษัท</p></div>
+    <div id="amcRoot"></div>
+  </section>
+
+  <section class="sec" id="b2b" data-reveal>
+    <div class="sec-h"><p class="eyebrow">สัญญาล้างรายปี · B2B</p><h2>ทั้งองค์กร ทั้งปี ในสัญญาเดียว</h2><p>เลือกแบบอาคาร หรือกำหนดจำนวนเครื่องเอง แล้วเห็นงบต่อปีพร้อมราคาขั้นบันไดทันที</p></div>
+    <div class="bld" data-builder>
+      <div class="panel">
+        <div class="presets" id="presets"></div>
+        <div class="urows" id="urows"></div>
+        <div class="bopts">
+          <div><p style="font-size:13.5px;color:var(--ink-3);margin-bottom:4px">ความถี่ต่อปี</p><div class="chips3" style="width:220px"><label><input type="radio" name="vc-vis" value="2" data-b-visits><span>2 ครั้ง</span></label><label><input type="radio" name="vc-vis" value="3" data-b-visits><span>3 ครั้ง</span></label><label><input type="radio" name="vc-vis" value="4" data-b-visits><span>4 ครั้ง</span></label></div></div>
+          <label class="field" style="flex:1;min-width:200px">ที่ตั้ง<input id="vc-zone" data-b-zone placeholder="เขต / อำเภอ"><span class="zr" data-b-zone-result></span></label>
+          <label class="chk"><input type="checkbox" id="vc-high" data-b-high> ติดสูงเกิน 3 ม.</label>
+        </div>
+      </div>
+      <aside class="panel sum" aria-live="polite">
+        <p style="color:var(--ink-3);font-size:14px">ราคาต่อปี (ก่อน VAT)</p>
+        <p class="num"><span data-b-out="low">—</span></p>
+        <p class="mono" style="color:var(--ink-3);margin-top:-8px;font-size:13px" data-b-out="high"></p>
+        <dl><dt>จำนวนเครื่อง</dt><dd data-b-out="count">0</dd><dt>ความถี่</dt><dd data-b-out="visits">—</dd><dt>เฉลี่ย/เครื่อง/ปี</dt><dd data-b-out="perunit">—</dd><dt>กำลังคนต่อรอบ</dt><dd data-b-out="teamdays">—</dd><dt>พื้นที่</dt><dd data-b-out="tier">—</dd></dl>
+        <p style="font-size:13px;color:var(--ok)" data-b-out="off"></p>
+        <a class="btn-primary" href="#quote" data-quote>ใส่ใบเสนอราคา</a>
+        <p class="disc">คำนวณจาก Pricebook งานล้าง 2569 · งานสูงและพื้นที่พิเศษประเมินหน้างาน · ราคาก่อน VAT ปัดหลักร้อย · ราคาขั้นบันไดตามจำนวนเครื่อง 10 เครื่องขึ้นไป · 100 เครื่องขึ้นไปขอราคาโครงการได้ในใบเสนอราคา</p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="sec" id="sop">
+    <div class="sec-h"><p class="eyebrow">มาตรฐานงาน · รายงานรายเครื่อง</p><h2>ขั้นตอนทั้งสัญญา และรายงานที่ได้หลังทุกรอบ</h2><p>จากวันสำรวจถึงสรุปทั้งปี ขั้นตอนต่อเครื่องตามแบบฟอร์มงานล้างของบริษัท ตัวอย่าง Service Report รายเครื่อง และเงื่อนไขสัญญาโดยสรุป</p></div>
+    <div class="panel" id="sopRoot"></div>
+  </section>
+
+  <section class="sec" id="projects">
+    <div class="sec-h"><p class="eyebrow">งานโครงการ · ติดตั้งใหม่ทั้งพื้นที่</p><h2>สร้างใหม่ รีโนเวต หรือเปลี่ยนแอร์ทั้งชุดพร้อมเทิร์นเครื่องเก่า</h2><p>บ้านและอาคารสร้างใหม่ พื้นที่รีโนเวตที่ยังไม่มีแอร์ หรือเปลี่ยนแอร์เดิมทั้งชุด ดูขั้นตอนงาน เอกสารส่งมอบ และประมาณการค่าติดตั้งทีละห้องจาก Pricebook</p></div>
+    <div class="panel" id="projRoot"></div>
+  </section>
+
+  <!-- PRICE CENTRE -->
+  <section class="sec" id="prices" data-reveal>
+    <div class="sec-h"><p class="eyebrow">ค่าบริการทั้งหมด</p><h2>ราคาชัด ก่อนเรียกช่าง</h2><p>ราคาทุกรายการดึงจาก Pricebook 2569 ของบริษัท (ใบเสนอราคาติดตั้ง / ล้างและซ่อม) ทุกราคาเป็นราคาก่อน VAT ปัดหลักร้อย (ต้องการใบกำกับภาษีบวก VAT 7%) · ล้างและติดตั้งครอบคลุมทุกประเภท ยกเว้นระบบ VRV / VRF <a href="#quote" data-ask="ระบบ VRV / VRF">ติดต่อทีมโครงการแยก</a></p></div>
+    <div class="panel" id="priceCenter"></div>
+  </section>
+
+  <!-- MATERIAL QUALITY -->
+  <section class="sec" id="quality" data-reveal>
+    <div class="sec-h"><p class="eyebrow">มาตรฐานวัสดุ</p><h2>ของที่มองไม่เห็นหลังติดตั้ง เราระบุไว้ทั้งหมด</h2><p>ท่อทองแดง ฉนวน ราง สายไฟ ท่อน้ำทิ้ง เบรกเกอร์ และขั้นตอนทดสอบ ระบุยี่ห้อและสเปกในทุกแพ็กเกจ ตรวจของจริงหน้างานเทียบกับใบเสนอราคาได้</p></div>
+    <div class="panel" id="qualityRoot"></div>
+  </section>
+
+  <!-- ABOUT + CONTACT (Rev.09 r5) -->
+  <section class="sec" id="about">
+    <div class="sec-h"><p class="eyebrow">เกี่ยวกับเรา</p><h2>บริษัทแอร์ที่มีทั้งอะไหล่ ทีมช่าง และแบรนด์ของตัวเอง</h2><p>ข้อมูลบริษัท ช่องทางติดต่อ และวิธีทำงานกับเรา</p></div>
+    <div id="aboutRoot"></div>
+  </section>
+
+  <!-- COVERAGE -->
+  <section class="sec" id="area" data-reveal>
+    <div class="sec-h"><p class="eyebrow">พื้นที่ให้บริการ</p><h2>ทีมออกจากพระราม 2 ทุกเช้า</h2><p>แผนที่ประเทศไทย 3 มิติ แสดงจังหวัดที่ให้บริการและช่วงค่าเดินทาง แตะจังหวัดหรือพิมพ์เขต/อำเภอเพื่อตรวจ</p></div>
+    <div class="cov" data-zone>
+      <div id="mapRoot"></div>
+      <div class="panel" style="display:grid;gap:12px;align-content:start">
+        <label class="field">ตรวจพื้นที่<input data-z-input placeholder="เขต อำเภอ จังหวัด หรือรหัสไปรษณีย์"></label>
+        <div class="try"><button type="button" data-z-try="สาทร">สาทร</button><button type="button" data-z-try="บางบัวทอง">บางบัวทอง</button><button type="button" data-z-try="บางพลี">บางพลี</button><button type="button" data-z-try="สามพราน">สามพราน</button><button type="button" data-z-try="ศรีราชา">ศรีราชา</button><button type="button" data-z-try="ระยอง">ระยอง</button></div>
+        <div class="zres" data-z-result hidden></div>
+        <p class="note"><span style="color:var(--cool)">●</span> พื้นที่หลัก &nbsp; <span style="color:var(--warn)">●</span> นอกพื้นที่ คิดค่าเดินทางตามช่วงระยะ (ไม่เกิน 150 กม.)</p>
+        <div id="travelTbl"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec faq" id="faq" data-reveal><div class="sec-h"><h2>คำถามที่พบบ่อย</h2></div><div id="faqList"></div></section>
+  <section class="sec" id="booking">
+    <div class="sec-h"><p class="eyebrow">จองคิว · ส่งเข้าระบบของบริษัท</p><h2>จองคิวล้าง ติดตั้ง ซ่อม หรือนัดสำรวจ</h2><p>เลือกงาน วันและช่วงเวลาที่สะดวก แล้วส่งคำขอเข้าระบบของบริษัท ได้เลขที่คำขอไว้ตรวจสถานะ ทีมโทรยืนยันวัน เวลา และราคาก่อนเข้างานทุกครั้ง</p></div>
+    <div id="bookRoot"></div>
+  </section>
+
+  <section class="sec" id="quote" data-reveal><div class="panel" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px;align-items:center">
+    <div><h2 style="font-size:30px">ให้ทีมติดต่อกลับ</h2><p style="color:var(--ink-2);margin-top:6px">ฝากชื่อและเบอร์ ทีมขายโทรกลับในเวลาทำการ</p><p class="sx-qalt">หรือโทร <a data-co="tel" href="#contact">02</a> · อีเมล <span class="sx-sel" data-co="email"></span></p></div>
+    <form id="qform" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label class="field">ชื่อ<input id="qc-name" required></label><label class="field">เบอร์โทร<input id="qc-tel" inputmode="tel" required></label><button class="btn-primary" style="grid-column:1/-1">ส่งข้อมูล</button></form>
+  </div></section>
+</main>
+<footer></footer>
+<nav class="mbar" aria-label="ติดต่อด่วน"><a class="btn-ghost" href="#booking">จองคิว</a><button type="button" class="btn-primary" data-cart-btn style="border-radius:12px">ใบเสนอราคา <span data-cart-n>0</span></button></nav>
+<div class="tray" data-compare hidden><ul data-compare-list></ul><button type="button" class="btn-primary" data-compare-go>เทียบ</button></div>
+<div class="drawer" data-drawer id="drawer" hidden><div class="dp" role="dialog" aria-modal="true" aria-label="รายละเอียด"><button type="button" class="x" data-close aria-label="ปิด">×</button><div id="drawerBody"></div></div></div>
+
+<script type="module">
+import { mountAmc, mountSop, mountProjects } from './assets/business.js';
+import { mountBooking } from './assets/booking.js';
+import { icon } from './assets/icons.js';
+import { mountCatalog, mountBuilder, mountZone, mountFaq, mountViewer, mountRoom, toast, reveal, wireDrawers, openDrawer, closeDrawer,
+  productDrawerContent, compareTable, typeArt, h, $, $$, baht, BRAND_BY_ID, TYPE_BY_ID, reduceMotion } from './assets/proto-ui.js';
+import { FAQ, PRESETS, TYPES, ZONES } from './assets/sbp-core.js';
+import { loadData, DEMO as CATA, BRANDS as BRS, DATA as PBK } from './assets/sbp-core.js';
+import { mountCart, productDetail, mountPriceCenter, cart, mountMaterials } from './assets/commerce.js';
+import { mountStudio } from './assets/studio.js';
+import { mountServices } from './assets/services.js';
+import { mountHowItWorks } from './assets/howitworks3d.js';
+import { mountTechStory } from './assets/techstory.js';
+import { mountThaiMap } from './assets/thaimap3d.js';
+import { travelTable, mountQuotePill, mountMobileMenu, mountFlow, enhanceQuoteForm, askTeam } from './assets/journey.js';
+import { loadMedia, productVisual } from './assets/product-media.js';
+import { mountRoomFit } from './assets/roomfit.js';
+import { mountKnowledge } from './assets/knowledge.js';
+import { mountJobGuide } from './assets/jobguide.js';
+import { mountSite } from './assets/site.js';
+import { mountJobCard } from './assets/jobcard.js';
+import { requestBooking } from './assets/contact.js';
+import { thaiPhrases, zoneMarks } from './assets/typeset.js';
+import { mountSeo } from './assets/seo.js';
+await loadData(); await loadMedia();
+enhanceQuoteForm();
+$$('[data-ask]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); askTeam(a.dataset.ask); }));
+const CART = mountCart();
+mountQuotePill(CART.open);
+mountFlow(document.getElementById('flowRoot'), { room: 'room', product: 'catalog', service: 'cleanflow', area: 'area', quote: 'quote' }, { openCart: CART.open });
+mountMobileMenu();
+
+// r20: quick quote on the home page — the job card (jobcard.js), priced live from the Pricebook; booking or the quote basket in one tap
+const JC = mountJobCard($('#quickRoot'), {
+  onBook: p => requestBooking(p, 'จองคิวจากประเมินราคา'),
+  onQuote: lines => { lines.forEach(l => cart.add(l)); CART.open(); },
+  onShop: () => document.getElementById('catalog').scrollIntoView(),
+});
+[['check', 'ราคาเดียวกับใบเสนอราคา', 'ทุกราคาเป็นราคาก่อน VAT ปัดหลักร้อย บุคคลทั่วไปชำระตามนี้ ต้องการใบกำกับภาษีบวก VAT 7%'],
+ ['info', 'เห็นทุกบรรทัดก่อนจอง', `งานล้างมียอดขั้นต่ำ ${baht(PBK.minBill)} ต่อการเข้างาน แสดงเป็นบรรทัดแยก พร้อมบอกว่าเพิ่มได้อีกกี่เครื่องในยอดนี้`],
+ ['sign', 'ซ่อมแจ้งราคาก่อนลงมือ', 'ประเมินเฉพาะค่าตรวจวินิจฉัย ค่าซ่อมแจ้งเป็นรายรายการให้อนุมัติก่อนทุกครั้ง'],
+ ['clock', 'ทีมโทรยืนยันวันเวลา', 'วันที่เลือกเป็นวันที่สะดวก ทีมยืนยันนัดและราคาสุดท้ายในใบเสนอราคา']]
+  .forEach(([ic, b, t]) => $('#quickWhy').append(h('li', {}, h('span', {}, icon(ic, { size: 16 })), h('b', {}, b), h('small', {}, t))));
+
+
+const DARK = getComputedStyle(document.documentElement).colorScheme.includes('dark');   // r20: read once (every read forced a style pass)
+const dark = () => DARK;
+const lab = a => h('button', { type: 'button', class: 'hs', 'aria-label': a.th }, h('span', {}, a.th));
+
+// hero showroom · r20 phones: poster still first, 3D after a tap on it or a calm moment
+const HV = mountViewer($('#top'), { style: 'showroom', premium: true, targetOffset: innerWidth > 900 ? [-0.04, -0.2] : [0, -0.12], labelTpl: lab, labelsAlways: innerWidth > 640, dirt: 0.6, exposure: dark() ? 1.0 : 1.15, phoneDefer: true, onCleaned: () => toast('ล้างเสร็จ · ลมกลับมาแรงขึ้น (แบบจำลอง)') });
+if (HV && innerWidth > 900) HV.zoom(1.42);   // Rev.09: smaller + higher so the unit clears the headline and the control dock
+
+// Rev.09 r10: queue booking → ticket in the company back office (ticket.js / backoffice/) — mounted at load: any page opens it (sbp:book)
+mountBooking($('#bookRoot'), { variant: 'C', onSent: id => JC.stamp(id) });
+// r20: the tools of every other page are built the first time that page opens (V below, site.js onView)
+let HWX = null, SVX = null, JOB = null, FIT = null, PC = null, BLD = null, cat = null;
+
+// catalog
+const drawer = $('#drawer');
+function openProduct(m, i = 0) { const b = $('#drawerBody'); b.innerHTML = ''; b.append(productDetail(m, i, { onPick: j => openProduct(m, j), on3D: () => { closeDrawer(drawer); scrollTo({ top: 0, behavior: 'smooth' }); }, onFit: (mm, k) => { closeDrawer(drawer); ensure('shop'); FIT.setModel(mm, k); } })); if (drawer.hidden) openDrawer(drawer); }
+function tilt(el) {
+  if (reduceMotion() || matchMedia('(hover:none)').matches) return el;
+  el.addEventListener('pointermove', e => { const r = el.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; el.style.transform = `perspective(800px) rotateX(${-y * 5}deg) rotateY(${x * 6}deg)`; });
+  el.addEventListener('pointerleave', () => el.style.transform = '');
+  return el;
+}
+function shopCatalog() {
+cat = mountCatalog($('[data-catalog]'), {
+  pageSize: 12, toast,
+  skeleton: () => h('div', { class: 'skel' }, h('i', { style: 'aspect-ratio:4/3' }), h('i', { style: 'height:14px;width:50%' }), h('i', { style: 'height:32px' })),
+  cardTpl: (m, skus, si, act) => { const b = BRAND_BY_ID[m.brand], s = skus[si];
+    return tilt(h('article', { class: 'card' }, h('div', { class: 'ph' }, productVisual(m, s)), h('p', { class: 'br' }, b.name, b.own ? h('b', { class: 'own-tag' }, 'แบรนด์เรา') : null, ' · ', TYPE_BY_ID[m.type].th), h('h3', {}, m.series),
+      h('div', { class: 'btu-chips', role: 'radiogroup', 'aria-label': 'BTU' }, skus.map((k, i) => h('button', { type: 'button', role: 'radio', class: 'bchip', 'aria-checked': i === si, onclick: () => act.pick(i) }, (k.btu / 1000) + 'k'))),
+      h('div', { class: 'pr' }, h('b', {}, baht(s.price)), h('span', { class: 'st o' }, 'ก่อน VAT')),
+      h('p', { class: 'inst' }, s.installStdEx ? `พร้อมติดตั้ง ${baht((s.px + s.installStdEx))}` : 'ติดตั้ง: ประเมินหน้างาน'),
+      h('div', { class: 'acts' }, h('button', { type: 'button', class: 'open', onclick: () => openProduct(m, m.skus.indexOf(s)) }, 'รายละเอียด'), h('button', { type: 'button', 'aria-pressed': act.inCompare, onclick: act.compare }, icon(act.inCompare ? 'check' : 'plus', { size: 15 }), 'เทียบ')))); },
+  rowTpl: () => h('div'),
+  onOpen: (m, s) => openProduct(m, m.skus.indexOf(s)),
+  onCompare: items => { const b = $('#drawerBody'); b.innerHTML = ''; b.append(h('h3', { style: 'font-size:24px;margin-bottom:10px' }, 'เทียบรุ่น'), compareTable(items)); openDrawer(drawer); },
+});
+const railAll = h('button', { type: 'button', 'aria-pressed': 'true', onclick: () => pickRail(null, railAll) }, 'ทั้งหมด');
+$('#rail').append(railAll, ...TYPES.map(t => { const b = h('button', { type: 'button', 'aria-pressed': 'false' }, h('span', { html: typeArt(t.id) }), t.th); b.addEventListener('click', () => pickRail(t.id, b)); return b; }));
+function pickRail(id, btn) { $$('#rail button').forEach(b => b.setAttribute('aria-pressed', b === btn)); cat.setType(id); }
+const facets = $('[data-cat-facets]'), home = facets.parentElement; const mq = matchMedia('(max-width:1080px)'); const place = () => (mq.matches ? $('#sheetBody') : home).append(facets); mq.addEventListener('change', place); place();
+}
+wireDrawers();
+
+// dot-matrix coverage (083-inspired)
+
+// 3D Thailand service-area map linked to the address checker
+function contactTools() {
+  $('#travelTbl').append(travelTable());
+  // 3D Thailand service-area map linked to the address checker (no longer awaited: the page never waits for the map)
+  const zoneRoot = $('#area [data-zone]'), zIn = $('[data-z-input]', zoneRoot);
+  let TMAP = null;
+  mountZone(zoneRoot, { onResult: z => TMAP && TMAP.highlight(z) });
+  mountThaiMap($('#mapRoot'), { theme: dark() ? 'dark' : 'light', onPick: th => { zIn.value = th; zIn.dispatchEvent(new Event('input')); } }).then(m => { TMAP = m; });
+  FAQ.forEach(f => $('#faqList').append(h('details', {}, h('summary', {}, f.q), h('p', {}, f.a))));
+  mountFaq($('#faqList'));
+}
+$$('[data-quote]').forEach(a => a.addEventListener('click', e => {
+  e.preventDefault(); ensure('business');
+  const est = BLD && BLD.estimate();
+  if (est && est.count) cart.add({ kind: 'service', group: 'contract', key: 'K-' + [est.count, est.visits, BLD.state().pkg].join('-'), name: `สัญญาล้างรายปี ${est.count} เครื่อง × ${est.visits} ครั้ง/ปี`, detail: `${BLD.state().pkg} · ${est.tierTh}${est.travel ? ' · รวมค่าเดินทางแล้ว' : ''}`, unitEx: est.annualEx, qty: 1, units: est.count });
+  CART.open();
+}));
+
+// r20: each page builds its tools the first time it opens — the first screen pays only for the home page (was: everything at load)
+const once = f => { let done = false, r; return () => (done ? r : (done = true, r = f())); };
+const V = {
+  shop: once(() => {
+    mountStudio($('#studioRoot'), { theme: dark() ? 'dark' : 'light', sceneStart: 'living', onOpen: (m, i) => openProduct(m, i) });   // virtual room studio
+    FIT = mountRoomFit($('#fitRoot'), { theme: dark() ? 'dark' : 'light', preset: 'living', onOpenModel: (m, i) => openProduct(m, i) });
+    shopCatalog();
+  }),
+  service: once(() => {
+    JOB = mountJobGuide($('#cleanRoot'), { theme: dark() ? 'dark' : 'light', start: 'C1', type: 'cassette' });
+    mountMaterials($('#qualityRoot'), { theme: dark() ? 'dark' : 'light' });
+    mountTechStory($('#storyRoot'), { theme: dark() ? 'dark' : 'light' });
+    SVX = mountServices($('#servicesRoot'), { how: false, onType: t => HWX && HWX.setType(t) });
+    PC = mountPriceCenter($('#priceCenter'));
+  }),
+  business: once(() => {
+    // builder
+    PRESETS.forEach(p => $('#presets').append(h('button', { type: 'button', 'data-b-preset': p.id, 'aria-pressed': 'false' }, p.th, h('small', {}, p.sub))));
+    TYPES.forEach(t => $('#urows').append(h('div', { class: 'urow' }, h('div', { html: typeArt(t.id) }), h('div', {}, h('b', {}, t.th), h('div', { class: 'bar' }, h('i', { 'data-b-bar': t.id }))),
+      h('div', { class: 'stp' }, h('button', { type: 'button', 'data-b-step': `${t.id}:-1`, 'aria-label': 'ลด' }, '−'), h('input', { type: 'number', min: '0', id: `vc-u-${t.id}`, 'data-b-unit': t.id, 'aria-label': `จำนวน ${t.th}`, inputmode: 'numeric' }), h('button', { type: 'button', 'data-b-step': `${t.id}:1`, 'aria-label': 'เพิ่ม' }, '+')))));
+    BLD = mountBuilder($('[data-builder]'));
+    // Rev.09 r9: corporate page — why us + quantity ladder, contract flow + sample report, projects (new build / renovation / replacement)
+    mountAmc($('#amcRoot')); mountSop($('#sopRoot')); mountProjects($('#projRoot'), { onCatalog: () => document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' }) });
+  }),
+  knowledge: once(() => {
+    HWX = mountHowItWorks($('#howRoot'), { theme: dark() ? 'dark' : 'light', start: 'wall', throwStyle: 'glass' });   // how each unit type works
+    mountKnowledge($('#learnRoot'), { ids: { cleanflow: 'cleanflow', fit: 'fit', studio: 'room', howto: 'howto', catalog: 'catalog', inside: 'top', prices: 'prices', quality: 'quality', b2b: 'b2b', area: 'area', quote: 'quote' } });
+  }),
+  contact: once(contactTools),
+};
+const ensure = v => (V[v] ? V[v]() : null);
+
+reveal();
+// Rev.09 r5: views by customer journey (site.js) — every section keeps its id and module
+mountSite({
+  variant: 'C', openCart: CART.open,
+  // r6 search: open a model's detail · jump to a price item (tab + filter)
+  openModel: m => openProduct(m, 0),
+  priceItem: (tab, q) => { ensure('service'); PC.show(tab); const x = $('#pc-search'); if (x) { x.value = q; x.dispatchEvent(new Event('input')); } },
+  views: { home: ['top', 'quick', 'start', 'flow'], shop: ['catalog', 'room', 'fit'], service: ['cleanflow', 'howto', 'prices', 'quality'], business: ['amc', 'b2b', 'sop', 'projects'], knowledge: ['journey', 'learn'], contact: ['booking', 'about', 'area', 'faq', 'quote'] },
+  labels: { howto: 'ช่างทำงานในบ้านจำลอง', cleanflow: 'ทีมช่างล้าง · ติดตั้ง' },
+  hooks: {
+    onView: v => ensure(v),
+    clean: () => { ensure('service'); JOB.setJob('clean'); }, install: () => { ensure('service'); JOB.setJob('install'); },
+    repair: () => { ensure('service'); SVX.set('repair'); const b = $$('#storyRoot [role="tab"]').find(x => /ซ่อม/.test(x.textContent)); if (b && b.getAttribute('aria-selected') !== 'true') b.click(); },
+  },
+});
+// r18: Thai headings keep each phrase on one line when it fits · section eyebrows carry the number of their jump link
+thaiPhrases('.sx-vh h1, .sx-lead, .sec-h h2, .sec-h h2 + p, #start .sx-int h3, #start .sx-int-s, .sx-next h2');
+zoneMarks();
+mountSeo({ page: document.title });
+</script>
+</body>
+</html>

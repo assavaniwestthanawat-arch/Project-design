@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{TITLE}}</title>
+{{CSSLINKS}}
+<style>
+{{CSS}}
+</style>
+</head>
+<body class="e-{{CODE}}">
+<aside class="proto" aria-label="สถานะต้นแบบ">ต้นแบบแบบ {{CODE}} · ราคาจาก Pricebook 2569 · ภาพในเว็บเป็นภาพประกอบ · <a href="./">กลับหน้ารวม</a></aside>
+<header class="hdr side">
+  <div class="wrap">
+    <a class="logo" href="#home"><img class="logo-mk" src="assets/logos/sbp.png" alt="" width="44" height="32"><span>SBP AirCare<small>บริษัท สหบูรพากรุ๊ป จำกัด</small></span></a>
+    <nav class="nav" aria-label="หน้าในเว็บไซต์"></nav>
+    <p class="side-co">โทร <a data-co="tel" href="#contact">02</a></p>
+    <div class="vsw" aria-label="สลับแบบ">{{VSW}}</div>
+    <button type="button" class="btn-primary" data-cart-btn>ใบเสนอราคา <span data-cart-n>0</span></button>
+  </div>
+</header>
+<div class="b3-main">
+<main id="main">
+{{HOME}}
+<div class="wrap">
+{{SECTIONS}}
+</div>
+</main>
+<footer></footer>
+</div>
+<nav class="mbar" aria-label="ติดต่อด่วน"><a class="btn-ghost" href="#booking">จองคิว</a><button type="button" class="btn-primary" data-cart-btn style="border-radius:999px">ใบเสนอราคา <span data-cart-n>0</span></button></nav>
+<div class="tray" data-compare hidden><ul data-compare-list></ul><button type="button" class="btn-primary" data-compare-go>เทียบ</button></div>
+<div class="drawer" data-drawer id="drawer" hidden><div class="dp" role="dialog" aria-modal="true" aria-label="รายละเอียด"><button type="button" class="x" data-close aria-label="ปิด">×</button><div id="drawerBody"></div></div></div>
+<div hidden>
+{{HEADS}}
+</div>
+<script type="module">
+import { mountV3 } from './assets/v3site.js';
+await mountV3({ variant: '{{CODE}}' });
+</script>
+</body>
+</html>

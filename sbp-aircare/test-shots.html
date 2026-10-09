@@ -1,0 +1,10 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><title>test · product shots</title>
+<style>body{margin:16px;font:14px system-ui;background:#eef2f6}.g{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}figure{margin:0;background:#fff;border-radius:12px;padding:8px}img{width:100%}</style></head>
+<body><div class="g" id="g"></div>
+<script type="module">
+// Rev.09 dev page: the rendered product shots used when a model has no photo yet (tests/shot.mjs test-shots.html)
+import { productShots } from './assets/product-media.js';
+const S = await productShots();
+for (const [k, v] of Object.entries(S)) { const f = document.createElement('figure'); f.innerHTML = `<img alt=""><figcaption>${k}</figcaption>`; f.querySelector('img').src = v; document.getElementById('g').append(f); }
+window.READY = true;
+</script></body></html>

@@ -1,0 +1,7 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;height:100%;background:#eef2f6}#c{width:100vw;height:100vh}</style></head><body><div id="c"></div><script type="module">
+import { createACViewer } from './assets/ac3d.js';
+const q = new URLSearchParams(location.search);
+const V = createACViewer(document.getElementById('c'), { style: q.get('style') || 'studio', premium: q.get('premium') === '1', unit: q.get('unit') || 'indoor', autoRotate: false, floorShadow: true, exposure: +(q.get('exp') || 1.05) });
+window.V = V; if (q.get('view')) V.view(q.get('view')); if (q.get('xray')) V.setXray(true); if (q.get('explode')) V.setExplode(+q.get('explode'), true);
+window.READY = true;
+</script></body></html>

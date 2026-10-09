@@ -1,0 +1,37 @@
+{
+  "name": "sbp-aircare-prototype",
+  "private": true,
+  "type": "module",
+  "description": "SBP AirCare website prototypes A/B/C/D, v2 A2–D2, v3 A3–C3 (vanilla ES modules + three.js r170). See CLAUDE.md.",
+  "scripts": {
+    "serve": "python3 -m http.server 8765",
+    "build": "python3 build.py --urls urls.json",
+    "build:dev": "python3 build.py --urls urls.dev.json",
+    "recon": "python3 tools_recon.py",
+    "pricing": "node tests/pricing.mjs",
+    "backoffice": "node tools/backoffice-server.mjs",
+    "test:backoffice": "node tests/backoffice.mjs",
+    "smoke": "node tests/smoke.mjs a.html && node tests/smoke.mjs b.html && node tests/smoke.mjs c.html && node tests/smoke.mjs d.html && npm run smoke:v2 && npm run smoke:v3",
+    "smoke:v2": "node tests/smoke.mjs a2.html && node tests/smoke.mjs b2.html && node tests/smoke.mjs c2.html && node tests/smoke.mjs d2.html",
+    "smoke:v3": "node tests/smoke.mjs a3.html && node tests/smoke.mjs b3.html && node tests/smoke.mjs c3.html",
+    "smoke:mobile": "node tests/smoke.mjs a.html 390 844 && node tests/smoke.mjs b.html 390 844 && node tests/smoke.mjs c.html 390 844 && node tests/smoke.mjs d.html 390 844 && node tests/smoke.mjs a2.html 390 844 && node tests/smoke.mjs b2.html 390 844 && node tests/smoke.mjs c2.html 390 844 && node tests/smoke.mjs d2.html 390 844 && node tests/smoke.mjs a3.html 390 844 && node tests/smoke.mjs b3.html 390 844 && node tests/smoke.mjs c3.html 390 844",
+    "textscan": "node tests/textscan.mjs a.html && node tests/textscan.mjs b.html && node tests/textscan.mjs c.html && node tests/textscan.mjs d.html && node tests/textscan.mjs a2.html && node tests/textscan.mjs b2.html && node tests/textscan.mjs c2.html && node tests/textscan.mjs d2.html && node tests/textscan.mjs a3.html && node tests/textscan.mjs b3.html && node tests/textscan.mjs c3.html",
+    "test:d": "node tests/d-flow.mjs 1366 light && node tests/d-flow.mjs 390 dark",
+    "test:v2": "node tests/v2-flow.mjs a2 1366 && node tests/v2-flow.mjs b2 1366 && node tests/v2-flow.mjs c2 390 && node tests/v2-flow.mjs d2 390",
+    "test:v3": "node tests/v3-flow.mjs a3 1366 && node tests/v3-flow.mjs b3 1366 && node tests/v3-flow.mjs c3 390 && node tests/v3-flow.mjs a3 390",
+    "v3": "python3 tools/v3gen.py",
+    "posters": "node tools/posters.mjs",
+    "test:models": "node tests/models3d.mjs a3.html",
+    "perf3d": "node tests/perf3d.mjs a.html && node tests/perf3d.mjs b.html && node tests/perf3d.mjs c.html",
+    "verify": "node tests/verify.mjs",
+    "verify:quick": "node tests/verify.mjs --quick",
+    "test:abc": "node tests/abc-flow.mjs a 1366 light && node tests/abc-flow.mjs b 1366 dark && node tests/abc-flow.mjs c 390 dark",
+    "axe": "node tests/axe.mjs a light && node tests/axe.mjs b light && node tests/axe.mjs c dark",
+    "tokens": "node tools/tokens.mjs",
+    "heroposters": "node tools/heroposters.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.56.0",
+    "axe-core": "4.13.0"
+  }
+}

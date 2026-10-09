@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ระบบออกแบบ SBP AirCare</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/shared.css">
+<style>
+/* r20 design-system page for Dev visual QA — every value below is read from the live A · B · C pages (tools/tokens.mjs → assets/tokens.js).
+   The page chrome uses its own quiet tokens; the specimens use only the shared alias tokens, exactly like the shared modules. */
+:root{
+  --bg:#F3F5F8; --paper:#FFFFFF; --ink:#16212E; --ink-2:#4A5767; --ink-3:#5F6B79; --rule:#D5DCE5; --focus:#1B51A4;
+  --pass:#1B7A45; --mid:#8A5300; --fail:#B02A26; --chip:#EEF2F7;
+  --sans:'IBM Plex Sans Thai',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0D131C;--paper:#151D28;--ink:#E6ECF3;--ink-2:#AAB6C4;--ink-3:#8E9BAB;--rule:#2A3646;--focus:#8DB2F2;--pass:#4ED39A;--mid:#FFB35C;--fail:#FF6B6B;--chip:#1C2633;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0D131C;--paper:#151D28;--ink:#E6ECF3;--ink-2:#AAB6C4;--ink-3:#8E9BAB;--rule:#2A3646;--focus:#8DB2F2;--pass:#4ED39A;--mid:#FFB35C;--fail:#FF6B6B;--chip:#1C2633;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:32px 72px}
+a{color:var(--focus)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+header.top{display:grid;gap:10px;padding-bottom:22px;border-bottom:2px solid var(--ink)}
+header.top h1{margin:0;font-size:clamp(28px,4vw,40px);line-height:1.2;font-weight:600;text-wrap:balance}
+header.top p{margin:0;max-width:72ch;color:var(--ink-2)}
+nav.toc{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:6px;font-size:15px}
+nav.toc a{min-height:44px;display:inline-flex;align-items:center}
+section.blk{padding-top:40px;display:grid;gap:16px}
+section.blk>h2{margin:0;font-size:26px;line-height:1.3;font-weight:600}
+section.blk>p{margin:0;max-width:72ch;color:var(--ink-2)}
+.ed{display:grid;gap:10px;padding:18px;border:1px solid var(--rule);border-radius:10px;background:var(--paper)}
+.ed h3{margin:0;font-size:19px;font-weight:600}
+.tw{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-size:14px}
+table.t th{padding:8px 10px;border-bottom:1px solid var(--ink);text-align:left;font-weight:600;color:var(--ink-2);font-size:13px;white-space:nowrap}
+table.t td{padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:middle}
+table.t td.k{font-family:var(--mono);font-size:13px;white-space:nowrap}
+table.t td.role{color:var(--ink-2);min-width:150px}
+.sw{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.sw i{flex:none;width:34px;height:34px;border-radius:7px;border:1px solid var(--rule)}
+.sw code{font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+.chip{display:inline-block;margin-left:2px;padding:1px 8px;border-radius:999px;background:var(--chip);font:600 12.5px var(--sans);font-variant-numeric:tabular-nums}
+.chip.pass{color:var(--pass)}.chip.mid{color:var(--mid)}.chip.fail{color:var(--fail)}.chip.na{color:var(--ink-3);font-weight:500}
+.spec{font-size:clamp(14px,1.2vw,16px);color:var(--ink);overflow-wrap:anywhere}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;color:var(--ink-2)}
+.panels{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,360px),1fr));gap:16px}
+.pn{display:grid;gap:12px;align-content:start;padding:16px;border-radius:12px;border:1px solid var(--rule);background:var(--pn-bg);color:var(--s-ink)}
+.pn>h3{margin:0;font-size:15px;font-weight:600;display:flex;justify-content:space-between;gap:8px;color:var(--s-ink)}
+.pn>h3 small{font-weight:500;color:var(--s-ink-3);font-size:12.5px}
+.pn .card{display:grid;gap:10px;padding:14px;border-radius:var(--s-r);background:var(--s-card);border:1px solid var(--s-line)}
+.pn .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pn .stat{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;font-weight:600}
+.pn .stat .ok{color:var(--s-ok)}.pn .stat .warn{color:var(--s-warn)}.pn .stat .bad{color:var(--s-bad)}
+.pn .lead{margin:0;color:var(--s-ink-2);font-size:15px;line-height:1.6}
+.pn .h{margin:0;color:var(--s-ink);font-weight:600;line-height:1.25}
+.pn .eb{margin:0;color:var(--s-ink-3);font-size:13px}
+ol.rules{margin:0;padding-left:22px;display:grid;gap:10px;max-width:84ch}
+ol.rules li{padding-left:4px}
+ol.rules b{font-weight:600}
+ol.rules code,.cmd{font-family:var(--mono);font-size:13.5px;background:var(--chip);padding:1px 6px;border-radius:5px;overflow-wrap:anywhere}
+footer.ft{margin-top:48px;padding-top:16px;border-top:1px solid var(--rule);color:var(--ink-3);font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>ระบบออกแบบ A · B · C</h1>
+    <p id="gen">ค่าทุกค่าในหน้านี้อ่านจากหน้าเว็บจริงของแต่ละแบบ ใช้ตรวจความสวยงามและความสม่ำเสมอก่อนส่งงาน</p>
+    <nav class="toc" aria-label="หัวข้อในหน้า"><a href="#color">สี</a><a href="#type">ตัวอักษร</a><a href="#parts">ชิ้นส่วนร่วม</a><a href="#rules">กติกาก่อนส่งงาน</a></nav>
+  </header>
+  <main>
+  <section class="blk" id="color" aria-labelledby="color-h">
+    <h2 id="color-h">สี</h2>
+    <p>โมดูลร่วม (shared.css, studio.css, services.css และ UI ที่สร้างจาก JavaScript) ใช้ได้เฉพาะ token ชุดนี้ แต่ละแบบกำหนดค่าเองใน <code class="cmd">:root</code> ของหน้า ตัวเลขคือคอนทราสต์เทียบพื้นการ์ด (ตัวอักษรบนปุ่มหลัก เทียบสีปุ่ม)</p>
+    <p class="legend"><span><span class="chip pass">4.5 ขึ้นไป</span> ผ่าน AA ทุกขนาด</span><span><span class="chip mid">3–4.5</span> ผ่านเฉพาะตัวอักษรใหญ่</span><span><span class="chip fail">ต่ำกว่า 3</span> ไม่ผ่าน</span></p>
+    <div id="colors"></div>
+  </section>
+
+  <section class="blk" id="type" aria-labelledby="type-h">
+    <h2 id="type-h">ตัวอักษร</h2>
+    <p>ขนาดที่วัดได้จริงบนจอ 1366 และ 390 พิกเซล กติกา: ชื่อหน้า (h1) ใหญ่กว่าหัวข้อส่วน (h2) เสมอ · ข้อความไทยไม่ต่ำกว่า 12.5 พิกเซล · เนื้อความ 16 พิกเซล ระยะบรรทัด 1.7</p>
+    <div id="types"></div>
+  </section>
+
+  <section class="blk" id="parts" aria-labelledby="parts-h">
+    <h2 id="parts-h">ชิ้นส่วนร่วม ทุกแบบ ทุกธีม</h2>
+    <p>ชิ้นส่วนจริงจาก shared.css วางบน token ของแต่ละแบบ ตัวเลขราคามาจาก Pricebook ชุดเดียวกับเว็บ (ล้างติดผนังขนาดเล็ก 2 เครื่อง + ยอดขั้นต่ำงานล้าง)</p>
+    <div class="panels" id="panels"></div>
+  </section>
+
+  <section class="blk" id="rules" aria-labelledby="rules-h">
+    <h2 id="rules-h">กติกาก่อนส่งงาน</h2>
+    <ol class="rules">
+      <li><b>คอนทราสต์ 4.5:1</b> ทุกตัวอักษรในทั้งสองธีม · สถานะห้ามบอกด้วยความจางอย่างเดียว · token สีตัวอักษรทุกตัว (รวม ok warn bad) ต้องกำหนดใหม่ในบล็อกมืดทั้งสองบล็อก · ตรวจ <code>BASE=http://localhost:8765 node tests/axe.mjs a light</code></li>
+      <li><b>ตัวอักษรขั้นต่ำ</b> 12 พิกเซล (ภาษาไทย 12.5) ยกเว้นป้ายบนภาพ 3 มิติและตัวเลขใน SVG · <b>เป้ากดบนจอสัมผัส</b> 44 พิกเซลขึ้นไป · ตรวจ <code>node tests/audit.mjs c 390 dark 3</code></li>
+      <li><b>หัวหน้าทุกหน้า</b> h1 ใหญ่กว่า h2 · หัวข้อไม่ข้ามระดับ · มี main เดียว · หัวข้อภาษาไทยผ่าน <code>typeset.thaiPhrases</code> (ไม่ฉีกคำ)</li>
+      <li><b>ไม่เลื่อนแนวนอน</b> ที่ 1366 และ 390 · ตารางกว้างเลื่อนในกรอบของตัวเองและกดโฟกัสด้วยคีย์บอร์ดได้ · เมนูหลักไม่ล้นทุกความกว้าง</li>
+      <li><b>การเคลื่อนไหว</b> เฉพาะภาพ 3 มิติที่มีความหมาย · เคารพ prefers-reduced-motion · ไม่มีเอฟเฟกต์ลอยขึ้นทีละหัวข้อ · ไม่มี "→" ท้ายปุ่ม · ป้ายควบคุมเป็นภาษาไทย</li>
+      <li><b>โมดูลร่วม</b> ใช้เฉพาะ alias token ในหน้านี้ · ชื่อคลาสมี prefix ของโมดูล (s- st- sv- hw- ts- sy3- qk- …) ห้ามชื่อทั่วไปที่ชนกับหน้า</li>
+      <li><b>ราคาและข้อความ</b> ราคาเดียว ก่อน VAT หลักร้อย · คำต้องห้ามตาม CLAUDE.md §6.6 #11 · ภาพจำลองมีคำว่า "แบบจำลองเพื่ออธิบาย" · ห้ามบอกว่า "ส่งแล้ว" จนกว่าหลังบ้านตอบเลขที่คำขอ · ตรวจ <code>npm run textscan</code> และ <code>npm run pricing</code></li>
+      <li><b>รวมทุกข้อ</b> <code>npm run verify</code> → <code>tests/out/summary.md</code></li>
+    </ol>
+  </section>
+  </main>
+  <footer class="ft" id="ft">SBP AirCare · บริษัท สหบูรพากรุ๊ป จำกัด · หน้านี้สำหรับทีมพัฒนา (ไม่ขึ้นเว็บจริง)</footer>
+</div>
+<script type="module">
+import T from './assets/tokens.js';
+import { loadData, DATA, cleanRate, baht, h, $ } from './assets/sbp-core.js';
+
+const FONTS = { a: "'Anuphan',sans-serif", b: "'IBM Plex Sans Thai',sans-serif", c: "'Anuphan',sans-serif" };   // body face per edition (display: Kanit for C)
+const DISPLAY = { a: "'Anuphan',sans-serif", b: "'IBM Plex Sans Thai',sans-serif", c: "'Kanit',sans-serif" };
+const ROLE = { '--s-card': 'พื้นการ์ด แผง', '--s-card-2': 'พื้นรอง แถวรายการ', '--s-ink': 'ตัวอักษรหลัก', '--s-ink-2': 'ตัวอักษรรอง', '--s-ink-3': 'คำอธิบายเล็ก ป้าย', '--s-line': 'เส้นแบ่ง กรอบ', '--s-accent': 'ปุ่มหลัก', '--s-on-accent': 'ตัวอักษรบนปุ่มหลัก', '--s-accent-soft': 'พื้นสรุปยอด ไฮไลต์', '--s-ok': 'สถานะ ผ่าน', '--s-warn': 'สถานะ เตือน', '--s-bad': 'สถานะ ไม่ผ่าน' };
+const TEXT = new Set(['--s-ink', '--s-ink-2', '--s-ink-3', '--s-ok', '--s-warn', '--s-bad']);
+
+// WCAG 2.x contrast (alpha composited over the card)
+const rgba = s => { const m = s.match(/[\d.]+/g).map(Number); return { r: m[0], g: m[1], b: m[2], a: m.length > 3 ? m[3] : 1 }; };
+const over = (c, bg) => ({ r: c.r * c.a + bg.r * (1 - c.a), g: c.g * c.a + bg.g * (1 - c.a), b: c.b * c.a + bg.b * (1 - c.a), a: 1 });
+const lum = c => { const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+const ratio = (fg, bg) => { const B = rgba(bg), F = over(rgba(fg), B); const [x, y] = [lum(F), lum(B)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+const hex = s => { const c = rgba(s); const x = '#' + [c.r, c.g, c.b].map(v => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase(); return c.a < 1 ? `${x} · ${Math.round(c.a * 100)}%` : x; };
+const chip = r => h('span', { class: 'chip ' + (r >= 4.5 ? 'pass' : r >= 3 ? 'mid' : 'fail') }, r.toFixed(1));
+
+$('#gen').textContent = `ค่าทุกค่าในหน้านี้อ่านจากหน้าเว็บจริงของแต่ละแบบเมื่อ ${T.generated} (tools/tokens.mjs) ใช้ตรวจความสวยงามและความสม่ำเสมอก่อนส่งงาน`;
+
+// ---- colours ----
+for (const [v, E] of Object.entries(T.editions)) {
+  const cell = (scheme, k) => {
+    const t = E[scheme].tokens, c = t[k];
+    const r = TEXT.has(k) ? ratio(c, t['--s-card']) : k === '--s-on-accent' ? ratio(c, t['--s-accent']) : null;
+    return h('td', {}, h('span', { class: 'sw' }, h('i', { style: `background:${c}`, 'aria-hidden': 'true' }), h('code', {}, hex(c)), r == null ? null : chip(r)));
+  };
+  $('#colors').append(h('div', { class: 'ed' }, h('h3', {}, E.name),
+    h('div', { class: 'tw', tabindex: '0', role: 'region', 'aria-label': `สี ${E.name}` }, h('table', { class: 't' },
+      h('thead', {}, h('tr', {}, h('th', { scope: 'col' }, 'token'), h('th', { scope: 'col' }, 'หน้าที่'), h('th', { scope: 'col' }, 'ธีมสว่าง'), h('th', { scope: 'col' }, 'ธีมมืด'))),
+      h('tbody', {}, T.alias.map(k => h('tr', {}, h('td', { class: 'k' }, k), h('td', { class: 'role' }, ROLE[k]), cell('light', k), cell('dark', k))),
+        h('tr', {}, h('td', { class: 'k' }, '--s-r'), h('td', { class: 'role' }, 'มุมโค้งการ์ด ปุ่ม'), h('td', { colspan: 2 }, h('code', {}, E.light.radius))),
+        h('tr', {}, h('td', { class: 'k' }, 'body'), h('td', { class: 'role' }, 'พื้นหน้า'), h('td', {}, h('span', { class: 'sw' }, h('i', { style: `background:${E.light.bg}` }), h('code', {}, hex(E.light.bg)))), h('td', {}, h('span', { class: 'sw' }, h('i', { style: `background:${E.dark.bg}` }), h('code', {}, hex(E.dark.bg))))))))));
+}
+
+// ---- type ----
+const ROLES = [['h1', 'ชื่อหน้า (h1)', 'ล้างแอร์ ติดตั้ง ซ่อม'], ['h2', 'หัวข้อส่วน (h2)', 'รู้ราคาก่อนนัดช่าง'], ['h3', 'หัวข้อย่อย (h3)', 'ล้างปกติ C1'], ['lead', 'คำนำส่วน', 'ราคาเดียวกับใบเสนอราคา เห็นทุกบรรทัดก่อนจอง'], ['body', 'เนื้อความ', 'ทีมโทรยืนยันวันเวลาก่อนเข้างาน'], ['eyebrow', 'ป้ายเหนือหัวข้อ', 'ประเมินราคาทันที']];
+for (const [v, E] of Object.entries(T.editions)) {
+  const d = E.light.type.desktop, p = E.light.type.phone;
+  const n = x => x ? (Math.round(x.size * 10) / 10) + ' px' : '—';
+  $('#types').append(h('div', { class: 'ed' }, h('h3', {}, E.name),
+    h('div', { class: 'tw', tabindex: '0', role: 'region', 'aria-label': `ตัวอักษร ${E.name}` }, h('table', { class: 't' },
+      h('thead', {}, h('tr', {}, ['บทบาท', 'ตัวอย่าง', 'ฟอนต์', 'จอใหญ่', 'มือถือ', 'น้ำหนัก', 'ระยะบรรทัด'].map(x => h('th', { scope: 'col' }, x)))),
+      h('tbody', {}, ROLES.map(([k, th, sample]) => { const x = d[k]; if (!x) return null;
+        return h('tr', {}, h('td', { class: 'role' }, th), h('td', {}, h('span', { class: 'spec', style: `font-family:'${x.family}',sans-serif;font-weight:${x.weight};font-size:${Math.min(x.size, 30)}px;line-height:1.3` }, sample)),
+          h('td', {}, x.family), h('td', {}, n(x)), h('td', {}, n(p[k])), h('td', {}, String(x.weight)), h('td', {}, x.lh ? String(x.lh) : 'ปกติ')); }))))));
+}
+
+// ---- live components on each edition × theme ----
+await loadData();
+const sv = DATA.inst.find(i => i.ex == null);   // a real "ประเมินหน้างาน" item from the Pricebook
+const r1 = cleanRate('Basic Clean', 'C1', 'wall', 0), unit = r1 ? r1.rate.s : null, two = unit != null ? unit * 2 : null, gap = two != null && two < DATA.minBill ? DATA.minBill - two : 0;
+for (const [v, E] of Object.entries(T.editions)) for (const scheme of ['light', 'dark']) {
+  const t = E[scheme].tokens, ty = E[scheme].type.desktop;
+  const style = Object.entries(t).map(([k, c]) => `${k}:${c}`).join(';') + `;--s-r:${E[scheme].radius};--pn-bg:${E[scheme].bg};font-family:${FONTS[v]};color-scheme:${scheme}`;
+  $('#panels').append(h('div', { class: 'pn', style },
+    h('h3', {}, E.name, h('small', {}, scheme === 'light' ? 'ธีมสว่าง' : 'ธีมมืด')),
+    h('div', { class: 'card' },
+      h('p', { class: 'eb' }, 'ประเมินราคาทันที'),
+      h('p', { class: 'h', style: `font-family:${DISPLAY[v]};font-size:${Math.min(ty.h2 ? ty.h2.size : 26, 28)}px;font-weight:${ty.h2 ? ty.h2.weight : 600}` }, 'รู้ราคาก่อนนัดช่าง'),
+      h('p', { class: 'lead' }, 'ราคาเดียวกับใบเสนอราคา เห็นทุกบรรทัดก่อนจอง'),
+      h('div', { class: 'row' }, h('button', { type: 'button', class: 's-btn primary' }, 'ใส่ใบเสนอราคา'), h('button', { type: 'button', class: 's-btn' }, 'จองคิว'), h('button', { type: 'button', class: 's-btn ghost' }, 'คัดลอกสรุปรายการ'))),
+    h('div', { class: 'card' },
+      h('label', { class: 's-field' }, 'พื้นที่ปฏิบัติงาน', h('input', { value: 'จอมทอง', autocomplete: 'off' })),
+      h('p', { class: 's-zr', 'data-tier': 'core' }, 'จอมทอง · อยู่ในพื้นที่ให้บริการ ไม่มีค่าเดินทาง'),
+      h('ul', { class: 's-lines' }, h('li', {}, h('div', { class: 's-l-t' }, h('b', {}, r1 ? r1.name : 'ล้างแอร์ติดผนัง'), h('small', {}, 'Basic Clean')), h('div', { class: 's-l-q' }, h('span', { class: 's-l-p' }, two != null ? baht(two) : '—'))),
+        h('li', { class: 'sv' }, h('div', { class: 's-l-t' }, h('b', {}, sv ? sv.name : 'งานประเมินหน้างาน'), h('small', {}, 'ขอประเมิน')), h('span', { class: 's-price survey' }, 'ประเมินหน้างาน'))),
+      h('dl', { class: 's-sum' }, h('dt', {}, 'รวมรายการ (ก่อน VAT)'), h('dd', {}, two != null ? baht(two) : '—'), gap ? [h('dt', {}, `ปรับขั้นต่ำงานล้าง ${baht(DATA.minBill)}`), h('dd', {}, baht(gap))] : null, h('dt', { class: 'tot' }, 'รวมทั้งสิ้น'), h('dd', { class: 'tot' }, baht((two || 0) + gap))),
+      h('p', { class: 's-note' }, 'ราคาตาม Pricebook 2569 ของบริษัท ปัดเป็นหลักร้อย ก่อน VAT')),
+    h('div', { class: 'card' }, h('p', { class: 'stat' }, h('span', { class: 'ok' }, 'อยู่ในพื้นที่ให้บริการ'), h('span', { class: 'warn' }, 'มีค่าเดินทางเพิ่ม'), h('span', { class: 'bad' }, 'เกินระยะให้บริการ')), h('p', { class: 's-note bad' }, 'ระยะนี้รับงานขั้นต่ำ 3 เครื่องต่อเที่ยว'))));
+}
+document.documentElement.classList.add('sg-on');
+</script>
+</body>
+</html>

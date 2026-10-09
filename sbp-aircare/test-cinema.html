@@ -1,0 +1,13 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><title>test · cinema</title>
+<style>html,body{margin:0;height:100%;background:#000}#c{position:fixed;inset:0}</style></head>
+<body><div id="c"></div>
+<script type="module">
+// r12 dev page: cinematic engine alone · ?mood=aurora|tower|noir|atelier&type=wall|ceiling|cassette|floor&shot=hero|close|air|inside|wide&q=high|mid|low
+// &fx=&fy= framing offset · &x= explode 0–1 · &xr x-ray · &t= seconds advanced · tools/posters.mjs renders the page posters here
+// window.TS = engine api · window.READY when the first frame is drawn (tests/cinema-shots)
+import { createCinema } from './assets/cinema3d.js';
+const q = new URLSearchParams(location.search);
+const C = createCinema(document.getElementById('c'), { mood: q.get('mood') || 'aurora', quality: q.get('q') || 'auto', bars: q.has('bars'), model: { type: q.get('type') || 'wall' } });
+C.auto(false); C.power(true); if (q.has('fx')) C.scene({ frame: [+q.get('fx'), +q.get('fy') || 0] }); C.shot(q.get('shot') || 'hero'); if (q.has('x')) C.explode(+q.get('x')); if (q.has('xr')) C.xray(true); C.advance(+(q.get('t') || 4));
+window.TS = C; window.READY = true;
+</script></body></html>

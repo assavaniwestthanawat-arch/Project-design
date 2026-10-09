@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SBP AirCare · แบบ B2 ภารกิจ</title>
+<meta name="description" content="8 ภารกิจกับทีมช่าง SBP AirCare เล่นทีละขั้นในภาพจำลอง 3 มิติ ตั้งแต่รู้จักระบบแอร์ เลือกเครื่อง ติดตั้ง ล้างใหญ่ ซ่อม จนส่งทีมถึงบ้าน ทุกภารกิจจบด้วยราคาจาก Pricebook และปุ่มสั่งงาน">
+<meta property="og:title" content="SBP AirCare · ภารกิจดูแลอากาศ 8 ภารกิจ">
+<meta property="og:description" content="เล่นทีละขั้นกับทีมช่าง เก็บเหรียญครบทุกภารกิจ แล้วรับราคาจริงของงานนั้น">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0A1330">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/shared.css">
+<link rel="stylesheet" href="assets/business.css">
+<link rel="stylesheet" href="assets/booking.css">
+<link rel="stylesheet" href="assets/services.css">
+<link rel="stylesheet" href="assets/v2.css">
+<link rel="stylesheet" href="assets/film.css">
+<style>
+/* แบบ B2 · ภารกิจ (r16) — the site as a game played with the SBP crew. Eight missions, each a 3D sequence stepped through like
+   a level: an objective list that ticks off, a dialogue box with what the crew is doing, a progress bar, and at the end a
+   "mission complete" banner, a badge, and the reward — the real price of that job from the Pricebook with the buttons that
+   order it. A HUD on top counts missions and holds the quote basket (the inventory).
+   Palette: night shift — deep FUJIVA navy, cool steel lines, caution amber (job-site tape) for objectives and progress, SP
+   orange only on the action that books a job. Type: Bai Jamjuree (squared, like a HUD) for headings and numbers, Kanit
+   (light) for reading. A deliberately single dark theme. */
+:root{
+  --paper:#0A1330; --surface:#111C40; --frost:#0D1736; --ink:#EEF3FF; --ink-2:#BCC8E8; --ink-3:#8D9CC4; --line:rgba(238,243,255,.12); --line-2:rgba(238,243,255,.26);
+  --brand:#FFB627; --brand-soft:rgba(255,182,39,.14); --hud:#7FD6FF; --go:#EF4E2E; --go-2:#F4683F; --on-go:#1A0D08; --ok:#7BE0A6; --warn:#FFC966; --bad:#FF8D80;
+  --glass:rgba(10,19,48,.8); --glass-ink:#EEF3FF; --plate:#F4F7FF; --stage-bg:#070E26; --r:6px;
+  --sub-ink:#EEF3FF; --cut-name:fm-wipe; --cut-color:#0A1330; --cut-time:.5s; --sub-shade:transparent;
+  --display:'Bai Jamjuree','Kanit',sans-serif; --text:'Kanit','Anuphan',Tahoma,sans-serif;
+  --s-card:var(--surface); --s-card-2:var(--frost); --s-ink:var(--ink); --s-ink-2:var(--ink-2); --s-ink-3:var(--ink-3); --s-line:var(--line-2);
+  --s-accent:var(--go); --s-on-accent:var(--on-go); --s-accent-soft:var(--brand-soft); --s-ok:var(--ok); --s-warn:var(--warn); --s-bad:var(--bad); --s-r:6px; --s-mono:var(--display);
+  color-scheme:dark;
+}
+body{background:var(--paper);font-weight:300}
+b,strong{font-weight:500}
+h1,h2,h3{font-weight:600}
+
+/* HUD header */
+.v-hd{position:fixed;inset:0 0 auto;z-index:60;padding-top:env(safe-area-inset-top,0px);background:rgba(10,19,48,.86);box-shadow:0 1px 0 var(--line)}
+@supports (backdrop-filter:blur(8px)){.v-hd{background:rgba(10,19,48,.7);backdrop-filter:blur(14px) saturate(1.3)}}
+.v-hd-in{display:flex;align-items:center;gap:18px;min-height:64px}
+.b-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.b-brand .plate{display:inline-grid;place-items:center;padding:4px 7px;border-radius:4px;background:var(--plate)}
+.b-brand img{display:block;height:22px;width:auto}
+.b-brand b{font:600 17px/1 var(--display);white-space:nowrap}
+.b-xp{display:grid;gap:4px;min-width:180px}
+.b-xp p{margin:0;display:flex;justify-content:space-between;gap:10px;font:600 13px/1 var(--display);color:var(--ink-2);white-space:nowrap}
+.b-xp p b{color:var(--brand);font-variant-numeric:tabular-nums}
+.b-xpbar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.b-xpbar i{display:block;height:100%;width:calc(var(--xp,0) * 100%);background:linear-gradient(90deg,var(--brand),#FFD978);transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.v-nav{display:flex;gap:2px;margin-left:auto}
+.v-nav a{padding:8px 10px;font:600 14px/1 var(--display);color:var(--ink-2);text-decoration:none;border-radius:4px;white-space:nowrap}
+.v-nav a:hover,.v-nav a[aria-current]{color:var(--ink);background:var(--brand-soft)}
+.v-act{display:flex;align-items:center;gap:8px}
+.b-inv{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 12px;border:1px solid var(--line-2);border-radius:var(--r);background:transparent;color:var(--ink);cursor:pointer;font:600 14px var(--display)}
+.b-inv [data-cart-n]{min-width:22px;padding:0 6px;border-radius:11px;background:var(--brand);color:#1A1200;font-weight:700;font-size:13px;line-height:22px;text-align:center}
+.b-snd{min-height:42px;padding:0 12px;border:1px solid var(--line-2);border-radius:var(--r);background:transparent;color:var(--ink-2);font:600 14px var(--display);cursor:pointer}
+.b-snd[aria-pressed="true"]{color:var(--ink);border-color:var(--brand)}
+.v-act .v-btn{min-height:42px}
+.v-menu{display:none;min-height:42px;padding:0 14px;border:1px solid var(--line-2);border-radius:var(--r);background:transparent;color:var(--ink);cursor:pointer;font:600 14px var(--display)}
+@media (max-width:1440px){
+  .v-menu{display:inline-flex;align-items:center}
+  .v-nav{position:absolute;top:100%;left:0;right:0;display:none;flex-direction:column;gap:0;padding:8px 16px 16px;background:rgba(10,19,48,.98);border-bottom:1px solid var(--line)}
+  .v-nav.open{display:flex}.v-nav a{padding:12px 4px;font-size:16px;border-bottom:1px solid var(--line)}
+  .v-act{margin-left:auto}
+}
+@media (max-width:640px){.b-brand b,.b-snd{display:none}.b-xp{min-width:0;flex:1}.b-xp p{justify-content:flex-start}.b-xp p span{font-size:12px}.b-xp p b{white-space:nowrap}.b-inv .qt{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.v-act .v-btn{padding:0 12px}}
+
+/* start screen */
+.b-start{position:relative;min-height:max(620px,100svh);display:grid;align-items:center}
+.b-start>.stage{position:absolute;inset:0}
+.b-start::after{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(120% 90% at 20% 60%,rgba(10,19,48,.92),rgba(10,19,48,.55) 50%,rgba(10,19,48,.15) 80%),linear-gradient(0deg,rgba(10,19,48,.95),rgba(10,19,48,0) 40%)}
+.b-start-in{position:relative;z-index:3;width:100%;padding-block:130px 80px;display:grid;gap:20px}
+.b-start .b-pre{font:600 14px/1 var(--display);color:var(--hud);letter-spacing:.06em}
+.b-start h1{font-size:clamp(46px,7.4vw,112px);line-height:1.02;max-width:9em;letter-spacing:-.01em}
+.b-start p.lede{font-size:clamp(17px,1.4vw,20px);line-height:1.7;color:var(--ink-2);max-width:34em}
+.b-cta{display:flex;flex-wrap:wrap;gap:10px}
+.b-cta .v-btn{min-height:54px;padding:0 26px;font:600 17px var(--display)}
+.b-start .stage-cap{position:absolute;z-index:3;left:auto;right:16px;bottom:16px}
+
+/* mission select */
+.b-select{padding-block:clamp(56px,9vh,96px);background:var(--frost);border-block:1px solid var(--line)}
+.b-select h2{font-size:clamp(28px,3vw,40px)}
+.b-select>.wrap>p{color:var(--ink-2);margin:8px 0 26px;max-width:42em}
+.b-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.b-card{position:relative;display:grid;gap:8px;align-content:start;height:100%;padding:18px 18px 16px;border:1px solid var(--line-2);border-radius:var(--r);background:linear-gradient(180deg,rgba(255,255,255,.03),transparent),var(--surface);text-decoration:none;transition:border-color .2s,transform .2s}
+.b-card:hover{border-color:var(--brand);transform:translateY(-2px)}
+.b-card .n{font:600 13px/1 var(--display);color:var(--hud);letter-spacing:.05em}
+.b-card b{font:600 19px/1.35 var(--display)}
+.b-card span{font-size:14.5px;line-height:1.55;color:var(--ink-2)}
+.b-card small{font:600 12.5px/1.4 var(--display);color:var(--ink-3)}
+.b-card .st{position:absolute;top:14px;right:14px;font:600 12px/1 var(--display);padding:5px 8px;border-radius:10px;border:1px solid var(--line-2);color:var(--ink-3)}
+.b-card[data-done] .st{border-color:var(--brand);background:var(--brand);color:#1A1200}
+.b-card[data-done]{border-color:rgba(255,182,39,.6)}
+@media (max-width:1000px){.b-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.b-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* a mission */
+.b-mis{padding-block:clamp(56px,9vh,104px);border-top:1px solid var(--line)}
+.b-mh{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 28px;align-items:end;margin-bottom:22px}
+.b-mh .n{font:600 14px/1 var(--display);color:var(--hud);letter-spacing:.05em;margin-bottom:10px}
+.b-mh h2{font-size:clamp(30px,3.6vw,52px);line-height:1.12}
+.b-mh .obj{margin-top:10px;color:var(--ink-2);max-width:44em}
+.b-mh .obj b{color:var(--brand)}
+.b-go{min-height:50px;padding:0 22px;border:1px solid var(--brand);border-radius:var(--r);background:var(--brand);color:#1A1200;font:600 16px var(--display);cursor:pointer}
+.b-go:hover{background:#FFC857}
+.b-game{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.b-game .fm-stage{aspect-ratio:16/9;border:1px solid var(--line-2);border-radius:var(--r)}
+/* HUD corners on the viewport */
+.b-hud{position:absolute;inset:10px;z-index:6;pointer-events:none;
+  background:linear-gradient(var(--hud),var(--hud)) 0 0/18px 2px no-repeat,linear-gradient(var(--hud),var(--hud)) 0 0/2px 18px no-repeat,
+  linear-gradient(var(--hud),var(--hud)) 100% 0/18px 2px no-repeat,linear-gradient(var(--hud),var(--hud)) 100% 0/2px 18px no-repeat,
+  linear-gradient(var(--hud),var(--hud)) 0 100%/18px 2px no-repeat,linear-gradient(var(--hud),var(--hud)) 0 100%/2px 18px no-repeat,
+  linear-gradient(var(--hud),var(--hud)) 100% 100%/18px 2px no-repeat,linear-gradient(var(--hud),var(--hud)) 100% 100%/2px 18px no-repeat;opacity:.75}
+.b-game .fm-tag,.b-game .stage-cap{left:22px;top:20px;bottom:auto;background:rgba(10,19,48,.7);font-family:var(--display)}
+.b-cnt{position:absolute;z-index:7;right:22px;top:18px;margin:0;padding:4px 10px;border-radius:12px;background:rgba(10,19,48,.75);font:600 13px/1.3 var(--display);color:var(--brand);font-variant-numeric:tabular-nums}
+/* dialogue box */
+.b-game .fm-sub{left:16px;right:16px;bottom:16px;width:auto;transform:none;justify-items:start;text-align:left;gap:3px;padding:12px 16px 13px;border:1px solid var(--line-2);border-left:3px solid var(--brand);border-radius:var(--r);background:rgba(8,15,40,.86);color:var(--ink)}
+@supports (backdrop-filter:blur(6px)){.b-game .fm-sub{background:rgba(8,15,40,.7);backdrop-filter:blur(8px)}}
+.b-game .fm-sub-k{font:600 12.5px/1.2 var(--display);color:var(--brand);letter-spacing:.04em;opacity:1}
+.b-game .fm-sub-t{font:600 clamp(16px,1.5vw,19px)/1.4 var(--display);text-shadow:none}
+.b-game .fm-sub-d{font-size:clamp(14px,1.05vw,15.5px);line-height:1.6;max-width:none;text-shadow:none;color:var(--ink-2)}
+.b-game .fm-sub.is-in .fm-sub-d{animation:b-type 1.4s steps(28,end) both}
+@keyframes b-type{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.b-game .fm-prog{top:auto;bottom:0;height:3px;border-radius:0 0 var(--r) var(--r)}
+.b-game .fm-prog::after{background:linear-gradient(90deg,var(--brand),#FFD978)}
+/* mission complete */
+.b-done{position:absolute;z-index:9;inset:0;display:grid;place-content:center;justify-items:center;gap:8px;margin:0;background:radial-gradient(closest-side,rgba(10,19,48,.82),rgba(10,19,48,.25));pointer-events:none;opacity:0;transform:scale(1.06);transition:opacity .5s,transform .7s cubic-bezier(.2,.8,.2,1)}
+.b-done b{font:600 clamp(30px,4vw,56px)/1 var(--display);color:var(--brand);letter-spacing:.02em;text-shadow:0 0 30px rgba(255,182,39,.45)}
+.b-done span{font:600 15px var(--display);color:var(--ink)}
+.fm.is-won .b-done{opacity:1;transform:none}
+/* objectives */
+.b-obj{display:grid;gap:12px;align-content:start;padding:14px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);min-width:0}
+.b-obj h3{font:600 15px/1 var(--display);color:var(--ink-2);display:flex;justify-content:space-between;gap:10px}
+.b-obj h3 span{color:var(--brand);font-variant-numeric:tabular-nums}
+.b-obj .fm-shots{display:grid;gap:2px;max-height:min(46vh,420px);overflow:auto;padding-right:4px;scrollbar-width:thin}
+.b-obj button.fm-shot{font-size:14px;padding:7px 8px}
+.b-obj button.fm-shot.past{color:var(--ink-3)}
+.b-obj button.fm-shot.past .fm-shot-t{text-decoration:line-through;text-decoration-color:rgba(255,182,39,.6)}
+.b-obj button.fm-shot.past .fm-shot-n{color:#1A1200}
+.b-obj .fm-ctl .fm-play{flex:1}
+.b-crew{display:grid;gap:6px;margin:0;font-size:13.5px;line-height:1.5}
+.b-crew dt{font:600 12px var(--display);color:var(--hud)}
+.b-crew dd{margin:0 0 4px;color:var(--ink-2)}
+@media (max-width:980px){.b-game{grid-template-columns:minmax(0,1fr)}.b-game .fm-stage{aspect-ratio:4/3}.b-obj .fm-shots{max-height:260px}}
+@media (max-width:640px){.b-game .fm-stage{aspect-ratio:3/4}.b-game .fm-sub{left:10px;right:10px;bottom:10px;padding:10px 12px}.b-game .fm-sub-d{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}}
+
+/* the reward: the real price */
+.b-reward{margin-top:22px;padding:clamp(16px,2.4vw,28px);border:1px solid var(--line-2);border-radius:var(--r);background:var(--frost);transition:border-color .6s,box-shadow .6s}
+.fm.is-done .b-reward{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand),0 0 40px rgba(255,182,39,.12)}
+.b-rh{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin-bottom:18px}
+.b-rh h3{font-size:clamp(20px,1.8vw,24px)}
+.b-rh p{margin:0;color:var(--ink-2);font-size:15px}
+.b-rh .tag{font:600 12px/1 var(--display);padding:5px 9px;border-radius:10px;background:var(--brand-soft);color:var(--brand)}
+.b-next{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;color:var(--ink-2)}
+.b-next a{color:var(--brand);font-weight:500;text-underline-offset:4px}
+
+/* showroom mission */
+.b-sr{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);grid-template-areas:"c c" "p d";gap:16px 28px;margin-top:18px}
+.b-sr [data-showroom]{display:contents}
+.b-sr [data-sr-ctl]{grid-area:c;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.b-sr .sr-pick{grid-area:p}.b-sr .sr-det{grid-area:d;position:sticky;top:calc(var(--hd,64px) + 12px)}
+@media (max-width:900px){.b-sr{grid-template-columns:minmax(0,1fr);grid-template-areas:"c" "d" "p"}.b-sr .sr-det{position:static}}
+/* repair mission: concierge + its own unit stage */
+.b-ask{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"q s" "r s";gap:22px 28px;align-items:start;margin-bottom:28px}
+.b-ask [data-concierge]{display:contents}
+.b-ask .cc-ask{grid-area:q}.b-ask .cc-res{grid-area:r}
+.b-ask .stage{grid-area:s;position:sticky;top:calc(var(--hd,64px) + 12px);aspect-ratio:4/3;border-radius:var(--r);border:1px solid var(--line-2)}
+@media (max-width:900px){.b-ask{grid-template-columns:minmax(0,1fr);grid-template-areas:"q" "s" "r"}.b-ask .stage{position:relative;top:0}}
+
+/* booking + contact */
+.b-sec{padding-block:clamp(56px,9vh,104px);border-top:1px solid var(--line)}
+.b-sec .ch-h{margin-bottom:24px}
+.b-sec .ch-h h2{font-size:clamp(30px,3.4vw,48px)}
+.b-sec .ch-h p{color:var(--ink-2);margin-top:8px;max-width:44em}
+.b-book{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:28px;align-items:start}
+.b-book .stage{position:sticky;top:calc(var(--hd,64px) + 12px);aspect-ratio:4/3;border-radius:var(--r);border:1px solid var(--line-2)}
+@media (max-width:900px){.b-book{grid-template-columns:minmax(0,1fr)}.b-book .stage{position:relative;top:0}}
+
+/* toast for badges */
+.b-toast{position:fixed;z-index:80;left:50%;top:calc(var(--hd,64px) + 14px);transform:translate(-50%,-20px);display:flex;gap:12px;align-items:center;padding:12px 18px;border:1px solid var(--brand);border-radius:var(--r);background:rgba(10,19,48,.94);color:var(--ink);font:600 15px var(--display);opacity:0;pointer-events:none;transition:opacity .4s,transform .5s cubic-bezier(.2,.8,.2,1)}
+.b-toast.on{opacity:1;transform:translate(-50%,0)}
+.b-toast i{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--brand);color:#1A1200;font-style:normal}
+
+/* footer */
+.b-ft{background:#060C22;color:var(--ink-2);padding-block:56px calc(56px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.b-ft-in{display:grid;grid-template-columns:1.3fr 1fr 1.3fr 1.1fr;gap:32px}
+.b-ft h3{font:600 16px var(--display);color:var(--ink);margin-bottom:10px}
+.b-ft p,.b-ft li{font-size:14.5px;line-height:1.7}
+.b-ft ul{list-style:none;padding:0;display:grid;gap:6px}
+.b-ft a{color:var(--ink);text-underline-offset:3px}
+.b-ft .plates{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.b-ft .plate{display:inline-grid;place-items:center;padding:8px 12px;border-radius:4px;background:var(--plate)}
+.b-ft .plate img{display:block;height:32px;width:auto}
+@media (max-width:900px){.b-ft-in{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.b-ft-in{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){.b-done,.b-toast,.b-card,.b-xpbar i{transition:none}.b-game .fm-sub.is-in .fm-sub-d{animation:none}}
+</style>
+</head>
+<body>
+<a class="v-skip" href="#main">ข้ามไปเนื้อหา</a>
+<header class="v-hd">
+  <div class="wrap v-hd-in">
+    <a class="b-brand" href="#top" aria-label="SBP AirCare หน้าแรก"><span class="plate"><img src="assets/logos/sbp.png" alt="" width="30" height="22"></span><b>SBP AirCare</b></a>
+    <div class="b-xp" aria-live="polite"><p><span>ภารกิจสำเร็จ</span><b data-xp-n>0 / 8</b></p><div class="b-xpbar" aria-hidden="true"><i></i></div></div>
+    <nav class="v-nav" id="v-nav" aria-label="ภารกิจ" data-spy>
+      <a href="#missions">เลือกภารกิจ</a><a href="#how">ระบบแอร์</a><a href="#room">ขนาดห้อง</a><a href="#buy">เลือกเครื่อง</a><a href="#install">ติดตั้ง</a><a href="#clean">ล้างใหญ่</a><a href="#repair">ซ่อม</a><a href="#booking">นัดวัน</a>
+    </nav>
+    <div class="v-act">
+      <button type="button" class="b-snd" data-sound aria-pressed="false">เสียง</button>
+      <button type="button" class="b-inv" data-cart-btn aria-label="ใบเสนอราคา"><span class="qt">ใบเสนอราคา</span><span data-cart-n>0</span></button>
+      <a class="v-btn go" href="#booking" data-book>จองคิว</a>
+      <button type="button" class="v-menu" aria-expanded="false" aria-controls="v-nav">เมนู</button>
+    </div>
+  </div>
+</header>
+<p class="b-toast" role="status" aria-live="polite"></p>
+
+<main id="main">
+  <section class="b-start" id="top" aria-labelledby="h-start">
+    <div class="stage" data-stage='{"type":"cassette","shot":"hero","power":true,"auto":true}'><picture><source media="(max-width:960px)" srcset="assets/posters/b2-hero-m.jpg"><img class="stage-poster" src="assets/posters/b2-hero.jpg" alt="" fetchpriority="high" decoding="async"></picture><p class="stage-cap">แบบจำลองเพื่ออธิบาย</p></div>
+    <div class="wrap b-start-in">
+      <p class="b-pre">SBP AirCare · 8 ภารกิจ</p>
+      <h1 id="h-start" data-kinetic>ภารกิจดูแลอากาศ</h1>
+      <p class="lede">เล่นทีละขั้นไปกับทีมช่างในภาพจำลอง 3 มิติ ตั้งแต่รู้จักระบบแอร์ หาขนาดเครื่อง ติดตั้ง ล้างใหญ่ ซ่อม จนส่งทีมถึงบ้าน ทุกภารกิจจบด้วยราคาจริงจาก Pricebook และ<span class="nw">ปุ่มสั่งงาน</span></p>
+      <div class="b-cta"><a class="v-btn go" href="#how" data-start="how">เริ่มภารกิจแรก</a><a class="v-btn ghost" href="#missions">เลือกภารกิจ</a></div>
+    </div>
+  </section>
+
+  <section class="b-select" id="missions" aria-labelledby="h-missions">
+    <div class="wrap">
+      <h2 id="h-missions">เลือกภารกิจ</h2>
+      <p>เล่นตามลำดับหรือเลือกภารกิจที่ตรงกับงานของคุณ ภารกิจที่เล่นจบแล้วจะได้เหรียญ เก็บไว้ในเครื่องนี้เท่านั้น</p>
+      <ul class="b-grid">
+        <li><a class="b-card" href="#how" data-mission="how"><span class="n">ภารกิจ 1</span><b>รู้จักระบบแอร์</b><span>ตามความร้อนจากในห้องออกไปนอกบ้านให้ครบวงจร</span><small>9 ขั้น · ระบบแอร์ทั้งบ้าน</small><i class="st">ยังไม่เล่น</i></a></li>
+        <li><a class="b-card" href="#room" data-mission="room"><span class="n">ภารกิจ 2</span><b>หาขนาดที่พอดีห้อง</b><span>ดูลมเย็นเดินทางในห้อง แล้วคำนวณ BTU ของห้องคุณ</span><small>5 ขั้น · ลมในห้อง</small><i class="st">ยังไม่เล่น</i></a></li>
+        <li><a class="b-card" href="#buy" data-mission="buy"><span class="n">ภารกิจ 3</span><b>สำรวจเครื่องก่อนซื้อ</b><span>เปิดเครื่อง ดูทางลม มองทะลุ เลือกจาก <b data-fact="models">705</b> รุ่น</span><small>5 ขั้น · ตัวเครื่อง</small><i class="st">ยังไม่เล่น</i></a></li>
+        <li><a class="b-card" href="#install" data-mission="install"><span class="n">ภารกิจ 4</span><b>ติดตั้งตามมาตรฐาน</b><span>ช่าง 2 คนติดตั้งแอร์ติดผนังตามแบบฟอร์มงานติดตั้ง</span><small>13 ขั้น · ทีมช่าง</small><i class="st">ยังไม่เล่น</i></a></li>
+        <li><a class="b-card" href="#clean" data-mission="clean"><span class="n">ภารกิจ 5</span><b>ล้างใหญ่ C2</b><span>ปลดคอยล์เย็นลงล้างโดยไม่ตัดท่อน้ำยา ทีละขั้นตามแบบฟอร์ม</span><small>27 ขั้น · ทีมช่าง</small><i class="st">ยังไม่เล่น</i></a></li>
+        <li><a class="b-card" href="#repair" data-mission="repair"><span class="n">ภารกิจ 6</span><b>หาสาเหตุก่อนซ่อม</b><span>รับแจ้งอาการ ตรวจวัด แจ้งผล ซ่อมเมื่ออนุมัติ</span><small>10 ขั้น · ช่างตรวจเช็ก</small><i class="st">ยังไม่เล่น</i></a></li>
+        <li><a class="b-card" href="#quality" data-mission="quality"><span class="n">ภารกิจ 7</span><b>ตรวจวัสดุก่อนติดตั้ง</b><span>ท่อทองแดง ฉนวน สายไฟ ท่อน้ำทิ้ง เบรกเกอร์กันดูด</span><small>7 ขั้น · วัสดุ</small><i class="st">ยังไม่เล่น</i></a></li>
+        <li><a class="b-card" href="#area" data-mission="area"><span class="n">ภารกิจ 8</span><b>ส่งทีมถึงบ้านคุณ</b><span>ดูพื้นที่บริการจากถนนพระราม 2 แล้วตรวจค่าเดินทาง</span><small>3 ขั้น · แผนที่</small><i class="st">ยังไม่เล่น</i></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ภารกิจ 1 -->
+  <section class="fm b-mis" id="how" data-film='{"kind":"cycle","type":"wall","drive":"player"}' aria-labelledby="h-how">
+    <div class="wrap">
+      <header class="b-mh"><div><p class="n">ภารกิจ 1</p><h2 id="h-how">รู้จักระบบแอร์</h2><p class="obj"><b>เป้าหมาย</b> ตามลมร้อนในห้องเข้าเครื่อง ผ่านคอยล์เย็น แล้วพาความร้อนออกไปนอกบ้านให้ครบวงจร</p></div><button type="button" class="b-go" data-start="how">เริ่มภารกิจ</button></header>
+      <div class="b-game">
+        <div class="fm-stage"><span class="b-hud" aria-hidden="true"></span><p class="b-cnt" data-count></p><p class="b-done" aria-hidden="true"><b>ภารกิจสำเร็จ</b><span>ได้เหรียญ นักสำรวจระบบ</span></p><div class="fm-prog" data-prog></div></div>
+        <aside class="b-obj" aria-label="ขั้นของภารกิจ"><h3>ขั้นของภารกิจ <span data-count></span></h3><ol class="fm-shots"></ol><div class="fm-ctl"></div></aside>
+      </div>
+      <div class="b-reward"><div class="b-next"><span>ภารกิจต่อไป ความเย็นที่พอดีเริ่มจากขนาดเครื่องที่พอดีกับห้อง</span><a href="#room" data-start="room">ไปภารกิจ 2 หาขนาดที่พอดีห้อง</a></div></div>
+    </div>
+  </section>
+
+  <!-- ภารกิจ 2 -->
+  <section class="fm b-mis" id="room" data-film='{"kind":"room","drive":"player"}' aria-labelledby="h-room">
+    <div class="wrap">
+      <header class="b-mh"><div><p class="n">ภารกิจ 2</p><h2 id="h-room">หาขนาดที่พอดีห้อง</h2><p class="obj"><b>เป้าหมาย</b> ดูว่าพัดลม บานสวิง และความสะอาดของเครื่องเปลี่ยนระยะลมเย็นอย่างไร แล้วคำนวณขนาดของห้องคุณ</p></div><button type="button" class="b-go" data-start="room">เริ่มภารกิจ</button></header>
+      <div class="b-game">
+        <div class="fm-stage"><span class="b-hud" aria-hidden="true"></span><p class="b-cnt" data-count></p><p class="b-done" aria-hidden="true"><b>ภารกิจสำเร็จ</b><span>ได้เหรียญ นักวัดห้อง</span></p><div class="fm-prog" data-prog></div></div>
+        <aside class="b-obj" aria-label="ขั้นของภารกิจ"><h3>ขั้นของภารกิจ <span data-count></span></h3><ol class="fm-shots"></ol><div class="fm-ctl"></div></aside>
+      </div>
+      <div class="b-reward"><div class="b-rh"><span class="tag">รางวัล</span><h3>ขนาดเครื่องของห้องคุณ</h3><p>ใส่ขนาดห้อง ได้ BTU ที่แนะนำ แล้วดูรุ่นที่มีขนาดนั้นได้ทันที</p></div><div data-sell="room"><p class="d-load">กำลังเตรียมเครื่องคำนวณ…</p></div></div>
+    </div>
+  </section>
+
+  <!-- ภารกิจ 3 -->
+  <section class="fm b-mis" id="buy" data-film='{"kind":"unit","drive":"player"}' aria-labelledby="h-buy">
+    <div class="wrap">
+      <header class="b-mh"><div><p class="n">ภารกิจ 3</p><h2 id="h-buy">สำรวจเครื่องก่อนซื้อ</h2><p class="obj"><b>เป้าหมาย</b> เลือกรุ่นจาก <b data-fact="models">705</b> รุ่น <b data-fact="brands">22</b> ยี่ห้อ แล้วดูตัวเครื่องให้ครบทุกมุม ราคาเครื่องและค่าติดตั้งอยู่ข้างรุ่น</p></div><button type="button" class="b-go" data-start="buy">เริ่มภารกิจ</button></header>
+      <div class="b-game">
+        <div class="fm-stage stage" data-stage='{"type":"wall","shot":"hero","power":true,"auto":false}'><span class="b-hud" aria-hidden="true"></span><p class="b-cnt" data-count></p><p class="b-done" aria-hidden="true"><b>ภารกิจสำเร็จ</b><span>ได้เหรียญ นักเลือกเครื่อง</span></p><div class="fm-prog" data-prog></div></div>
+        <aside class="b-obj" aria-label="ขั้นของภารกิจ"><h3>ขั้นของภารกิจ <span data-count></span></h3><ol class="fm-shots"></ol><div class="fm-ctl"></div></aside>
+      </div>
+      <div class="b-sr"><div data-sr-ctl></div><div data-showroom><p class="d-load">กำลังเตรียมรายการรุ่น…</p></div></div>
+    </div>
+  </section>
+
+  <!-- ภารกิจ 4 -->
+  <section class="fm b-mis" id="install" data-film='{"kind":"crew","job":"install","type":"wall","level":"STANDARD","drive":"player"}' aria-labelledby="h-install">
+    <div class="wrap">
+      <header class="b-mh"><div><p class="n">ภารกิจ 4</p><h2 id="h-install">ติดตั้งตามมาตรฐาน</h2><p class="obj"><b>เป้าหมาย</b> ช่าง 2 คนติดตั้งแอร์ติดผนังตามแบบฟอร์มงานติดตั้ง SBP-SR-ACIN-UNI-001 Rev.04 ทดสอบรอยรั่วและทำสุญญากาศก่อนเปิดวาล์ว</p></div><button type="button" class="b-go" data-start="install">เริ่มภารกิจ</button></header>
+      <div class="b-game">
+        <div class="fm-stage"><span class="b-hud" aria-hidden="true"></span><p class="b-cnt" data-count></p><p class="b-done" aria-hidden="true"><b>ภารกิจสำเร็จ</b><span>ได้เหรียญ ผู้คุมงานติดตั้ง</span></p><div class="fm-prog" data-prog></div></div>
+        <aside class="b-obj" aria-label="ขั้นของภารกิจ"><h3>ขั้นของภารกิจ <span data-count></span></h3><ol class="fm-shots"></ol><dl class="b-crew" data-crew hidden></dl><div class="fm-ctl"></div></aside>
+      </div>
+      <div class="b-reward"><div class="b-rh"><span class="tag">รางวัล</span><h3>ค่าติดตั้งของงานนี้</h3><p>รวมท่อและวัสดุ 4 เมตรแรก รับประกันงานติดตั้ง 3 ปีเมื่อซื้อเครื่องกับบริษัท หรือ 1 ปีเมื่อจัดหาเครื่องเอง</p></div><div data-sell="install"><p class="d-load">กำลังเตรียมราคาติดตั้ง…</p></div></div>
+    </div>
+  </section>
+
+  <!-- ภารกิจ 5 -->
+  <section class="fm b-mis" id="clean" data-film='{"kind":"crew","job":"clean","type":"wall","level":"C2","drive":"player"}' aria-labelledby="h-clean">
+    <div class="wrap">
+      <header class="b-mh"><div><p class="n">ภารกิจ 5</p><h2 id="h-clean">ล้างใหญ่ C2</h2><p class="obj"><b>เป้าหมาย</b> ปลดคอยล์เย็นลงล้างโดยไม่ตัดท่อน้ำยา ถอดใบพัดและถาดน้ำทิ้งตามทะเบียนชิ้นส่วน ทีละขั้นตามแบบฟอร์มงานล้าง SBP-SR-ACCL-UNI-001 Rev.07</p></div><button type="button" class="b-go" data-start="clean">เริ่มภารกิจ</button></header>
+      <div class="b-game">
+        <div class="fm-stage"><span class="b-hud" aria-hidden="true"></span><p class="b-cnt" data-count></p><p class="b-done" aria-hidden="true"><b>ภารกิจสำเร็จ</b><span>ได้เหรียญ ผู้คุมงานล้าง</span></p><div class="fm-prog" data-prog></div></div>
+        <aside class="b-obj" aria-label="ขั้นของภารกิจ"><h3>ขั้นของภารกิจ <span data-count></span></h3><ol class="fm-shots"></ol><dl class="b-crew" data-crew hidden></dl><div class="fm-ctl"></div></aside>
+      </div>
+      <div class="b-reward"><div class="b-rh"><span class="tag">รางวัล</span><h3>ค่าล้างของเครื่องคุณ</h3><p>เลือกประเภท ขนาด วิธีล้าง แพ็กเกจ และจำนวนเครื่อง ได้ราคาจาก Pricebook ทันที</p></div><div data-sell="clean"><p class="d-load">กำลังเตรียมราคางานล้าง…</p></div></div>
+    </div>
+  </section>
+
+  <!-- ภารกิจ 6 -->
+  <section class="fm b-mis" id="repair" data-film='{"kind":"story","story":"repair","drive":"player"}' aria-labelledby="h-repair">
+    <div class="wrap">
+      <header class="b-mh"><div><p class="n">ภารกิจ 6</p><h2 id="h-repair">หาสาเหตุก่อนซ่อม</h2><p class="obj"><b>เป้าหมาย</b> รับแจ้งอาการ ตรวจวัดที่หน้างาน แจ้งผลและราคาเป็นรายรายการ แล้วลงมือเมื่อลูกค้าอนุมัติเท่านั้น</p></div><button type="button" class="b-go" data-start="repair">เริ่มภารกิจ</button></header>
+      <div class="b-game">
+        <div class="fm-stage"><span class="b-hud" aria-hidden="true"></span><p class="b-cnt" data-count></p><p class="b-done" aria-hidden="true"><b>ภารกิจสำเร็จ</b><span>ได้เหรียญ นักวินิจฉัย</span></p><div class="fm-prog" data-prog></div></div>
+        <aside class="b-obj" aria-label="ขั้นของภารกิจ"><h3>ขั้นของภารกิจ <span data-count></span></h3><ol class="fm-shots"></ol><div class="fm-ctl"></div></aside>
+      </div>
+      <div class="b-reward"><div class="b-rh"><span class="tag">รางวัล</span><h3>เล่าอาการของแอร์คุณ</h3><p>ตอบสามข้อ เราชี้สาเหตุที่พบบ่อยในภาพ แนะนำงานที่ควรทำก่อน พร้อมราคา ช่างยืนยันสาเหตุจริงที่หน้างานเสมอ</p></div>
+        <div class="b-ask"><div data-concierge><p class="d-load">กำลังเตรียมคำถาม…</p></div><div class="stage" data-cc-stage data-stage='{"type":"wall","shot":"close","power":true,"auto":false}'><p class="stage-cap">แบบจำลองเพื่ออธิบาย</p></div></div>
+        <div data-sell="repair"></div></div>
+    </div>
+  </section>
+
+  <!-- ภารกิจ 7 -->
+  <section class="fm b-mis" id="quality" data-film='{"kind":"materials","drive":"player"}' aria-labelledby="h-quality">
+    <div class="wrap">
+      <header class="b-mh"><div><p class="n">ภารกิจ 7</p><h2 id="h-quality">ตรวจวัสดุก่อนติดตั้ง</h2><p class="obj"><b>เป้าหมาย</b> ดูวัสดุทุกชิ้นที่อยู่ในผนังหลังติดตั้งเสร็จ ทุกรายการระบุยี่ห้อ ทองแดงหนา 0.70 มม.</p></div><button type="button" class="b-go" data-start="quality">เริ่มภารกิจ</button></header>
+      <div class="b-game">
+        <div class="fm-stage"><span class="b-hud" aria-hidden="true"></span><p class="b-cnt" data-count></p><p class="b-done" aria-hidden="true"><b>ภารกิจสำเร็จ</b><span>ได้เหรียญ ผู้ตรวจวัสดุ</span></p><div class="fm-prog" data-prog></div></div>
+        <aside class="b-obj" aria-label="ขั้นของภารกิจ"><h3>ขั้นของภารกิจ <span data-count></span></h3><ol class="fm-shots"></ol><div class="fm-ctl"></div></aside>
+      </div>
+      <div class="b-reward"><div class="b-rh"><span class="tag">รางวัล</span><h3>วัสดุแต่ละระดับงาน</h3><p>ตารางเดียวกับที่ทีมใช้เตรียมงาน</p></div><div data-sell="quality"><p class="d-load">กำลังเตรียมตารางวัสดุ…</p></div></div>
+    </div>
+  </section>
+
+  <!-- ภารกิจ 8 -->
+  <section class="fm b-mis" id="area" data-film='{"kind":"map","drive":"player"}' aria-labelledby="h-area">
+    <div class="wrap">
+      <header class="b-mh"><div><p class="n">ภารกิจ 8</p><h2 id="h-area">ส่งทีมถึงบ้านคุณ</h2><p class="obj"><b>เป้าหมาย</b> ดูพื้นที่บริการจากสำนักงานใหญ่ถนนพระราม 2 แล้วตรวจว่าบ้านคุณอยู่ในพื้นที่และมีค่าเดินทางเท่าไร</p></div><button type="button" class="b-go" data-start="area">เริ่มภารกิจ</button></header>
+      <div class="b-game">
+        <div class="fm-stage"><span class="b-hud" aria-hidden="true"></span><p class="b-cnt" data-count></p><p class="b-done" aria-hidden="true"><b>ภารกิจสำเร็จ</b><span>ได้เหรียญ ผู้นำทาง</span></p><div class="fm-prog" data-prog></div></div>
+        <aside class="b-obj" aria-label="ขั้นของภารกิจ"><h3>ขั้นของภารกิจ <span data-count></span></h3><ol class="fm-shots"></ol><div class="fm-ctl"></div></aside>
+      </div>
+      <div class="b-reward"><div class="b-rh"><span class="tag">รางวัล</span><h3>พื้นที่และค่าเดินทางของคุณ</h3><p>พิมพ์เขต อำเภอ หรือจังหวัด ดูผลบนแผนที่และค่าเดินทางต่อเที่ยว</p></div><div data-sell="area"><p class="d-load">กำลังเตรียมพื้นที่บริการ…</p></div></div>
+    </div>
+  </section>
+
+  <section class="b-sec" id="booking" aria-labelledby="h-booking">
+    <div class="wrap">
+      <header class="ch-h"><h2 id="h-booking">นัดทีมช่าง</h2><p>เลือกวันที่สะดวก ทีมโทรยืนยันวัน เวลา และราคาก่อนเข้างานทุกครั้ง ได้เลขที่คำขอไว้ตรวจสถานะเอง ใบเสนอราคาที่เก็บไว้ส่งไปพร้อมคำขอ</p></header>
+      <div class="b-book">
+        <div class="stage" data-stage='{"type":"wall","shot":"wide","power":true,"auto":false}'><p class="stage-cap">แบบจำลองเพื่ออธิบาย</p></div>
+        <div id="bookRoot"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="b-sec" id="contact" aria-labelledby="h-contact">
+    <div class="wrap">
+      <header class="ch-h"><h2 id="h-contact">คำถามที่พบบ่อยและติดต่อ</h2><p>ไม่พบคำตอบ ฝากชื่อและเบอร์ไว้ ทีมติดต่อกลับ หรือโทรหาเราโดยตรง</p></header>
+      <div class="d-split">
+        <div class="d-col" id="faqList"></div>
+        <div class="d-col" id="quote">
+          <div class="d-contact">
+            <p><b data-company="th">บริษัท สหบูรพากรุ๊ป จำกัด</b><br><span data-company="addr">593 ถนนพระราม 2 แขวงบางมด เขตจอมทอง กรุงเทพฯ 10150</span></p>
+            <p>โทร <a href="tel:024593291" data-company="tel">02-459-3291-9</a><br>อีเมล <span data-company="email">Sahaburapa.official@gmail.com</span></p>
+          </div>
+          <form id="qform" class="d-form">
+            <label class="d-field">ชื่อ<input id="q-name" autocomplete="name" required></label>
+            <label class="d-field">เบอร์โทร<input id="q-tel" inputmode="tel" autocomplete="tel" required pattern="[0-9\- ]{9,12}"></label>
+            <label class="d-field">อีเมล (ถ้ามี)<input id="q-email" type="email" autocomplete="email"></label>
+            <button class="v-btn go">ส่งให้ทีมติดต่อกลับ</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="b-ft">
+  <div class="wrap b-ft-in">
+    <div><div class="plates"><span class="plate"><img src="assets/logos/sbp.png" alt="SP Quality Brand บริษัท สหบูรพากรุ๊ป จำกัด" width="55" height="40"></span><span class="plate"><img src="assets/logos/fujiva.png" alt="FUJIVA แบรนด์แอร์ของบริษัท" width="110" height="36"></span></div>
+      <p>SBP AirCare บริการล้าง ติดตั้ง ซ่อม และสัญญาดูแลแอร์ของ<span class="nw">บริษัท สหบูรพากรุ๊ป จำกัด</span></p></div>
+    <div><h3>ภารกิจ</h3><ul><li><a href="#install">ติดตั้งตามมาตรฐาน</a></li><li><a href="#clean">ล้างใหญ่ C2</a></li><li><a href="#repair">หาสาเหตุก่อนซ่อม</a></li><li><a href="#buy">สำรวจเครื่องก่อนซื้อ</a></li><li><button type="button" class="v-link" data-prices="clean">ราคาค่าบริการทั้งหมด</button></li></ul></div>
+    <div><h3>ราคาบนเว็บ</h3><p>ทุกราคาก่อน VAT ปัดเป็นหลักร้อย จาก Pricebook 2569 ของบริษัท บุคคลทั่วไปชำระตามราคาที่แสดง นิติบุคคลที่ต้องการใบกำกับภาษีบวก VAT 7% รายการประเมินหน้างานแจ้งราคาก่อนเริ่มงาน ภาพ 3 มิติทั้งหมดเป็นแบบจำลองเพื่ออธิบาย เหรียญในหน้านี้เป็นเพียงการนับภารกิจที่เล่นจบ ไม่มีมูลค่าและไม่ใช่ส่วนลด</p></div>
+    <div><h3>เว็บไซต์ทดลอง</h3><p>แบบ B2 ภารกิจ ของเว็บต้นแบบ SBP AirCare รุ่นที่ 2 ใช้ข้อมูลและระบบจองคิวชุดเดียวกับทุกแบบ</p><p><a href="./">เทียบทุกแบบ</a></p><p><button type="button" class="v-btn ghost" data-feedback>ให้ความเห็นเรื่องเว็บไซต์</button></p></div>
+  </div>
+</footer>
+<div class="drawer" data-drawer id="drawer" hidden><div class="dp" role="dialog" aria-modal="true" aria-label="รายละเอียด"><button type="button" class="x" data-close aria-label="ปิด">×</button><div id="drawerBody"></div></div></div>
+
+<script type="module">
+// r16 แบบ B2 · ภารกิจ — every chapter a mission played step by step (film.js "player"); badges kept in this browser only
+import { mountFilmSite } from './assets/filmsite.js';
+import { tone } from './assets/filmfx.js';
+const KEY = 'sbp-b2-missions', IDS = ['how', 'room', 'buy', 'install', 'clean', 'repair', 'quality', 'area'];
+const BADGE = { how: 'นักสำรวจระบบ', room: 'นักวัดห้อง', buy: 'นักเลือกเครื่อง', install: 'ผู้คุมงานติดตั้ง', clean: 'ผู้คุมงานล้าง', repair: 'นักวินิจฉัย', quality: 'ผู้ตรวจวัสดุ', area: 'ผู้นำทาง' };
+let done = new Set();
+try { done = new Set((JSON.parse(localStorage.getItem(KEY) || '[]') || []).filter(x => IDS.includes(x))); } catch (_) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch (_) {} };
+const hud = () => {
+  document.querySelector('[data-xp-n]').textContent = `${done.size} / ${IDS.length}`;
+  document.querySelector('.b-xp').style.setProperty('--xp', done.size / IDS.length);
+  document.querySelectorAll('[data-mission]').forEach(a => { const on = done.has(a.dataset.mission); a.toggleAttribute('data-done', on); a.querySelector('.st').textContent = on ? 'สำเร็จ' : 'ยังไม่เล่น'; });
+  IDS.forEach(id => document.getElementById(id)?.classList.toggle('is-done', done.has(id)));
+};
+const toastEl = document.querySelector('.b-toast');
+let tt = 0;
+const badge = text => { toastEl.replaceChildren(Object.assign(document.createElement('i'), { textContent: '★', ariaHidden: 'true' }), text); toastEl.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => toastEl.classList.remove('on'), 3600); };
+hud();
+
+const api = await mountFilmSite({
+  variant: 'B2', theme: 'dark', mood: 'tower', place: 'home', srStart: { type: 'wall' },
+  onStep(ch, i, s) {
+    if (i >= 0) tone('step');
+    // crew missions: who does what in this step
+    const crew = ch.el.querySelector('[data-crew]');
+    if (crew) { crew.hidden = !(s && s.who); if (s && s.who) crew.replaceChildren(...[['ช่างหัวหน้า', s.who[0]], ['ช่างผู้ช่วย', s.who[1]]].flatMap(([k, v]) => [Object.assign(document.createElement('dt'), { textContent: k }), Object.assign(document.createElement('dd'), { textContent: v })])); }
+    // leaving the last step takes the banner away
+    if (ch.steps && i < ch.steps.length - 1) ch.el.classList.remove('is-won');
+  },
+  onDone(ch) {
+    ch.el.classList.add('is-won'); setTimeout(() => ch.el.classList.remove('is-won'), 3800);
+    tone('done');
+    if (!done.has(ch.id) && BADGE[ch.id]) { done.add(ch.id); save(); hud(); setTimeout(() => { badge(`ได้เหรียญ ${BADGE[ch.id]} · ภารกิจ ${done.size} จาก ${IDS.length}`); tone('badge'); }, 900); }
+  },
+});
+// "เริ่มภารกิจ": from the first step, with the viewport on screen
+document.querySelectorAll('[data-start]').forEach(b => b.addEventListener('click', e => {
+  const id = b.dataset.start, sec = document.getElementById(id); if (!sec) return;
+  if (b.tagName === 'A') e.preventDefault();
+  const view = sec.querySelector('.b-game') || sec;
+  view.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+  api.film.go(id, -1); setTimeout(() => api.film.play(id), 700);
+}));
+// a mission card scrolls to its mission and plays it
+document.querySelectorAll('[data-mission]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); document.querySelector(`[data-start="${a.dataset.mission}"].b-go`)?.click(); history.replaceState(null, '', '#' + a.dataset.mission); }));
+</script>
+</body>
+</html>

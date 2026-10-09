@@ -1,0 +1,67 @@
+/* C3 "โชว์รูม" — people choosing a new AC for a home or condo; job: pick the right model and see it in the room.
+   Gallery white with a cool mist for bands, deep navy ink, FUJIVA blue for marks, orange only on the primary action.
+   Type: Noto Serif Thai as the display face (large, calm), Anuphan for reading. The pages are a row of tabs under the
+   header, centred like a showroom's floor plan. Signature: the serif statement over a panoramic room photograph. */
+:root{
+  --bg:#FFFFFF; --tile:#FFFFFF; --tile-2:#F2F5F8; --ink:#101C2E; --ink-2:#465467; --ink-3:#596678;
+  --line:rgba(16,28,46,.11); --blue:#163F80; --blue-2:#1B51A4; --blue-l:#E9EFF9; --or:#C4401F; --or-d:#A9361A; --or-l:#FDECE6; --on-or:#FFFFFF;
+  --brand-or:#EF4E2E; --brand-blue:#1B51A4; --plate:transparent; --ok:#166A3B; --warn:#9E4A0B; --bad:#B02A26; --feature:#101C2E; --feature-ink:#F2F5F8;
+  --shadow:0 1px 1px rgba(16,28,46,.04),0 18px 40px -26px rgba(16,28,46,.28);
+  --r:24px; --r-s:14px; --r-ph:28px;
+  --sans:'Anuphan','Noto Sans Thai','Leelawadee UI',Tahoma,sans-serif; --display:'Noto Serif Thai','Anuphan',Georgia,serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --ease:cubic-bezier(.22,.7,.18,1); --hdr-h:124px;
+  --s-card:var(--tile); --s-card-2:var(--tile-2); --s-ink:var(--ink); --s-ink-2:var(--ink-2); --s-ink-3:var(--ink-3); --s-line:var(--line); --s-accent:var(--or); --s-on-accent:var(--on-or); --s-accent-soft:var(--blue-l); --s-ok:var(--ok); --s-warn:var(--warn); --s-bad:var(--bad); --s-r:14px; --s-mono:var(--mono);
+}
+h1,h2{font-family:var(--display);font-weight:500;letter-spacing:-.005em}
+h3,h4{font-family:var(--sans);font-weight:600}
+.proto{background:var(--tile-2);color:var(--ink-2)}.proto a{color:var(--blue-2)}
+/* header + the page tabs row */
+.hdr{background:rgba(255,255,255,.92)}
+.hdr>.wrap{height:64px;justify-content:space-between}
+.c3-tabs{border-top:1px solid var(--line)}
+.c3-tabs .wrap{height:auto}
+.c3-tabs .nav{display:flex;justify-content:center;margin:0;padding-block:6px;gap:4px}
+.c3-tabs .nav a{font-size:15px;padding:8px 14px;color:var(--ink-2)}
+.c3-tabs .nav a[aria-current="page"]{background:var(--ink);color:#fff}
+@media (max-width:1080px){.c3-tabs .nav{justify-content:flex-start}}
+@media (max-width:640px){.logo small{display:none}.vsw a{padding:5px 7px}.c3-tabs .nav a{padding:7px 11px;font-size:14.5px}}
+.vsw a[aria-current]{background:var(--ink);color:#fff}
+/* hero */
+.c3-hero{padding-block:clamp(28px,5vw,64px) 8px;display:grid;gap:clamp(20px,3vw,32px)}
+.c3-hero-t{text-align:center;display:grid;justify-items:center;gap:16px}
+.c3-hero h1{font-size:clamp(32px,4.8vw,62px);line-height:1.28;max-width:18em}
+.c3-hero .lede{font-size:17.5px;line-height:1.8;color:var(--ink-2);max-width:40em}
+.c3-cta{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.c3-hero-ph{--ar:21/9}
+@media (max-width:640px){.c3-hero-ph{--ar:4/3}.c3-hero-t{text-align:left;justify-items:start}.c3-cta{justify-content:flex-start}}
+.c3-jobs{grid-template-columns:repeat(4,minmax(0,1fr))}
+.c3-jobs a{grid-template-columns:auto minmax(0,1fr);border:0;background:var(--tile-2);border-radius:var(--r-s)}
+.c3-jobs .jp{grid-column:2;text-align:left;font-weight:600;color:var(--ink)}
+@media (max-width:980px){.c3-jobs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.c3-jobs{grid-template-columns:minmax(0,1fr)}}
+/* sections: centred headings on the home page, generous air everywhere */
+section.sec{padding-block:64px 8px}
+.sec-h h2{font-size:clamp(26px,3vw,38px);line-height:1.32}
+.sx-vh{padding-block:40px 6px}
+.sx-vh h1{font-size:clamp(32px,4.4vw,52px);font-weight:500;line-height:1.25}
+#start .sx-int{border:0;background:var(--tile-2);border-radius:var(--r-s)}
+#start .sx-ico{border-radius:50%;background:var(--tile);color:var(--blue-2)}
+.svc .tile{box-shadow:none;background:var(--tile-2)}
+.sx-nc{border:0;background:var(--tile-2)}
+footer{background:var(--tile-2);border-top:0}
+.c3-tabs .nav{flex:1}
+.c3-hero>.wrap{width:100%}
+/* r17 · gallery prints: every photo hangs in a white mat with a soft shadow on the wall, lit from above; the hero gets a
+   spotlight on the wall behind the headline and a soft shadow under the panorama */
+:root{
+  --r-ph:6px;
+  --ph-shadow:0 0 0 10px #FFFFFF,0 0 0 11px rgba(16,28,46,.08),0 40px 60px -36px rgba(16,28,46,.45);
+  --ph-light:radial-gradient(130% 90% at 50% -12%,rgba(255,255,255,.34),rgba(255,255,255,0) 58%),linear-gradient(0deg,rgba(16,28,46,.18),rgba(16,28,46,0) 34%);
+  --ph-blend:soft-light;
+}
+.c3-hero{background:radial-gradient(56% 62% at 50% 0%,#E6EDF6 0%,rgba(230,237,246,.55) 38%,rgba(255,255,255,0) 72%)}
+.c3-hero>.wrap:has(.ph3)::after{content:"";display:block;height:34px;margin:2px 6% 0;background:radial-gradient(50% 60% at 50% 0%,rgba(16,28,46,.16),rgba(16,28,46,0) 72%)}
+.c3-hero-ph{--ph-pos:50% 46%}
+.ph3{margin:11px}
+.c3-hero .ph3{margin-inline:11px}
+.sx-vh.has-ph{background:radial-gradient(40% 70% at 76% 40%,#EDF2F8,rgba(237,242,248,0) 70%)}

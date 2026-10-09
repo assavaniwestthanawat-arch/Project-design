@@ -1,0 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="assets/fonts.css"><link rel="stylesheet" href="assets/shared.css">
+<style>:root{--s-card:#fff;--s-card-2:#f4f6f9;--s-ink:#16202b;--s-ink-2:#3d4a58;--s-ink-3:#616c7a;--s-line:#d9e0e8;--s-accent:#ad5110;--s-on-accent:#fff;--s-ok:#1c7a43;--s-warn:#9a5b00;--s-bad:#b3261e;--s-r:14px;--s-mono:ui-monospace,monospace}body{margin:0;padding:20px;font-family:'IBM Plex Sans Thai',sans-serif;background:#eef2f6}#r{max-width:1200px;margin:auto}</style></head>
+<body class="s-light"><div id="r"></div><script type="module">
+import { mountThrowSim } from './assets/throwsim3d.js';
+const q = new URLSearchParams(location.search);
+if (q.get('theme') === 'dark') { document.body.style.background = '#090e14'; Object.entries({ '--s-card': '#111a24', '--s-card-2': '#172230', '--s-ink': '#eaf0f6', '--s-ink-2': '#a6b3c2', '--s-ink-3': '#8a99ab', '--s-line': 'rgba(150,190,230,.13)', '--s-accent': '#ff8a3d', '--s-on-accent': '#0f1c2b' }).forEach(([k, v]) => document.documentElement.style.setProperty(k, v)); }
+window.TS = mountThrowSim(document.getElementById('r'), { theme: q.get('theme') || 'light', type: q.get('type') || 'wall', style: q.get('style') || 'remote' });
+window.READY = true;
+</script></body></html>
