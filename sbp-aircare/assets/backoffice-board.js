@@ -292,7 +292,7 @@ export function mountBoard(root) {
       e.preventDefault(); why.removeAttribute('aria-invalid'); const w = why.value.trim();
       if (!w) return bad(err, why, errTh('reason_required'));
       if (!confirm(`ยกเลิกรายการเรียกเก็บ ${r.ref} (${thb(r.amount)})? ลูกค้าจะชำระรายการนี้ไม่ได้อีก`)) return;
-      payAct(t, go, err, () => api.payVoid(r.id, w), `ยกเลิกรายการ ${r.ref} แล้ว`, key);
+      payAct(t, go, err, () => api.payVoid(r.id, w, session.name), `ยกเลิกรายการ ${r.ref} แล้ว`, key);
     });
     return fold(key, 'ยกเลิกรายการนี้', f);
   }

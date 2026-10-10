@@ -41,6 +41,7 @@ export function limiter() {
       if (e.n >= max) return false;
       e.n++; return true;
     },
+    peek(key, max) { const e = m.get(key); return !e || e.reset <= clock() || e.n < max; },
     sweep() { const t = clock(); for (const [k, e] of m) if (e.reset <= t) m.delete(k); },
     size: () => m.size,
   };

@@ -63,7 +63,7 @@ export const staffApi = token => ({
   me: () => call({ action: 'me', token }),
   payDetail: id => call({ action: 'paydetail', token, id }),
   payRequest: (id, o) => call({ action: 'payreq', token, id, ...o }),
-  payVoid: (req, reason) => call({ action: 'payvoid', token, req, reason }),
+  payVoid: (req, reason, staff) => call({ action: 'payvoid', token, req, reason, staff }),
   payRecord: (id, o) => call({ action: 'payrecord', token, id, ...o }),
   payVerify: (payment, decision, o = {}) => call({ action: 'payverify', token, payment, decision, ...o }),
   refund: (id, o) => call({ action: 'refund', token, id, ...o }),

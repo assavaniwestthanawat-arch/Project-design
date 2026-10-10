@@ -48,10 +48,14 @@ export function setActive(db, username, active) {
 
 export function login(ctx, b, req) {
   const { db, rl, cfg } = ctx;
-  const ip = req && req.ip || '';
-  if (!rl.hit('login:ip:' + ip, cfg.limits.loginPerIp, 15 * 60e3)) return { ok: false, error: 'rate_limited' };
-  const u = db.prepare(`SELECT * FROM staff WHERE username = ? AND active = 1`).get(str(b.user, 40).toLowerCase());
-  if (!u || !verifyPw(String(b.password || ''), u.pwHash)) { audit(db, str(b.user, 40) || '-', 'staff.login_failed', '', { ip: sha256('ip:' + ip).slice(0, 12) }); return { ok: false, error: 'unauthorized' }; }
+  const ip = req && req.ip || '', user = str(b.user, 40).toLowerCase(), W = 15 * 60e3, max = cfg.limits.loginPerIp;
+  // only FAILED attempts count (per address and per username): a shared office address must not lock the team out
+  if (!rl.peek('login:ip:' + ip, max) || !rl.peek('login:u:' + user, max)) return { ok: false, error: 'rate_limited' };
+  const u = db.prepare(`SELECT * FROM staff WHERE username = ? AND active = 1`).get(user);
+  if (!u || !verifyPw(String(b.password || ''), u.pwHash)) {
+    rl.hit('login:ip:' + ip, max, W); rl.hit('login:u:' + user, max, W);
+    audit(db, str(b.user, 40) || '-', 'staff.login_failed', '', { ip: sha256('ip:' + ip).slice(0, 12) }); return { ok: false, error: 'unauthorized' };
+  }
   const tk = token(32);
   db.prepare(`DELETE FROM sessions WHERE expiresMs < ?`).run(nowMs());
   db.prepare(`INSERT INTO sessions (tokenHash, staffId, createdAt, expiresMs) VALUES (?, ?, ?, ?)`).run(sha256(tk), u.id, now(), nowMs() + SESSION_MS);

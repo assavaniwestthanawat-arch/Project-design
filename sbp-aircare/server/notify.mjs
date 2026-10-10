@@ -39,12 +39,12 @@ export function createNotifier(ctx) {
       `เรียนคุณ ${o.name}\n\nคำขอเลขที่ ${o.id} (${SERVICES[o.service] || KINDS[o.kind]})\nสถานะ: ${STATUSES[o.status] || o.status}${when}${trackUrl(o.id) ? '\n\nตรวจสถานะ: ' + trackUrl(o.id) : ''}\n\nหากต้องการเปลี่ยนวันนัด กรุณาโทรหาบริษัท` + SIGN, o.id);
   };
   const notifyPayRequest = (t, r) => {
-    if (!t.email) return;
+    if (!cfg.customerNotify || !t.email) return;
     enqueue('email', t.email, `SBP AirCare · รายการชำระเงิน ${t.id}`,
       `เรียนคุณ ${t.name}\n\nรายการชำระเงินสำหรับคำขอเลขที่ ${t.id}\n${REQ_KINDS[r.kind] || r.kind}: ${fmtBaht(r.amount)} บาท\nรหัสอ้างอิงสำหรับใส่ในบันทึกการโอน: ${r.ref}\nชำระได้ถึง: ${r.expiresAt}\n\nเลือกวิธีชำระ (พร้อมเพย์ โอนเข้าบัญชีบริษัท หรือชำระหน้างาน) ที่หน้าเว็บไซต์ด้วยเลขที่คำขอและเบอร์โทร${trackUrl(t.id) ? '\n' + trackUrl(t.id) : ''}\nบริษัทยืนยันยอดจากบัญชีธนาคารก่อนออกเลขที่ใบเสร็จ` + SIGN, t.id);
   };
   const notifyPaid = (t, p) => {
-    if (!t || !t.email) return;
+    if (!cfg.customerNotify || !t || !t.email) return;
     enqueue('email', t.email, `SBP AirCare · ได้รับชำระเงินแล้ว ${t.id}`,
       `เรียนคุณ ${t.name}\n\nบริษัทได้รับชำระเงินสำหรับคำขอเลขที่ ${t.id} แล้ว\nจำนวน: ${fmtBaht(p.amount)} บาท\nเลขที่ใบเสร็จ: ${p.receiptNo}\n\nหากต้องการใบกำกับภาษีหรือเอกสารเพิ่มเติม กรุณาติดต่อบริษัท` + SIGN, t.id);
   };
