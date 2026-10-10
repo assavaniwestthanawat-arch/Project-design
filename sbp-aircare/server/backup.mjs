@@ -23,8 +23,10 @@ export function verifyBackup(file) {
 
 export function backupNow(db, cfg) {
   mkdirSync(cfg.backupDir, { recursive: true });
-  const stamp = now().replace(/[-: ]/g, '').replace(/^(\d{8})(\d{6})$/, '$1-$2');
-  const file = join(cfg.backupDir, `aircare-${stamp}.sqlite`);
+  // one file per second (the name pattern below is also used by deploy/offsite-backup.sh) — a second run in the same second waits
+  const name = () => join(cfg.backupDir, `aircare-${now().replace(/[-: ]/g, '').replace(/^(\d{8})(\d{6})$/, '$1-$2')}.sqlite`);
+  let file = name();
+  for (let i = 0; i < 12 && existsSync(file); i++) { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 250); file = name(); }
   db.exec(`VACUUM INTO '${file.replace(/'/g, "''")}'`);
   const v = verifyBackup(file);
   if (!v.ok) throw new Error('backup verification failed: ' + JSON.stringify(v));

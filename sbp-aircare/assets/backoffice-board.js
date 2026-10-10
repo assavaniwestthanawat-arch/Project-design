@@ -242,7 +242,7 @@ export function mountBoard(root) {
     // payment requests
     const reqRow = r => h('li', {}, h('div', { class: 'bo-rw' }, h('span', {}, `${K[r.kind] || r.kind} `, h('b', {}, thb(r.amount))), h('span', { class: 'bo-ps rq-' + r.status }, r.statusTh || r.status)),
       meta([`รหัสอ้างอิง ${r.ref}`, r.paid > 0 && r.paid < r.amount ? `รับแล้ว ${thb(r.paid)}` : '', r.status === 'open' && r.expiresAt ? `ชำระได้ถึง ${thDay(r.expiresAt)}` : '', r.createdBy ? `โดย ${r.createdBy}` : '']),
-      r.note ? h('small', {}, r.note) : null, r.status === 'open' && can.request && !(r.paid > 0) ? voidForm(t, r) : null);
+      r.note ? h('small', {}, r.note) : null, r.status === 'open' && can.request && !(r.paid > 0) && !(d.payments || []).some(p => p.reqId === r.id && ['submitted', 'pending'].includes(p.status)) ? voidForm(t, r) : null);
     // payments received
     const payRow = p => {
       const err = h('p', { class: 'bo-err', role: 'alert' });

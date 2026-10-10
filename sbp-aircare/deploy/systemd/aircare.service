@@ -1,0 +1,54 @@
+# SBP AirCare — the website as a systemd service (plain Ubuntu install, deploy/DEPLOY_TH.md ทางที่ 2). Rev.10.
+#   sudo cp deploy/systemd/aircare.service /etc/systemd/system/ && sudo systemctl daemon-reload
+#   sudo systemctl enable --now aircare          · status: systemctl status aircare · log: journalctl -u aircare -f
+# Settings: /etc/aircare/aircare.env (copy of deploy/.env.example; HOST=127.0.0.1, DATA_DIR=/var/lib/aircare,
+# TRUST_PROXY=1 — Caddy on the same machine is the only way in). Code in /opt/aircare/sbp-aircare stays read-only.
+[Unit]
+Description=SBP AirCare website (Node.js)
+Documentation=file:///opt/aircare/sbp-aircare/deploy/DEPLOY_TH.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=aircare
+Group=aircare
+WorkingDirectory=/opt/aircare/sbp-aircare
+EnvironmentFile=/etc/aircare/aircare.env
+ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning server/index.mjs
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=15
+UMask=0077
+
+# hardening — the process can write only its data folder
+StateDirectory=aircare
+StateDirectoryMode=0750
+ReadWritePaths=/var/lib/aircare
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+LockPersonality=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+# MemoryDenyWriteExecute must stay off: the V8 JIT needs writable + executable memory
+
+[Install]
+WantedBy=multi-user.target

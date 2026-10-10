@@ -1,0 +1,33 @@
+# SBP AirCare — Caddy in front of the Node app (Rev.10). Automatic HTTPS: Let's Encrypt (ZeroSSL fallback), renewals and
+# the HTTP → HTTPS redirect are built in. Needs: the domain's A/AAAA record pointing at this server, ports 80 + 443 open.
+#   Docker:       deploy/compose.yaml mounts this file and passes SITE_DOMAIN / ACME_EMAIL (from deploy/.env) and
+#                 APP_UPSTREAM=app:8080.
+#   Plain Ubuntu: sudo cp deploy/Caddyfile /etc/caddy/Caddyfile and put SITE_DOMAIN / ACME_EMAIL in the drop-in
+#                 deploy/systemd/caddy-aircare.conf (APP_UPSTREAM defaults to 127.0.0.1:8080).
+# Caddy sets X-Forwarded-For (the real visitor IP, client-sent values are ignored) and X-Forwarded-Proto; the app trusts
+# them because TRUST_PROXY=1 and its port is reachable only from Caddy. Keep Cloudflare DNS records "DNS only" (grey
+# cloud): behind the Cloudflare proxy the visitor IP would need extra trusted_proxies settings that are not set up here.
+{
+	email {$ACME_EMAIL}
+}
+
+{$SITE_DOMAIN} {
+	request_body {
+		max_size 1MB
+	}
+	header -Server
+	reverse_proxy {$APP_UPSTREAM:127.0.0.1:8080}
+	# access log, rolled; kept up to 90 days (IP addresses are personal data — PDPA; see DEPLOY_TH.md "บันทึกการเข้าใช้")
+	log {
+		output file /var/log/caddy/aircare-access.log {
+			roll_size 20MiB
+			roll_keep 50
+			roll_keep_for 2160h
+		}
+	}
+}
+
+# Optional: send www.<domain> to the main address (add a www A record first, then remove the leading #).
+# www.{$SITE_DOMAIN} {
+# 	redir https://{$SITE_DOMAIN}{uri} permanent
+# }

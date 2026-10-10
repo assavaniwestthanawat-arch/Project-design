@@ -1,0 +1,30 @@
+# SBP AirCare — Docker build context = this folder (deploy/compose.yaml: context ..). Deny everything, then allow only
+# what deploy/Dockerfile copies. internal/ (special/project rates), tests/, tools/, backoffice/, docs (*.md), dist/,
+# node_modules/, data/ and .env files never enter the build context.
+*
+!package.json
+!server/
+!assets/
+!a.html
+!b.html
+!c.html
+!d.html
+!a2.html
+!b2.html
+!c2.html
+!d2.html
+!a3.html
+!b3.html
+!c3.html
+!backoffice.html
+!privacy.html
+!terms.html
+!refund.html
+
+# never, even inside the allowed folders
+**/*.md
+**/*.txt
+**/README*
+**/.*
+**/*.py
+assets/photos/photos.json

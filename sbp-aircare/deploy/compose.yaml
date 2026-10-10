@@ -1,0 +1,61 @@
+# SBP AirCare — Docker Compose (Rev.10): the Node app + Caddy (automatic HTTPS). Run everything from sbp-aircare/:
+#   cp deploy/.env.example deploy/.env && nano deploy/.env        (fill it in — deploy/DEPLOY_TH.md)
+#   docker compose -f deploy/compose.yaml up -d --build             (start / update)
+#   docker compose -f deploy/compose.yaml logs -f app               (app log)
+# The app publishes NO port: only Caddy on this compose network can reach it. That is what makes TRUST_PROXY=1 safe
+# (the app believes X-Forwarded-For / -Proto) — never add a "ports:" entry to the app (Docker ports also bypass ufw).
+# deploy/.env feeds the app (env_file) and gives Caddy SITE_DOMAIN / ACME_EMAIL (compose reads .env next to this file).
+name: sbp-aircare
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: sbp-aircare:latest
+    env_file: .env
+    environment:
+      # fixed for the container whatever deploy/.env says (the systemd path uses other values)
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: "8080"
+      DATA_DIR: /data
+      TRUST_PROXY: "1"
+    volumes:
+      - aircare-data:/data
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 15s
+    # runs as the image's 'node' user; it needs no Linux capabilities at all
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: "5" }
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [app]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?set SITE_DOMAIN in deploy/.env}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in deploy/.env}
+      APP_UPSTREAM: app:8080
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - caddy_logs:/var/log/caddy
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: "5" }
+
+volumes:
+  aircare-data:
+  caddy_data:
+  caddy_config:
+  caddy_logs:

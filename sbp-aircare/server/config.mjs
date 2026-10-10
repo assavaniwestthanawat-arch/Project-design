@@ -67,6 +67,7 @@ export function checkConfig(cfg) {
     if (!cfg.siteUrl.startsWith('https://')) errors.push('SITE_URL must be the public https:// address in production');
     if (cfg.staffToken && cfg.staffToken.length < 24) errors.push('STAFF_TOKEN must be at least 24 characters (or unset it and use staff accounts)');
     if (cfg.mailTransport === 'smtp' && (!cfg.smtp.user || !cfg.smtp.pass)) errors.push('SMTP_USER and SMTP_PASS are required when SMTP_HOST is set');
+    if (!cfg.trustProxy) warnings.push('TRUST_PROXY is off — behind Caddy/nginx every visitor shares the proxy address for the per-address limits (set TRUST_PROXY=1)');
     if (!cfg.notifyEmail.length && !cfg.line.token) warnings.push('NOTIFY_EMAIL / LINE_TOKEN not set — new tickets reach staff only through the back office');
   }
   if (!cfg.pay.promptpayId) warnings.push('PROMPTPAY_ID not set — online PromptPay QR is off (bank transfer / pay on site only)');

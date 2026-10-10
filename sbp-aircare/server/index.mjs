@@ -39,7 +39,13 @@ if (at) timers.push(setInterval(() => {
   const t = now(); if (t.slice(11, 16) < `${at[1]}:${at[2]}` || lastBackup === today()) return;
   lastBackup = today();
   try { const r = backupNow(app.db, cfg); console.log('backup', r.file, r.bytes); } catch (e) { console.error('backup failed', e); }
-  if (cfg.retentionDays > 0) try { console.log('retention', anonymizeOld(app.db, cfg.retentionDays)); } catch (e) { console.error('retention failed', e); }
+}, 60e3));
+// PDPA retention (RETENTION_DAYS) runs once a day on its own — it must not depend on the in-process backup being on
+let lastRetention = '';
+if (cfg.retentionDays > 0) timers.push(setInterval(() => {
+  if (now().slice(11, 16) < '03:30' || lastRetention === today()) return;
+  lastRetention = today();
+  try { console.log('retention', JSON.stringify(anonymizeOld(app.db, cfg.retentionDays))); } catch (e) { console.error('retention failed', e); }
 }, 60e3));
 
 let closing = false;

@@ -1,0 +1,49 @@
+# SBP AirCare — nightly backup + off-site copy (plain Ubuntu install). Started by aircare-backup.timer. Rev.10.
+#   sudo cp deploy/systemd/aircare-backup.* /etc/systemd/system/ && sudo systemctl daemon-reload
+#   sudo systemctl enable --now aircare-backup.timer · run now: sudo systemctl start aircare-backup
+#   result: journalctl -u aircare-backup -n 30
+# deploy/offsite-backup.sh: server/backup.mjs (VACUUM INTO + PRAGMA integrity_check, keeps BACKUP_KEEP copies in
+# /var/lib/aircare/backups) → rclone copy to RCLONE_REMOTE → removes remote copies older than OFFSITE_KEEP_DAYS.
+# Settings come from the same /etc/aircare/aircare.env as the site (RCLONE_REMOTE, RCLONE_CONFIG, HC_PING_URL, …).
+[Unit]
+Description=SBP AirCare nightly database backup (+ off-site copy)
+Documentation=file:///opt/aircare/sbp-aircare/deploy/DEPLOY_TH.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=aircare
+Group=aircare
+WorkingDirectory=/opt/aircare/sbp-aircare
+EnvironmentFile=/etc/aircare/aircare.env
+ExecStart=/opt/aircare/sbp-aircare/deploy/offsite-backup.sh
+UMask=0077
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=1h
+
+StateDirectory=aircare
+StateDirectoryMode=0750
+ReadWritePaths=/var/lib/aircare
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+LockPersonality=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
