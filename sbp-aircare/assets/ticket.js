@@ -18,12 +18,18 @@ let manual = null;
 export const useEndpoint = u => { manual = /^https:\/\/\S+$/.test(u || '') ? u : null; return !!manual; };
 // Rev.10: the production server (server/) serves the pages itself and marks them with <meta name="sbp-api" content="/exec">
 // (same origin, no CORS). Artifact / offline single-file builds carry no such tag → "not connected" as before.
-const served = () => { try { const m = document.querySelector('meta[name="sbp-api"]'); return m && /^\/[\w/-]*$/.test(m.content) ? m.content : null; } catch (e) { return null; } };
+// Rev.10 test site on Claude (no domain yet, owner 10 ต.ค. 2569): `build.py --test` marks the page "artifact:db" — the calls then
+// run in the page against the artifact's own document store (artifact-api.js); test data only, never real customers.
+const served = () => { try { const m = document.querySelector('meta[name="sbp-api"]'); return m && (m.content === 'artifact:db' || /^\/[\w/-]*$/.test(m.content)) ? m.content : null; } catch (e) { return null; } };
 export const endpoint = () => override() || manual || TICKET_ENDPOINT || served();
 export const connected = () => !!endpoint();
+export const testSite = () => endpoint() === 'artifact:db';
+// the test build plugs the in-page backend in (build.py --test: useLocalBackend(handle) from artifact-api.js) — production pages never carry it
+let local = null;
+export const useLocalBackend = fn => { local = typeof fn === 'function' ? fn : null; };
 
 const ERR_TH = {
-  not_connected: 'หน้านี้ยังไม่ได้เชื่อมกับระบบหลังบ้าน', network: 'ส่งเข้าระบบไม่ได้ (เครือข่าย หรือหน้านี้ถูกจำกัดการเชื่อมต่อ)', timeout: 'ระบบหลังบ้านตอบช้าเกินไป',
+  not_connected: 'หน้านี้ยังไม่ได้เชื่อมกับระบบหลังบ้าน', read_only: 'ลิงก์นี้เปิดดูได้อย่างเดียว ส่งคำขอในเว็บทดสอบได้เฉพาะผู้ทดสอบที่ได้รับเชิญ', network: 'ส่งเข้าระบบไม่ได้ (เครือข่าย หรือหน้านี้ถูกจำกัดการเชื่อมต่อ)', timeout: 'ระบบหลังบ้านตอบช้าเกินไป',
   rate_limited: 'ส่งคำขอจากเบอร์นี้หลายครั้งเกินไป กรุณารอสักครู่ หรือโทรหาเรา', bad_tel: 'เบอร์โทรไม่ถูกต้อง', bad_name: 'กรุณากรอกชื่อ', no_consent: 'กรุณายืนยันการใช้ข้อมูลเพื่อติดต่อกลับ',
   bad_date: 'วันที่ต้องเป็นวันนี้หรือหลังจากนี้', bad_email: 'รูปแบบอีเมลไม่ถูกต้อง', not_found: 'ไม่พบคำขอ ตรวจเลขที่คำขอและเบอร์โทรอีกครั้ง', unauthorized: 'รหัสเจ้าหน้าที่ไม่ถูกต้อง',
   staff_disabled: 'ยังไม่ได้ตั้งรหัสเจ้าหน้าที่ (STAFF_TOKEN) ในระบบหลังบ้าน', server: 'ระบบหลังบ้านขัดข้อง', rejected: 'ระบบปฏิเสธคำขอ',
@@ -39,6 +45,10 @@ export const errTh = e => ERR_TH[(e && e.code) || e] || `ส่งไม่ส�
 async function call(body) {
   const url = endpoint();
   if (!url) throw { code: 'not_connected' };
+  if (url === 'artifact:db') {
+    if (!local) throw { code: 'not_connected' };
+    try { return await local(body); } catch (e) { throw e && e.code ? e : { code: 'server' }; }
+  }
   const ctl = typeof AbortController === 'function' ? new AbortController() : null;
   const t = setTimeout(() => ctl && ctl.abort(), TIMEOUT_MS);
   try {
