@@ -60,7 +60,7 @@ export function create(ctx, t, req) {
   if (alt && !isDate(alt)) alt = '';
   const slot = own(SLOTS, t.slot) ? t.slot : '';
   if (q && q.lines != null && !Array.isArray(q.lines)) return fail('bad_json');
-  const rid = /^[A-Za-z0-9_-]{8,64}$/.test(t.rid || '') ? t.rid : '';
+  const rid = typeof t.rid === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(t.rid) ? t.rid : '';   // ['abc…'] stringifies to a match but cannot be bound
   // idempotent retry (the browser timed out after the server had already stored the ticket): same rid + same phone
   if (rid) {
     const prev = db.prepare(`SELECT id, status FROM tickets WHERE rid = ? AND tel = ? AND createdAt >= ?`).get(rid, tel, now(nowMs() - DAY));

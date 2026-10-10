@@ -11,6 +11,13 @@ import * as S from './staff.mjs';
 import { limiter, token, now } from './util.mjs';
 import { ROOT, VERSION } from './config.mjs';
 
+// deepest {…}/[…] nesting outside JSON strings (real requests are a handful of levels deep)
+const nesting = s => {
+  let d = 0, m = 0;
+  for (let i = 0, q = false; i < s.length; i++) { const c = s[i]; if (q) { if (c === '\\') i++; else if (c === '"') q = false; } else if (c === '"') q = true; else if (c === '{' || c === '[') m = Math.max(m, ++d); else if (c === '}' || c === ']') d--; }
+  return m;
+};
+
 export async function createApp(cfg, { root = ROOT, log = console } = {}) {
   await loadPricing(root);
   const db = openDb(cfg.dbFile);
@@ -22,15 +29,17 @@ export async function createApp(cfg, { root = ROOT, log = console } = {}) {
   const stat = createStatic(cfg, root);
   const started = Date.now();
 
-  const clientIp = req => (cfg.trustProxy ? String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() : '') || req.socket.remoteAddress || '';
+  const clientIp = req => (cfg.trustProxy ? String(req.headers['x-forwarded-for'] || '').split(',').pop().trim() : '') || req.socket.remoteAddress || '';
   const json = (req, res, status, o) => {
     const body = JSON.stringify(o);
     res.writeHead(status, { ...securityHeaders(req, cfg), 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'Content-Length': Buffer.byteLength(body) });
     res.end(body);
   };
+  // an oversized body is read to its end and dropped (destroying the request would also drop our {error:'too_large'} reply);
+  // only a sender that goes on far past the limit is cut off
   const readBody = (req, max) => new Promise(resolve => {
     const chunks = []; let n = 0, over = false;
-    req.on('data', c => { n += c.length; if (n > max) { over = true; req.destroy(); return; } chunks.push(c); });
+    req.on('data', c => { n += c.length; if (n > max) { over = true; chunks.length = 0; if (n > 16 * max) req.destroy(); return; } chunks.push(c); });
     req.on('end', () => resolve(over ? null : Buffer.concat(chunks)));
     req.on('close', () => resolve(over ? null : Buffer.concat(chunks)));
     req.on('error', () => resolve(null));
@@ -74,6 +83,7 @@ export async function createApp(cfg, { root = ROOT, log = console } = {}) {
     if (raw == null) return json(req, res, 200, { ok: false, error: 'too_large' });
     const text = raw.toString('utf8');
     if (text.length > 30000) return json(req, res, 200, { ok: false, error: 'too_large' });   // same limit as Code.gs (characters)
+    if (nesting(text) > 64) return json(req, res, 200, { ok: false, error: 'bad_json' });      // ~5,000 levels overflow String()/JSON.stringify() in the handlers
     let b; try { b = JSON.parse(text || '{}'); } catch (e) { return json(req, res, 200, { ok: false, error: 'bad_json' }); }
     if (!b || typeof b !== 'object' || Array.isArray(b)) return json(req, res, 200, { ok: false, error: 'unknown_action' });
     req.ip = clientIp(req);

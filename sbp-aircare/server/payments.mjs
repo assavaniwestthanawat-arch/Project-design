@@ -122,6 +122,7 @@ export function createPayments(ctx) {
     if (!ctx.rl.hit('pay:ip:' + (req && req.ip || ''), cfg.limits.payPerIp, 10 * 60e3)) return fail('rate_limited');
     const t = findByIdTel(db, b.id, b.tel); if (!t) return fail('not_found');
     const method = b.method === 'transfer' ? 'transfer' : 'promptpay';
+    if (!methodsFor().includes(method)) return fail('pay_unavailable');
     let res;
     tx(db, () => {
       const r = openReq(t, b.req); if (!r) { res = fail('pay_closed'); return; }
@@ -178,7 +179,8 @@ export function createPayments(ctx) {
     if (!role(staff, 'admin', 'staff')) return fail('forbidden');
     const r = db.prepare(`SELECT * FROM payreq WHERE id = ?`).get(str(b.req, 40)); if (!r) return fail('not_found');
     if (r.status !== 'open') return fail('pay_closed');
-    if (paidFor(r.id) > 0) return fail('has_payments');
+    // verified money, or a transfer the customer reported and the office has not checked yet, keeps the request visible
+    if (db.prepare(`SELECT COUNT(*) n FROM payments WHERE reqId = ? AND status IN ('verified', 'submitted', 'pending')`).get(r.id).n) return fail('has_payments');
     db.prepare(`UPDATE payreq SET status = 'void', closedAt = ?, note = ? WHERE id = ?`).run(now(), str([r.note, 'ยกเลิก: ' + str(b.reason, 200)].filter(Boolean).join(' · '), 400), r.id);
     audit(db, staff.name, 'pay.void', r.ticketId, { req: r.id, reason: str(b.reason, 200) });
     return { ok: true, ...detail({ id: r.ticketId }, staff) };
@@ -191,13 +193,14 @@ export function createPayments(ctx) {
     let reqId = '';
     if (b.req) { const r = db.prepare(`SELECT * FROM payreq WHERE id = ? AND ticketId = ?`).get(str(b.req, 40), t.id); if (!r) return fail('not_found'); reqId = r.id; }
     const verified = role(staff, 'admin', 'staff');
+    const id = rid('PM');
     tx(db, () => {
-      const id = rid('PM');
       db.prepare(`INSERT INTO payments (id, ticketId, reqId, method, amount, status, reference, note, byWho, createdAt, verifiedBy, verifiedAt, receiptNo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
         .run(id, t.id, reqId, b.method, amount, verified ? 'verified' : 'submitted', str(b.reference, 120), str(b.note, 400), staff.name, now(), verified ? staff.name : '', verified ? now() : '', verified ? nextReceipt() : null);
       if (reqId) settle(reqId);
       audit(db, staff.name, 'pay.record', t.id, { payment: id, req: reqId, method: b.method, amount, verified });
     });
+    if (verified && ctx.notifyPaid) ctx.notifyPaid(t, db.prepare(`SELECT * FROM payments WHERE id = ?`).get(id));
     return { ok: true, ...detail({ id: t.id }, staff) };
   }
   function verify(b, staff) {
@@ -244,7 +247,7 @@ export function createPayments(ctx) {
   }
   // phase 2: a gateway reports a charge (already signature-checked and re-fetched by the provider module)
   function gatewayResult({ provider, providerRef, ticketId, reqId, amount, status, method = 'gateway' }) {
-    let res = null;
+    let res = null, done = false;
     tx(db, () => {
       const t = ticketOr404(ticketId); if (!t) return;
       const ex = db.prepare(`SELECT * FROM payments WHERE provider = ? AND providerRef = ?`).get(provider, providerRef);
@@ -260,8 +263,10 @@ export function createPayments(ctx) {
         res = id;
       }
       if (st === 'verified' && reqId) settle(reqId);
+      done = st === 'verified';
       audit(db, provider, 'pay.gateway', t.id, { providerRef, status: st, amount });
     });
+    if (done && ctx.notifyPaid) ctx.notifyPaid(ticketOr404(ticketId), db.prepare(`SELECT * FROM payments WHERE id = ?`).get(res));
     return res;
   }
 

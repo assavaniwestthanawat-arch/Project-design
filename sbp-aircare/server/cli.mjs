@@ -7,7 +7,8 @@
 //   node server/cli.mjs anonymize <ticket id>     PDPA erasure request (money records stay for accounting)
 //   node server/cli.mjs retention <days>          erase personal data of finished tickets older than <days>
 //   node server/cli.mjs outbox                    undelivered notices (failed / pending)
-import { copyFileSync, existsSync, renameSync } from 'node:fs';
+import { copyFileSync, existsSync, renameSync, mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { createInterface } from 'node:readline';
 import { loadConfig } from './config.mjs';
 import { openDb } from './db.mjs';
@@ -33,6 +34,7 @@ if (cmd === 'restore') {
   const v = verifyBackup(src); if (!v.ok) die('ไฟล์ backup ไม่ผ่านการตรวจ: ' + JSON.stringify(v));
   if (existsSync(cfg.dbFile)) { const keep = cfg.dbFile + '.before-restore-' + Date.now(); renameSync(cfg.dbFile, keep); console.log('เก็บฐานข้อมูลเดิมไว้ที่', keep); }
   for (const x of ['-wal', '-shm']) if (existsSync(cfg.dbFile + x)) renameSync(cfg.dbFile + x, cfg.dbFile + x + '.old');
+  mkdirSync(dirname(cfg.dbFile), { recursive: true });   // restoring onto a new machine: DATA_DIR may not exist yet
   copyFileSync(src, cfg.dbFile);
   console.log('กู้คืนแล้ว', JSON.stringify(verifyBackup(cfg.dbFile)));
   process.exit(0);

@@ -24,6 +24,8 @@ export function verifyPw(pw, stored) {
   const got = scryptSync(String(pw), Buffer.from(salt, 'base64'), want.length, { N: +n, r: +r, p: +p });
   return got.length === want.length && timingSafeEqual(got, want);
 }
+let dummy = null;
+const DUMMY_GET = () => dummy || (dummy = hashPw(randomBytes(12).toString('hex')));
 export const pwProblem = pw => (typeof pw !== 'string' || pw.length < 10 ? 'รหัสผ่านต้องยาวอย่างน้อย 10 ตัวอักษร' : null);
 
 export function addStaff(db, { username, name, role = 'staff', password }) {
@@ -52,7 +54,8 @@ export function login(ctx, b, req) {
   // only FAILED attempts count (per address and per username): a shared office address must not lock the team out
   if (!rl.peek('login:ip:' + ip, max) || !rl.peek('login:u:' + user, max)) return { ok: false, error: 'rate_limited' };
   const u = db.prepare(`SELECT * FROM staff WHERE username = ? AND active = 1`).get(user);
-  if (!u || !verifyPw(String(b.password || ''), u.pwHash)) {
+  // an unknown user still pays for one scrypt, so the reply time does not tell which usernames exist
+  if (!verifyPw(String(b.password || ''), u ? u.pwHash : DUMMY_GET()) || !u) {
     rl.hit('login:ip:' + ip, max, W); rl.hit('login:u:' + user, max, W);
     audit(db, str(b.user, 40) || '-', 'staff.login_failed', '', { ip: sha256('ip:' + ip).slice(0, 12) }); return { ok: false, error: 'unauthorized' };
   }

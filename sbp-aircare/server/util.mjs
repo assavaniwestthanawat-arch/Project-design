@@ -17,7 +17,8 @@ export const str = (v, max = MAX.short) => (v == null ? '' : String(v).replace(/
 export const digits = v => String(v == null ? '' : v).replace(/\D/g, '');
 export const own = (o, k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k);
 // a real calendar date (Code.gs only checked the shape — 2099-13-45 passed)
-export const isDate = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && new Date(s + 'T00:00:00Z').toISOString().slice(0, 10) === s;
+// (month 13 / day 45 is an Invalid Date, whose toISOString() throws — check it first, never throw)
+export const isDate = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && (d => !isNaN(d) && d.toISOString().slice(0, 10) === s)(new Date(s + 'T00:00:00Z'));
 
 export const sha256 = s => createHash('sha256').update(s).digest('hex');
 export const token = (n = 24) => randomBytes(n).toString('base64url');
