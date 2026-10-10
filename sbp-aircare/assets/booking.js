@@ -10,6 +10,7 @@ import { cart } from './commerce.js';
 import { fetchSlots, trackTicket, connected, errTh, SERVICES, SLOTS, STATUSES, sourceTag, quoteFromCart } from './ticket.js';
 import { guardForm, consentBox, honeypot, submitTicket } from './contact.js';
 import { icon } from './icons.js';
+import { paymentBox } from './payment.js';
 
 const SVC = [['clean', 'ล้างแอร์'], ['install', 'ติดตั้งแอร์'], ['repair', 'ตรวจเช็ก / ซ่อม'], ['move', 'ย้ายแอร์'], ['amc', 'สำรวจสัญญาล้างรายปี'], ['project', 'สำรวจงานโครงการ / รีโนเวต'], ['other', 'อื่น ๆ']];
 const WITH_UNITS = ['clean', 'install', 'repair', 'move', 'amc'];
@@ -159,7 +160,9 @@ export function mountBooking(root, { variant = 'A', hl = 'h3', onSent } = {}) {
       tOut.replaceChildren(h('p', { class: 'bk-tst' }, h('b', {}, k.id), ` · ${SERVICES[k.service] || ''}`),
         k.status === 'cancelled' || k.status === 'need_info' ? h('p', { class: 's-note bad' }, k.statusTh) :
           h('ol', { class: 'bk-tl' }, order.map((s, i) => h('li', { class: i < at ? 'done' : i === at ? 'now' : '' }, i <= at ? icon('check', { size: 12 }) : null, STATUSES[s]))),
-        k.schedDate ? h('p', {}, `นัดหมาย: ${thDay(k.schedDate)} ${SLOTS[k.schedSlot] || ''}`) : k.prefDate ? h('p', { class: 's-note' }, `วันที่ขอ: ${thDay(k.prefDate)} ${SLOTS[k.slot] || ''} (รอยืนยัน)`) : null);
+        k.schedDate ? h('p', {}, `นัดหมาย: ${thDay(k.schedDate)} ${SLOTS[k.schedSlot] || ''}`) : k.prefDate ? h('p', { class: 's-note' }, `วันที่ขอ: ${thDay(k.prefDate)} ${SLOTS[k.slot] || ''} (รอยืนยัน)`) : null,
+        // Rev.10: what the office asked to be paid, and how (production server only — server/payments.mjs)
+        k.payment ? paymentBox({ id: k.id, tel: t, payment: k.payment, hl: 'h4', onChange: () => track(tid, t) }) : null);
     } catch (e) { tOut.replaceChildren(h('p', { class: 's-note bad', role: 'alert' }, errTh(e))); }
   }
   showSvc(); markSlots(); upd();
@@ -177,6 +180,8 @@ export function mountBooking(root, { variant = 'A', hl = 'h3', onSent } = {}) {
     track,
   };
   current = api;
+  // Rev.10: links in payment / status emails open ?track=<id>#booking — fill the number in; the phone is still needed (never in a URL)
+  try { const q = new URLSearchParams(location.search).get('track'); if (q && /^SBP-\d{6}-\d{3,5}$/i.test(q)) { tId.value = q.toUpperCase(); tOut.replaceChildren(h('p', { class: 's-note' }, 'กรอกเบอร์โทรที่ใช้ส่งคำขอ แล้วกดตรวจสถานะ เพื่อดูสถานะและการชำระเงิน')); } } catch (e) {}
   document.addEventListener('sbp:book', e => { e.preventDefault(); api.preset(e.detail || {}); document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
   return api;
 }

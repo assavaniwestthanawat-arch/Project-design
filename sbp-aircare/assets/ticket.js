@@ -82,7 +82,9 @@ export const SERVICES = { clean: 'ล้างแอร์', install: 'ติด
 export const STATUSES = { new: 'รับคำขอแล้ว รอยืนยัน', need_info: 'รอข้อมูลเพิ่มจากลูกค้า', confirmed: 'ยืนยันนัดแล้ว', assigned: 'จัดทีมแล้ว', in_progress: 'กำลังดำเนินการ', done: 'เสร็จแล้ว', cancelled: 'ยกเลิก' };
 export const SLOTS = { AM: 'ช่วงเช้า', PM: 'ช่วงบ่าย', EVE: 'นอกเวลาทำการ' };
 // a short "where it came from" stamp for the team (variant + view); no tracking ids, no device fingerprint
-export const sourceTag = variant => `เว็บไซต์ แบบ ${variant || ((document.title.match(/แบบ\s*([ABCD])/) || [])[1]) || '-'} · ${(location.hash || '#home').slice(0, 40)}`;
+// Rev.10: the production server tags each page with <meta name="sbp-variant"> (titles become customer-facing when SITE_MODE=live)
+const metaVariant = () => { try { return document.querySelector('meta[name="sbp-variant"]').content; } catch (e) { return ''; } };
+export const sourceTag = variant => `เว็บไซต์ แบบ ${variant || ((document.title.match(/แบบ\s*([ABCD])/) || [])[1]) || metaVariant() || '-'} · ${(location.hash || '#home').slice(0, 40)}`;
 // map the visitor's quote basket to ticket lines (prices as shown: round hundreds before VAT)
 export const quoteFromCart = cart => {
   if (!cart || !cart.items || !cart.items.length) return null;

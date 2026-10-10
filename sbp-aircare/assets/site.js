@@ -12,7 +12,8 @@ import { h, $, $$, COMPANY, DEMO, DATA, BRANDS, BRAND_BY_ID, TYPE_BY_ID, PROCESS
 import { GUIDES } from './knowledge.js';
 import { cart } from './commerce.js';
 import { askTeam, handoffBox, guardForm, submitTicket, requestBooking, honeypot } from './contact.js';
-import { quoteFromCart, sourceTag } from './ticket.js';
+import { quoteFromCart, sourceTag, connected } from './ticket.js';
+import { legalLinks } from './feedback.js';
 import { openFeedback, trapFocus, perfButton } from './feedback.js';
 
 const RM = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -330,7 +331,7 @@ export function mountSite(cfg) {
   if (proto) {
     const hub = proto.querySelector('a');
     proto.innerHTML = ''; proto.classList.add('sx-beta');
-    proto.append(h('b', {}, `ทดลองใช้ (Beta) · แบบ ${variant}`), h('span', { class: 'sx-bt' }, ' · ราคาจาก Pricebook 2569 · ช่วงทดลองระบบยังไม่ส่งคำขอถึงทีมอัตโนมัติ'), ' ', fbBtn(), ' ', perfButton(variant));
+    proto.append(h('b', {}, `ทดลองใช้ (Beta) · แบบ ${variant}`), h('span', { class: 'sx-bt' }, connected() ? ' · ราคาจาก Pricebook 2569' : ' · ราคาจาก Pricebook 2569 · ช่วงทดลองระบบยังไม่ส่งคำขอถึงทีมอัตโนมัติ'), ' ', fbBtn(), ' ', perfButton(variant));
     if (hub) { hub.textContent = hubLabel; proto.append(' ', hub); }
   }
   const foot = $('footer');
@@ -339,8 +340,10 @@ export function mountSite(cfg) {
     foot.append(h('div', { class: 'wrap sx-foot' },
       h('div', {}, h('p', { class: 'sx-fb-marks' }, h('img', { src: logoSrc('sbp'), alt: COMPANY.th, width: 55, height: 40 }), h('img', { class: 'sx-fb-fuj', src: logoSrc('fujiva'), alt: 'FUJIVA แบรนด์แอร์ของบริษัท', width: 97, height: 32 })), h('b', { class: 'sx-fb-brand' }, COMPANY.brand), h('p', {}, COMPANY.th), h('p', {}, COMPANY.addr), h('p', {}, 'โทร ', h('a', { href: COMPANY.telHref }, COMPANY.tel), ' · ', h('span', { class: 'sx-sel' }, COMPANY.email))),
       h('div', {}, h('h2', { class: 'sx-fh' }, 'บริการและสินค้า'), h('ul', {}, live.filter(v => v !== 'home').map(v => h('li', {}, h('a', { href: '#' + v }, VV[v].th))))),
-      h('div', {}, h('h2', { class: 'sx-fh' }, 'ช่วงทดลองใช้'), h('p', {}, 'เว็บไซต์เวอร์ชันทดลองสำหรับลูกค้ากลุ่มแรก ราคาตาม Pricebook 2569 ยืนยันอีกครั้งในใบเสนอราคาอย่างเป็นทางการ'), fbBtn()),
-      h('div', {}, h('h2', { class: 'sx-fh' }, 'บริษัท'), h('ul', {}, h('li', {}, h('a', { href: '#about' }, 'เกี่ยวกับเรา')), h('li', {}, h('a', { href: COMPANY.webUrl, target: '_blank', rel: 'noopener' }, COMPANY.web)), h('li', {}, h('a', { href: '#faq' }, 'คำถามที่พบบ่อย'))))));
+      document.documentElement.hasAttribute('data-sbp-live')   // Rev.10 SITE_MODE=live (server/static.mjs)
+        ? h('div', {}, h('h2', { class: 'sx-fh' }, 'ความเห็นต่อเว็บไซต์'), h('p', {}, 'ราคาตาม Pricebook 2569 ก่อน VAT ยืนยันอีกครั้งในใบเสนอราคาอย่างเป็นทางการ'), fbBtn())
+        : h('div', {}, h('h2', { class: 'sx-fh' }, 'ช่วงทดลองใช้'), h('p', {}, 'เว็บไซต์เวอร์ชันทดลองสำหรับลูกค้ากลุ่มแรก ราคาตาม Pricebook 2569 ยืนยันอีกครั้งในใบเสนอราคาอย่างเป็นทางการ'), fbBtn()),
+      h('div', {}, h('h2', { class: 'sx-fh' }, 'บริษัท'), h('ul', {}, h('li', {}, h('a', { href: '#about' }, 'เกี่ยวกับเรา')), h('li', {}, h('a', { href: COMPANY.webUrl, target: '_blank', rel: 'noopener' }, COMPANY.web)), h('li', {}, h('a', { href: '#faq' }, 'คำถามที่พบบ่อย')), ...legalLinks().map(a => h('li', {}, a))))));
   }
 
   /* ---- 10 · find anything (r6): pages, paths, 705 models, every price item, guides, FAQ — header button or "/" ---- */

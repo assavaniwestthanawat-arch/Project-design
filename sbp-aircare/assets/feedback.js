@@ -4,7 +4,7 @@
 // openFeedback({variant, pages, seen}) · trapFocus(box) · mountBeta({variant, pages, hubLabel})
 import { h, $, $$ } from './sbp-core.js';
 import { submitTicket, honeypot } from './contact.js';
-import { sourceTag } from './ticket.js';
+import { sourceTag, connected } from './ticket.js';
 
 export function trapFocus(box) {
   box.addEventListener('keydown', e => {
@@ -53,6 +53,9 @@ export function perfButton(variant) {
   return h('button', { type: 'button', class: 'sx-fbb sx-perfb', onclick: open }, 'ทดสอบความลื่น');
 }
 
+// Rev.10: privacy notice, terms, cancellation/refund policy — served only by the production server (server/static.mjs LEGAL),
+// so the links appear only there (Artifact / offline builds have no such pages)
+export const legalLinks = () => (connected() ? [['privacy.html', 'นโยบายความเป็นส่วนตัว'], ['terms.html', 'ข้อตกลงการใช้บริการ'], ['refund.html', 'การยกเลิกและคืนเงิน']].map(([href, t]) => h('a', { href: './' + href }, t)) : []);
 // the beta notice for pages without site.js (แบบ D, รุ่นที่ 2): a thin bar above the page header — inside the header when the
 // header is fixed — with the feedback button and the way back to the hub; plus every [data-feedback] button in the page
 export function mountBeta({ variant = 'D', pages = null, hubLabel = 'หน้ารวมทุกแบบ' } = {}) {
@@ -63,9 +66,12 @@ export function mountBeta({ variant = 'D', pages = null, hubLabel = 'หน้�
   const hub = globalThis.SBP_HUB ?? './';
   const hd = $('header'), inHd = !!hd && getComputedStyle(hd).position === 'fixed';   // a fixed header carries the bar (an aside inside a header is not a landmark of its own)
   const bar = h(inHd ? 'div' : 'aside', { class: 'proto sx-beta sx-beta-x', 'aria-label': inHd ? null : 'สถานะเว็บไซต์ทดลอง' },
-    h('b', {}, `ทดลองใช้ (Beta) · แบบ ${variant}`), h('span', { class: 'sx-bt' }, ' · ราคาจาก Pricebook 2569 · ช่วงทดลองระบบยังไม่ส่งคำขอถึงทีมอัตโนมัติ'), ' ',
+    h('b', {}, `ทดลองใช้ (Beta) · แบบ ${variant}`), h('span', { class: 'sx-bt' }, connected() ? ' · ราคาจาก Pricebook 2569' : ' · ราคาจาก Pricebook 2569 · ช่วงทดลองระบบยังไม่ส่งคำขอถึงทีมอัตโนมัติ'), ' ',
     h('button', { type: 'button', class: 'sx-fbb', onclick: fb }, 'ให้ความเห็น'), ' ', perfButton(variant),
     hub ? [' ', h('a', { href: hub, target: /^https?:/.test(hub) ? '_blank' : null, rel: /^https?:/.test(hub) ? 'noopener' : null }, hubLabel)] : null);
   if (inHd) hd.prepend(bar); else if (hd) hd.before(bar); else document.body.prepend(bar);
+  // Rev.10: pages with their own footer (D, รุ่นที่ 2) get the legal links too when served by the production server
+  const foot = $('footer'), links = legalLinks();
+  if (foot && links.length && !foot.querySelector('.sx-legal')) foot.append(h('nav', { class: 'sx-legal', 'aria-label': 'นโยบายและข้อตกลง' }, ...links.flatMap((a, i) => (i ? [' · ', a] : [a]))));
   return { open: fb };
 }

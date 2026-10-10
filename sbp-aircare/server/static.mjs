@@ -34,7 +34,13 @@ export function createStatic(cfg, root) {
 
   function htmlTransform(rel, src) {
     // same-origin API: ticket.js reads <meta name="sbp-api"> (Artifact / offline builds have none → "not connected")
-    let html = src.replace(/<head>/i, '<head>\n<meta name="sbp-api" content="/exec">');
+    let html = src.replace(/<head>/i, `<head>\n<meta name="sbp-api" content="/exec">\n<meta name="sbp-variant" content="${rel.replace(/\.html$/, '').toUpperCase()}">`);
+    // SITE_MODE=live: no prototype chrome (Beta bar, design switcher, hub links) and a customer-facing title
+    if (cfg.siteMode === 'live' && cfg.pages.includes(rel)) {
+      html = html.replace(/<html([^>]*)>/i, '<html$1 data-sbp-live>')
+        .replace(/<title>[^<]*<\/title>/i, '<title>SBP AirCare · ขาย ล้าง ติดตั้ง ซ่อมแอร์ · บริษัท สหบูรพากรุ๊ป จำกัด</title>')
+        .replace(/<\/head>/i, '<style>[data-sbp-live] .vsw,[data-sbp-live] aside.proto,[data-sbp-live] .sx-beta{display:none!important}</style>\n</head>');
+    }
     if (cfg.siteUrl && rel === cfg.home && !/rel="canonical"/.test(html)) html = html.replace(/<\/head>/i, `<link rel="canonical" href="${cfg.siteUrl}/">\n</head>`);
     if (!/rel="icon"/.test(html)) html = html.replace(/<\/head>/i, '<link rel="icon" href="/favicon.ico" type="image/png">\n</head>');
     // CSP: every executable inline script by hash (each page has exactly one inline module — build.py asserts it)

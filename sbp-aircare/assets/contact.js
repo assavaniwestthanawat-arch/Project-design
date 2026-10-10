@@ -15,7 +15,9 @@ export function enhanceQuoteForm(form = document.getElementById('qform')) {
 /* ---- Rev.09 r10: tickets to the back office ---- */
 // PDPA: purpose-limited consent, shown next to every form that sends personal data (wording for the owner/legal to review)
 export const CONSENT_TH = `ยินยอมให้ ${COMPANY.th} ใช้ชื่อ เบอร์โทร อีเมล และที่อยู่ที่กรอก เพื่อติดต่อกลับ นัดหมาย เสนอราคา และให้บริการตามคำขอนี้เท่านั้น`;
-export const consentBox = id => h('label', { class: 's-consent' }, h('input', { type: 'checkbox', id, required: true, 'aria-label': 'ยินยอมให้ใช้ข้อมูลเพื่อติดต่อกลับ' }), h('span', {}, CONSENT_TH));
+// Rev.10: on the production site the sentence links to the privacy notice (privacy.html is served by server/static.mjs)
+export const consentBox = id => h('label', { class: 's-consent' }, h('input', { type: 'checkbox', id, required: true, 'aria-label': 'ยินยอมให้ใช้ข้อมูลเพื่อติดต่อกลับ' }),
+  h('span', {}, CONSENT_TH, connected() ? h('span', {}, ' · ', h('a', { href: './privacy.html', target: '_blank', rel: 'noopener' }, 'อ่านประกาศความเป็นส่วนตัว')) : null));
 // hidden field people never fill (bots do) — the back office drops tickets that carry it
 export const honeypot = () => h('label', { class: 's-hp', 'aria-hidden': 'true' }, 'เว็บไซต์', h('input', { name: 'website', tabindex: '-1', autocomplete: 'off' }));
 /**
@@ -26,15 +28,22 @@ export const honeypot = () => h('label', { class: 's-hp', 'aria-hidden': 'true' 
 export async function submitTicket(ticket, { out, fallback, label = 'คำขอ', onTrack = null, form = null }) {
   const btn = form && form.querySelector('button[type=submit],button:not([type])');
   if (btn) { btn.disabled = true; btn.dataset.t = btn.textContent; btn.textContent = 'กำลังส่ง…'; }
+  // Rev.10: one request id per form fill — a retry after a timeout returns the ticket the server already stored instead
+  // of a duplicate; the consent sentence the customer ticked is stored with the ticket (PDPA)
+  const holder = form || out;
+  if (!holder.dataset.rid) holder.dataset.rid = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(16).padStart(2, '0')).join('');
+  ticket = { ...ticket, rid: holder.dataset.rid, ...(ticket.consent === true ? { consentText: CONSENT_TH } : {}) };
   try {
     const r = await sendTicket(ticket);
+    delete holder.dataset.rid;
     out.replaceChildren(ticketCard({ id: r.id, statusTh: r.statusTh || STATUSES.new, label, onTrack, tel: ticket.customer && ticket.customer.tel }));
     out.hidden = false;
     return { ok: true, id: r.id };
   } catch (e) {
     const why = errTh(e), hard = ['bad_tel', 'bad_name', 'no_consent', 'bad_date', 'bad_email', 'rate_limited'].includes(e && e.code);
     out.replaceChildren(hard ? h('p', { class: 's-note bad', role: 'alert' }, why)
-      : handoffBox({ ...fallback, note: `${connected() ? why + ' — ' : ''}ระบบช่วงทดลองยังส่งข้อมูลจากหน้านี้ถึงทีมโดยตรงไม่ได้ กรุณาส่งสรุปนี้ให้เราทางอีเมล หรือโทรแจ้งเลขอ้างอิง ทีมจะติดต่อกลับเพื่อยืนยันรายละเอียดและนัดวัน` }));
+      : handoffBox({ ...fallback, note: connected() ? `ส่งเข้าระบบไม่สำเร็จ (${why}) กรุณาลองอีกครั้ง หรือส่งสรุปนี้ให้เราทางอีเมล หรือโทรแจ้งเลขอ้างอิง ทีมจะติดต่อกลับเพื่อยืนยันรายละเอียดและนัดวัน`
+        : 'ระบบช่วงทดลองยังส่งข้อมูลจากหน้านี้ถึงทีมโดยตรงไม่ได้ กรุณาส่งสรุปนี้ให้เราทางอีเมล หรือโทรแจ้งเลขอ้างอิง ทีมจะติดต่อกลับเพื่อยืนยันรายละเอียดและนัดวัน' }));
     out.hidden = false;
     return { ok: false, code: e && e.code };
   } finally { if (btn) { btn.disabled = false; btn.textContent = btn.dataset.t || btn.textContent; } }
@@ -75,14 +84,14 @@ export function askTeam(topic, message = '') {
 export async function copyText(text, ta) {
   try { await navigator.clipboard.writeText(text); return true; } catch (e) { if (ta) { ta.focus(); ta.select(); } return false; }
 }
-export function handoffBox({ ref, title = 'สรุปคำขอของคุณ', text, subject = 'คำขอจากเว็บไซต์ SBP AirCare', note = 'ระบบช่วงทดลองยังไม่ส่งข้อมูลถึงทีมอัตโนมัติ กรุณาส่งสรุปนี้ให้เราทางอีเมล หรือโทรแจ้งเลขอ้างอิง ทีมจะติดต่อกลับเพื่อยืนยันราคาและนัดวัน' }) {
+export function handoffBox({ ref, title = 'สรุปคำขอของคุณ', text, subject = 'คำขอจากเว็บไซต์ SBP AirCare', note = connected() ? 'ส่งสรุปนี้ให้เราทางอีเมล หรือโทรแจ้งเลขอ้างอิง ทีมจะติดต่อกลับเพื่อยืนยันราคาและนัดวัน' : 'ระบบช่วงทดลองยังไม่ส่งข้อมูลถึงทีมอัตโนมัติ กรุณาส่งสรุปนี้ให้เราทางอีเมล หรือโทรแจ้งเลขอ้างอิง ทีมจะติดต่อกลับเพื่อยืนยันราคาและนัดวัน' }) {
   const ta = h('textarea', { class: 's-hand-t', readonly: true, rows: Math.min(10, text.split('\n').length + 1), 'aria-label': 'สรุปคำขอสำหรับคัดลอก' }, text);
   const msg = h('p', { class: 's-hand-m', 'aria-live': 'polite' });
   const copyBtn = h('button', { type: 'button', class: 's-btn primary', onclick: async () => { msg.textContent = (await copyText(text, ta)) ? 'คัดลอกแล้ว วางในอีเมลหรือแชตได้เลย' : 'คัดลอกอัตโนมัติไม่ได้ ข้อความถูกเลือกไว้แล้ว กดคัดลอกจากเครื่องของคุณ'; } }, 'คัดลอกสรุป');
   const mail = h('a', { class: 's-btn ghost', href: `mailto:${COMPANY.email}?subject=${encodeURIComponent(subject + (ref ? ' · ' + ref : ''))}&body=${encodeURIComponent(text)}` }, 'เปิดอีเมลพร้อมข้อความ');
   const em = h('span', { class: 's-hand-sel' }, COMPANY.email);
   return h('div', { class: 's-hand', role: 'status' },
-    h('p', { class: 's-hand-b' }, 'ช่วงทดลองใช้ (Beta)'),
+    connected() ? null : h('p', { class: 's-hand-b' }, 'ช่วงทดลองใช้ (Beta)'),
     h('h3', {}, title, ref ? h('small', {}, ` · เลขอ้างอิง ${ref}`) : null),
     h('p', {}, note),
     ta, h('div', { class: 's-hand-act' }, copyBtn, mail), msg,

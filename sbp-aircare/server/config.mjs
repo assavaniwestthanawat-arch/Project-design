@@ -28,6 +28,8 @@ export function loadConfig(env = process.env) {
     dataDir, dbFile: resolve(env.DB_FILE || join(dataDir, 'aircare.sqlite')),
     backupDir: resolve(env.BACKUP_DIR || join(dataDir, 'backups')), backupKeep: int(env.BACKUP_KEEP, 14),
     home: PAGES.includes(home) ? home : 'c.html',
+    // beta (default): prototype chrome stays (Beta bar, feedback, design switcher) · live: public launch — the server hides it
+    siteMode: env.SITE_MODE === 'live' ? 'live' : 'beta',
     pages: pages.includes(home) ? pages : [...pages, home],
     // tickets (same knobs as the Apps Script properties — backoffice/README.md)
     staffToken: env.STAFF_TOKEN || '',

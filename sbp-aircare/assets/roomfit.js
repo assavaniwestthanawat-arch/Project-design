@@ -18,6 +18,7 @@ import { cart } from './commerce.js';
 import { productVisual, photosFor } from './product-media.js';
 import { toast } from './proto-ui.js';
 import { askTeam, handoffBox, copyText } from './contact.js';
+import { connected } from './ticket.js';
 import { FURN, FURN_GROUPS, PRESETS, presetLayout, freeSpot, clampItem, layoutChecks, newId, frame2, footprint } from './roomplan.js';
 import { BUILDINGS, CEILINGS, WALL_MATS, ROUTES, OUT_LOCS, DRAINS, HATCHES, REACH, STOREY, siteDefault, routeDefault, outdoorDefault, routePlan, siteWorks, resizeLayout, encodeLayout, decodeLayout, dropFor } from './siteplan.js';
 
@@ -530,7 +531,7 @@ export function mountRoomFit(root, { theme = 'light', onOpenModel, preset = 'bed
     const R = fitCheck(S), ref = 'L' + Date.now().toString().slice(-7);
     sendBox.innerHTML = '';
     sendBox.append(handoffBox({ ref, title: 'แบบห้องสำหรับประเมินราคา', text: briefText(R), subject: 'ขอประเมินติดตั้งแอร์จากแบบห้อง',
-      note: 'ช่วงทดลองระบบยังไม่ส่งแบบห้องถึงทีมอัตโนมัติ กรุณาคัดลอกสรุปนี้ (มีรหัสแบบห้องอยู่ท้ายข้อความ) ส่งทางอีเมล ทีมเปิดรหัสแล้วเห็นห้อง แนวท่อ และตำแหน่งคอยล์ร้อนแบบเดียวกับคุณ แล้วติดต่อกลับเพื่อยืนยันราคาและนัดสำรวจ' }));
+      note: connected() ? 'คัดลอกสรุปนี้ (มีรหัสแบบห้องอยู่ท้ายข้อความ) ส่งทางอีเมล หรือวางในช่องรายละเอียดของฟอร์มจองคิว / ติดต่อเรา ทีมเปิดรหัสแล้วเห็นห้อง แนวท่อ และตำแหน่งคอยล์ร้อนแบบเดียวกับคุณ แล้วติดต่อกลับเพื่อยืนยันราคาและนัดสำรวจ' : 'ช่วงทดลองระบบยังไม่ส่งแบบห้องถึงทีมอัตโนมัติ กรุณาคัดลอกสรุปนี้ (มีรหัสแบบห้องอยู่ท้ายข้อความ) ส่งทางอีเมล ทีมเปิดรหัสแล้วเห็นห้อง แนวท่อ และตำแหน่งคอยล์ร้อนแบบเดียวกับคุณ แล้วติดต่อกลับเพื่อยืนยันราคาและนัดสำรวจ' }));
     sendBox.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
   }
   function importCode(code) {
