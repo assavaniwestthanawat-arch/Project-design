@@ -16,7 +16,10 @@ const override = () => { try { if (/^(localhost|127\.0\.0\.1)$/.test(location.ho
 // staff board only: the back-office URL typed at login (offline board file, before TICKET_ENDPOINT is set) — https only
 let manual = null;
 export const useEndpoint = u => { manual = /^https:\/\/\S+$/.test(u || '') ? u : null; return !!manual; };
-export const endpoint = () => override() || manual || TICKET_ENDPOINT;
+// Rev.10: the production server (server/) serves the pages itself and marks them with <meta name="sbp-api" content="/exec">
+// (same origin, no CORS). Artifact / offline single-file builds carry no such tag → "not connected" as before.
+const served = () => { try { const m = document.querySelector('meta[name="sbp-api"]'); return m && /^\/[\w/-]*$/.test(m.content) ? m.content : null; } catch (e) { return null; } };
+export const endpoint = () => override() || manual || TICKET_ENDPOINT || served();
 export const connected = () => !!endpoint();
 
 const ERR_TH = {
@@ -24,6 +27,12 @@ const ERR_TH = {
   rate_limited: 'ส่งคำขอจากเบอร์นี้หลายครั้งเกินไป กรุณารอสักครู่ หรือโทรหาเรา', bad_tel: 'เบอร์โทรไม่ถูกต้อง', bad_name: 'กรุณากรอกชื่อ', no_consent: 'กรุณายืนยันการใช้ข้อมูลเพื่อติดต่อกลับ',
   bad_date: 'วันที่ต้องเป็นวันนี้หรือหลังจากนี้', bad_email: 'รูปแบบอีเมลไม่ถูกต้อง', not_found: 'ไม่พบคำขอ ตรวจเลขที่คำขอและเบอร์โทรอีกครั้ง', unauthorized: 'รหัสเจ้าหน้าที่ไม่ถูกต้อง',
   staff_disabled: 'ยังไม่ได้ตั้งรหัสเจ้าหน้าที่ (STAFF_TOKEN) ในระบบหลังบ้าน', server: 'ระบบหลังบ้านขัดข้อง', rejected: 'ระบบปฏิเสธคำขอ',
+  // Rev.10 payments + staff accounts
+  pay_closed: 'รายการชำระนี้ปิดแล้ว (ชำระครบ ยกเลิก หรือหมดอายุ) ตรวจสถานะอีกครั้ง', pay_unavailable: 'ช่องทางชำระนี้ยังไม่เปิดใช้ เลือกช่องทางอื่น หรือโทรหาเรา',
+  bad_method: 'ช่องทางชำระไม่ถูกต้อง', bad_amount: 'จำนวนเงินไม่ถูกต้อง (อย่างน้อย 1 บาท ทศนิยมไม่เกิน 2 ตำแหน่ง)', amount_required: 'ใบเสนอราคายังมีรายการที่ต้องประเมิน กรุณาใส่จำนวนเงินที่ยืนยันกับลูกค้าแล้ว',
+  forbidden: 'บัญชีนี้ไม่มีสิทธิ์ทำรายการนี้', ticket_cancelled: 'คำขอนี้ถูกยกเลิกแล้ว', has_payments: 'รายการนี้มียอดชำระแล้ว ยกเลิกไม่ได้ ใช้การคืนเงินแทน',
+  reason_required: 'กรุณาระบุเหตุผล', refund_too_large: 'คืนเงินได้ไม่เกินยอดที่ได้รับสุทธิ', gateway_error: 'ระบบรับชำระออนไลน์ขัดข้อง ลองใหม่หรือเลือกช่องทางอื่น',
+  bad_json: 'ข้อมูลที่ส่งไม่ถูกต้อง', too_large: 'ข้อมูลยาวเกินไป', bad_status: 'สถานะไม่ถูกต้อง', bad_team: 'ไม่มีทีมนี้ในระบบ', bad_decision: 'คำสั่งไม่ถูกต้อง',
 };
 export const errTh = e => ERR_TH[(e && e.code) || e] || `ส่งไม่สำเร็จ (${(e && e.code) || e})`;
 
@@ -50,7 +59,22 @@ export const trackTicket = (id, tel) => call({ action: 'track', id: String(id ||
 export const staffApi = token => ({
   list: (q = {}) => call({ action: 'list', token, ...q }),
   update: (id, patch, staff) => call({ action: 'update', token, id, patch, staff }),
+  // Rev.10 (production server only — the Apps Script back office answers unknown_action)
+  me: () => call({ action: 'me', token }),
+  payDetail: id => call({ action: 'paydetail', token, id }),
+  payRequest: (id, o) => call({ action: 'payreq', token, id, ...o }),
+  payVoid: (req, reason) => call({ action: 'payvoid', token, req, reason }),
+  payRecord: (id, o) => call({ action: 'payrecord', token, id, ...o }),
+  payVerify: (payment, decision, o = {}) => call({ action: 'payverify', token, payment, decision, ...o }),
+  refund: (id, o) => call({ action: 'refund', token, id, ...o }),
+  logout: () => call({ action: 'logout', token }),
 });
+// Rev.10 staff accounts: username + password → a 12-hour session token used exactly like STAFF_TOKEN
+export const staffLogin = (user, password) => call({ action: 'login', user, password });
+// Rev.10 customer payments (id + phone, like track): see a request's PromptPay QR / bank account, choose to pay on site,
+// or report a transfer (the office verifies it against the bank statement before it counts)
+export const payInfo = (id, tel, req, method) => call({ action: 'pay', id: String(id || '').trim().toUpperCase(), tel, req, method });
+export const payReport = (id, tel, req, method, reference) => call({ action: 'paid', id: String(id || '').trim().toUpperCase(), tel, req, method, reference });
 
 // shared vocabulary (the back office uses the same keys — Code.gs KINDS / SERVICES / STATUSES / SLOTS)
 export const KINDS = { booking: 'จองคิว', quote: 'ขอใบเสนอราคา', inquiry: 'ติดต่อ / สอบถาม', feedback: 'ความเห็นเว็บไซต์' };
@@ -63,5 +87,7 @@ export const sourceTag = variant => `เว็บไซต์ แบบ ${varian
 export const quoteFromCart = cart => {
   if (!cart || !cart.items || !cart.items.length) return null;
   const t = cart.totals();
-  return { totalEx: t.totalEx, tax: t.tax, vat: t.vat, total: t.inc, travel: t.travel, minGap: t.minGap, lines: cart.items.map(i => ({ name: i.name + (i.detail ? ` (${i.detail})` : ''), qty: i.qty, unitEx: i.unitEx })) };
+  // Rev.10: each line also carries its pricebook key / group / kind so the server can re-price it (server/pricing.mjs)
+  return { totalEx: t.totalEx, tax: t.tax, vat: t.vat, total: t.inc, travel: t.travel, minGap: t.minGap, zoneInput: cart.zoneInput || '',
+    lines: cart.items.map(i => ({ name: i.name + (i.detail ? ` (${i.detail})` : ''), qty: i.qty, unitEx: i.unitEx, key: i.key, group: i.group, kind: i.kind, ...(i.units ? { units: i.units } : {}) })) };
 };

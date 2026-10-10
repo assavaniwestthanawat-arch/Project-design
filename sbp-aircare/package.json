@@ -2,8 +2,13 @@
   "name": "sbp-aircare-prototype",
   "private": true,
   "type": "module",
-  "description": "SBP AirCare website prototypes A/B/C/D, v2 A2–D2, v3 A3–C3 (vanilla ES modules + three.js r170). See CLAUDE.md.",
+  "description": "SBP AirCare website prototypes A/B/C/D, v2 A2–D2, v3 A3–C3 (vanilla ES modules + three.js r170). Production server in server/ (Rev.10). See CLAUDE.md and server/API.md.",
   "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server/index.mjs",
+    "dev": "DEV=1 MAIL_TRANSPORT=memory STAFF_TOKEN=dev-token-0123456789abcdef node --disable-warning=ExperimentalWarning server/index.mjs",
+    "cli": "node --disable-warning=ExperimentalWarning server/cli.mjs",
+    "backup:db": "node --disable-warning=ExperimentalWarning server/backup.mjs",
+    "test:server": "node --disable-warning=ExperimentalWarning tests/server.mjs",
     "serve": "python3 -m http.server 8765",
     "build": "python3 build.py --urls urls.json",
     "build:dev": "python3 build.py --urls urls.dev.json",
@@ -31,7 +36,11 @@
     "heroposters": "node tools/heroposters.mjs"
   },
   "devDependencies": {
-    "playwright": "1.56.0",
-    "axe-core": "4.13.0"
+    "axe-core": "4.13.0",
+    "jsqr": "^1.4.0",
+    "playwright": "1.56.0"
+  },
+  "engines": {
+    "node": ">=22.13"
   }
 }

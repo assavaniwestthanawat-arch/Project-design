@@ -6,3 +6,11 @@ _entry_*.mjs
 !assets/logos/*.png
 backoffice/.dev-data.json
 tests/out/
+
+# Rev.10 production server: runtime data and secrets never go to git
+data/
+.env
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+backups/
