@@ -90,11 +90,11 @@ V2 = ['a2', 'b2', 'c2', 'd2']   # r12: รุ่นที่ 2 (cinematic editio
 V3 = ['a3', 'b3', 'c3']         # r13: รุ่นที่ 3 (bright, photographic, nine pages by job; tools/v3gen.py) — hub preview3.html → index3.html
 HUB = 'index3' if URLS.get('index3') or '--urls' not in sys.argv else None   # r13: the beta hub (all editions) is where every page's "back" link goes
 
-def build_variant(v):
+def build_variant(v, transform=None):
     html = read(os.path.join(ROOT, f'{v}.html'))
     # stylesheets -> inline
     page = html
-    html = re.sub(r'<link rel="stylesheet" href="assets/([\w.-]+\.css)">', lambda m: f'<style>{css_inline(m.group(1), page)}</style>', html)
+    html = re.sub(r'<link rel="stylesheet" href="assets/([\w.-]+\.css)">', lambda m: f'<style{" data-sbp-fonts" if m.group(1) == "fonts.css" else ""}>{css_inline(m.group(1), page)}</style>', html)
     # Rev.09 r9: <img src="assets/logos/<key>.png"> (company + FUJIVA marks in the markup) -> inline data URI
     html = re.sub(r'src="assets/logos/([\w-]+)\.png"', lambda m: f'src="{logos[m.group(1).lower()]}"', html)
     # r12: poster frames of the v2 stages (assets/posters/*.jpg, rendered by tools/posters.mjs) -> inline data URI
@@ -106,7 +106,7 @@ def build_variant(v):
     # the one module script -> bundled inline module
     m = re.search(r'<script type="module">(.*?)</script>', html, flags=re.S)
     assert m, v
-    js = bundle(m.group(1), v)
+    js = bundle(transform(m.group(1)) if transform else m.group(1), v)
     html = html[:m.start()] + DATA_TAG + (TH_TAG if 'thaimap3d' in m.group(1) or 'thai-provinces.json' in js else '') + '<script type="module">' + js + '</script>' + html[m.end():]
     assert 'assets/' not in re.sub(r'<script type="module">.*?</script>', '', html, flags=re.S) or True
     return html
@@ -144,6 +144,47 @@ def strip_doc(html):
         cls = re.search(r'class="([^"]*)"', attrs).group(1)
         out += f"<script>document.body.classList.add(...{json.dumps(cls.split())})</script>"
     return out
+
+# ---- Rev.10: test site on Claude (owner 10 ต.ค. 2569: "จัดทำเป็นเว็บของ Claude ขึ้นมาก่อนเพราะยังไม่มี Domain เพื่อให้ทดสอบใช้งาน") ----
+#   python3 build.py --test c [--preview <artifact url of the view-only preview>]  →  dist/art/test-c.html
+# One artifact page in two modes: the site (its calls run against the artifact's own `db` store — assets/artifact-api.js) and,
+# at #backoffice, the staff board on the same store with TEST accounts. Publish with capabilities {db:{}, user:{}}.
+# Test data only — the page says so; the production back office is never published as an artifact (CLAUDE.md §6.6 #23).
+if '--test' in sys.argv:
+    tv = sys.argv[sys.argv.index('--test') + 1]
+    if '--preview' in sys.argv:
+        pv_url = sys.argv[sys.argv.index('--preview') + 1]
+        URLS.update({k: pv_url for k in [*VARIANTS, *V2, *V3, 'index', 'index2', 'index3']})
+    bo_css = re.search(r'<style>(.*?)</style>', read(os.path.join(ROOT, 'backoffice.html')), flags=re.S).group(1)
+    def test_entry(js):
+        imports = re.findall(r'^import\b[^;]*;', js, flags=re.M)
+        body = re.sub(r'^import\b[^;]*;', '', js, flags=re.M)
+        return '\n'.join([
+            "import { loadData as __ld } from './assets/sbp-core.js';",
+            "import { mountBoard as __mb } from './assets/backoffice-board.js';",
+            *imports,
+            "const __BO = location.hash === '#backoffice';",
+            "addEventListener('hashchange', () => { if ((location.hash === '#backoffice') !== __BO) location.reload(); });",
+            'async function __site() {', body, '}',
+            'async function __board() {',
+            # the board replaces the page: its own stylesheet, the page's inlined fonts stay
+            "  for (const n of [...document.body.childNodes]) if (!(n.nodeName === 'STYLE' && n.hasAttribute('data-sbp-fonts')) && n.nodeName !== 'META') n.remove();",
+            "  document.body.className = ''; document.documentElement.removeAttribute('data-theme'); document.title = 'หลังบ้าน (ทดสอบ) · SBP AirCare';",
+            '  const st = document.createElement("style"); st.textContent = ' + json.dumps(bo_css + '.bo-test{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:center;padding:8px 16px;font:500 13.5px/1.5 var(--sans);background:var(--card2);color:var(--ink2);border-bottom:1px solid var(--line)}.bo-test b{color:var(--ink)}.bo-test a{color:var(--blue);display:inline-flex;align-items:center;min-height:32px}@media (pointer:coarse){.bo-test a{min-height:44px}}') + '; document.body.append(st);',
+            "  const bar = document.createElement('aside'); bar.className = 'bo-test'; bar.setAttribute('aria-label', 'หลังบ้านทดสอบ');",
+            "  bar.innerHTML = '<span><b>หลังบ้านทดสอบ</b> · ข้อมูลในระบบนี้เป็นข้อมูลทดสอบ</span><span>บัญชีทดสอบ: <b>admin</b> · <b>staff</b> · <b>tech</b> · รหัสผ่าน <b>ทดสอบ1234</b></span><a href=\"#\">กลับหน้าเว็บ</a>';",
+            "  const root = document.createElement('div'); root.id = 'boRoot'; document.body.append(bar, root);",
+            '  await __ld(); __mb(root);', '}',
+            'if (__BO) __board(); else __site();',
+        ])
+    full = build_variant(tv, test_entry)
+    page = strip_doc(links(full, 'art', VARIANTS if tv in VARIANTS else V2 if tv in V2 else V3, HUB or 'index3'))
+    page = re.sub(r'(<title>.*?</title>)', lambda m: m.group(1) + '<meta name="sbp-api" content="artifact:db">', page, count=1, flags=re.S)
+    assert 'content="artifact:db"' in page
+    out = os.path.join(DIST, 'art', f'test-{tv}.html')
+    open(out, 'w', encoding='utf-8').write(page)
+    print(json.dumps({'test': out, 'kb': len(page.encode()) // 1024}))
+    sys.exit(0)
 
 sizes = {}
 built = {}

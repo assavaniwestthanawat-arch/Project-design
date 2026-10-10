@@ -217,6 +217,14 @@ export function mountBoard(root) {
   }
   const fold = (key, title, ...kids) => h('details', { class: 'bo-pf', open: payOpen.has(key), ontoggle: e => { e.currentTarget.open ? payOpen.add(key) : payOpen.delete(key); } }, h('summary', {}, title), ...kids);
   const pform = (...kids) => dirty(h('form', { class: 'bo-pform', novalidate: true }, ...kids));
+  // in-page confirmation (no window.confirm: claude.ai artifact frames refuse it — the Rev.10 test site — and it is clearer anyway)
+  const sure = (anchor, text, yes) => {
+    const old = anchor.parentNode.querySelector(':scope > .bo-sure'); if (old) { old.remove(); return; }
+    const box = h('div', { class: 'bo-sure', role: 'group', 'aria-label': 'ยืนยันรายการ' }, h('p', {}, text));
+    const ok = h('button', { type: 'button', class: 'bo-btn primary sm', onclick: () => { box.remove(); yes(); } }, 'ยืนยัน');
+    box.append(h('div', { class: 'bo-rw' }, ok, h('button', { type: 'button', class: 'bo-btn sm', onclick: () => { box.remove(); anchor.focus(); } }, 'ไม่ใช่')));
+    anchor.after(box); ok.focus();
+  };
   const bad = (err, el, msg) => { err.textContent = msg; el.setAttribute('aria-invalid', 'true'); el.focus(); };
   const meta = a => h('small', {}, a.filter(Boolean).join(' · '));
 
@@ -246,8 +254,8 @@ export function mountBoard(root) {
     // payments received
     const payRow = p => {
       const err = h('p', { class: 'bo-err', role: 'alert' });
-      const vb = h('button', { type: 'button', class: 'bo-btn primary sm', onclick: () => { if (confirm(`ยืนยันว่าพบยอด ${thb(p.amount)} ในบัญชีบริษัท / ได้รับเงินแล้ว? ระบบจะออกเลขที่ใบเสร็จ`)) payAct(t, vb, err, () => api.payVerify(p.id, 'verify', { staff: session.name }), r => { const x = r.payments.find(y => y.id === p.id); return `ยืนยันได้รับเงิน ${thb(p.amount)} แล้ว${x && x.receiptNo ? ' · ใบเสร็จ ' + x.receiptNo : ''}`; }); } }, 'ยืนยันได้รับเงิน');
-      const rb = h('button', { type: 'button', class: 'bo-btn sm', onclick: () => { if (confirm(`บันทึกว่าไม่พบยอด ${thb(p.amount)}? รายการนี้จะไม่นับเป็นยอดที่ได้รับ`)) payAct(t, rb, err, () => api.payVerify(p.id, 'reject', { staff: session.name }), 'บันทึกว่าไม่พบยอดแล้ว'); } }, 'ไม่พบยอด');
+      const vb = h('button', { type: 'button', class: 'bo-btn primary sm', onclick: () => sure(vb.parentNode, `ยืนยันว่าพบยอด ${thb(p.amount)} ในบัญชีบริษัท / ได้รับเงินแล้ว? ระบบจะออกเลขที่ใบเสร็จ`, () => payAct(t, vb, err, () => api.payVerify(p.id, 'verify', { staff: session.name }), r => { const x = r.payments.find(y => y.id === p.id); return `ยืนยันได้รับเงิน ${thb(p.amount)} แล้ว${x && x.receiptNo ? ' · ใบเสร็จ ' + x.receiptNo : ''}`; })) }, 'ยืนยันได้รับเงิน');
+      const rb = h('button', { type: 'button', class: 'bo-btn sm', onclick: () => sure(rb.parentNode, `บันทึกว่าไม่พบยอด ${thb(p.amount)}? รายการนี้จะไม่นับเป็นยอดที่ได้รับ`, () => payAct(t, rb, err, () => api.payVerify(p.id, 'reject', { staff: session.name }), 'บันทึกว่าไม่พบยอดแล้ว')) }, 'ไม่พบยอด');
       return h('li', { 'data-pay': p.id }, h('div', { class: 'bo-rw' }, h('span', {}, `${p.methodTh || M[p.method] || p.method} `, h('b', {}, thb(p.amount))), h('span', { class: 'bo-ps pm-' + p.status }, p.statusTh || p.status)),
         p.receiptNo ? h('small', {}, 'เลขที่ใบเสร็จ ', h('b', { class: 'bo-rc' }, p.receiptNo)) : null,
         meta([p.reqId ? `รายการ ${refOf(p.reqId)}` : '', p.reference ? `อ้างอิง ${p.reference}` : '', `บันทึกโดย ${p.byWho} ${String(p.createdAt || '').slice(5, 16)}`, p.verifiedBy && p.status !== 'submitted' ? `ตรวจโดย ${p.verifiedBy}` : '']),
@@ -291,8 +299,7 @@ export function mountBoard(root) {
     f.addEventListener('submit', e => {
       e.preventDefault(); why.removeAttribute('aria-invalid'); const w = why.value.trim();
       if (!w) return bad(err, why, errTh('reason_required'));
-      if (!confirm(`ยกเลิกรายการเรียกเก็บ ${r.ref} (${thb(r.amount)})? ลูกค้าจะชำระรายการนี้ไม่ได้อีก`)) return;
-      payAct(t, go, err, () => api.payVoid(r.id, w, session.name), `ยกเลิกรายการ ${r.ref} แล้ว`, key);
+      sure(go, `ยกเลิกรายการเรียกเก็บ ${r.ref} (${thb(r.amount)})? ลูกค้าจะชำระรายการนี้ไม่ได้อีก`, () => payAct(t, go, err, () => api.payVoid(r.id, w, session.name), `ยกเลิกรายการ ${r.ref} แล้ว`, key));
     });
     return fold(key, 'ยกเลิกรายการนี้', f);
   }
@@ -335,8 +342,7 @@ export function mountBoard(root) {
       if (!amtOk(a)) return bad(err, amt, a ? errTh('bad_amount') : 'กรุณาใส่จำนวนเงินที่คืน');
       if (+a > net) return bad(err, amt, errTh('refund_too_large'));
       if (!w) return bad(err, why, errTh('reason_required'));
-      if (!confirm(`บันทึกการคืนเงิน ${thb(+a)} ให้ ${t.name}? บันทึกแล้วแก้ไขหรือลบไม่ได้`)) return;
-      payAct(t, go, err, () => api.refund(t.id, { amount: a, method: method.value, payment: pm.value || undefined, reference: ref.value.trim(), reason: w, staff: session.name }), `บันทึกการคืนเงิน ${thb(+a)} แล้ว`, 'refund');
+      sure(go, `บันทึกการคืนเงิน ${thb(+a)} ให้ ${t.name}? บันทึกแล้วแก้ไขหรือลบไม่ได้`, () => payAct(t, go, err, () => api.refund(t.id, { amount: a, method: method.value, payment: pm.value || undefined, reference: ref.value.trim(), reason: w, staff: session.name }), `บันทึกการคืนเงิน ${thb(+a)} แล้ว`, 'refund'));
     });
     return fold('refund', 'บันทึกการคืนเงิน', f);
   }

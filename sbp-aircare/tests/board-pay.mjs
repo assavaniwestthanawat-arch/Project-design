@@ -37,7 +37,7 @@ const ctxPage = async (w = +W, scheme = theme) => {
   const c = await b.newContext({ viewport: { width: w, height: 900 }, colorScheme: scheme });
   const p = await c.newPage();
   p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text().slice(0, 200)); });
-  p.on('dialog', d => d.accept());   // confirm() before verify / reject / void / refund
+  p.on('dialog', d => { errs.push('unexpected dialog: ' + d.message()); d.dismiss(); });   // the board confirms in the page (no window.confirm)
   await p.goto(`${BASE}/backoffice.html`); await p.waitForSelector('#bo-nm', { timeout: 30000 });
   return p;
 };
@@ -49,6 +49,7 @@ const openTicket = async (p, id) => {
 };
 const text = (p, sel) => p.$eval(sel, e => e.textContent).catch(() => '');
 const toast = (p, re) => p.waitForFunction(r => new RegExp(r).test(document.querySelector('.bo-toast')?.textContent || ''), re.source, { timeout: 15000 });
+const yes = async (p, scope = '.bo-pay') => { await p.waitForSelector(`${scope} .bo-sure`, { timeout: 5000 }); await p.click(`${scope} .bo-sure button:has-text("ยืนยัน")`); };   // in-page confirmation step
 const unfold = async (p, key) => { const s = p.locator('.bo-pay details.bo-pf > summary', { hasText: key }).first(); await s.click(); };
 
 try {
@@ -120,7 +121,7 @@ try {
   await p.click('.bo-who button:has-text("รีเฟรช")'); await toast(p, /อัปเดตแล้ว/);
   await p.waitForSelector('.bo-pay [data-pay] button');
   ok(await p.locator('.bo-pay [data-pay] button', { hasText: 'ยืนยันได้รับเงิน' }).count() === 1, 'admin sees verify for the submitted payment');
-  await p.click('.bo-pay [data-pay] button:has-text("ไม่พบยอด")');
+  await p.click('.bo-pay [data-pay] button:has-text("ไม่พบยอด")'); await yes(p);
   await toast(p, /ไม่พบยอด/);
   ok(/ไม่พบยอด/.test(await text(p, '.bo-pay [data-pay] .bo-ps')), 'rejected: shown as ไม่พบยอด');
 
@@ -139,7 +140,7 @@ try {
   const vf = p.locator('.bo-pay .bo-rows li', { hasText: d2.requests[1].ref }).locator('form');
   await vf.locator('button[type=submit]').click();
   ok(/เหตุผล/.test(await vf.locator('.bo-err').textContent()), 'void without a reason: Thai error in role=alert');
-  await vf.locator('input').fill('สร้างซ้ำโดยไม่ตั้งใจ'); await vf.locator('button[type=submit]').click();
+  await vf.locator('input').fill('สร้างซ้ำโดยไม่ตั้งใจ'); await vf.locator('button[type=submit]').click(); await yes(p);
   await toast(p, /ยกเลิกรายการ .* แล้ว/);
   const d3 = await api({ action: 'paydetail', token: TOKEN, id });
   ok(d3.requests[1].status === 'void' && /สร้างซ้ำ/.test(d3.requests[1].note), 'request voided with the reason', d3.requests[1]);
@@ -161,7 +162,7 @@ try {
   await unfold(p, 'บันทึกการคืนเงิน');
   await p.fill('#bo-rf-amt', '5000'); await p.fill('#bo-rf-why', 'ทดสอบ'); await p.click('.bo-pay form:has(#bo-rf-amt) button[type=submit]');
   ok(/คืนเงินได้ไม่เกิน/.test(await text(p, '.bo-pay form:has(#bo-rf-amt) .bo-err')), 'refund above the net received: Thai error');
-  await p.fill('#bo-rf-amt', '500'); await p.fill('#bo-rf-why', 'ลดราคาให้ลูกค้า 1 เครื่อง'); await p.click('.bo-pay form:has(#bo-rf-amt) button[type=submit]');
+  await p.fill('#bo-rf-amt', '500'); await p.fill('#bo-rf-why', 'ลดราคาให้ลูกค้า 1 เครื่อง'); await p.click('.bo-pay form:has(#bo-rf-amt) button[type=submit]'); await yes(p);
   await toast(p, /บันทึกการคืนเงิน ฿500 แล้ว/);
   ok(/คืนเงินบางส่วน/.test(await text(p, '.bo-pay .bo-ph')) && /฿500/.test(await text(p, '.bo-pay .bo-money')), 'refund recorded: คืนเงินบางส่วน');
 
@@ -176,7 +177,7 @@ try {
   await p.click('.bo-who button:has-text("รีเฟรช")'); await toast(p, /อัปเดตแล้ว/);
   await openTicket(p, c2.id);
   await p.fill('#bo-note', 'โน้ตที่ยังไม่บันทึก');   // unsaved typing in the status form must survive a payment action
-  await p.click('.bo-pay [data-pay] button:has-text("ยืนยันได้รับเงิน")');
+  await p.click('.bo-pay [data-pay] button:has-text("ยืนยันได้รับเงิน")'); await yes(p);
   await toast(p, /ยืนยันได้รับเงิน ฿1,000 แล้ว · ใบเสร็จ RC/);
   ok((await api({ action: 'paydetail', token: TOKEN, id: c2.id })).payments[0].status === 'verified', 'admin verified the tech entry');
   ok(await p.inputValue('#bo-note') === 'โน้ตที่ยังไม่บันทึก' && /ได้รับเงินแล้ว/.test(await text(p, '.bo-pay [data-pay] .bo-ps')), 'unsaved note kept while the payment block updates');
