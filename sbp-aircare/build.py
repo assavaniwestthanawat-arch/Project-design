@@ -182,7 +182,7 @@ if '--test' in sys.argv:
         ])
     full = build_variant(tv, test_entry)
     page = strip_doc(links(full, 'art', VARIANTS if tv in VARIANTS else V2 if tv in V2 else V3, HUB or 'index3'))
-    page = re.sub(r'(<title>.*?</title>)', lambda m: m.group(1) + '<meta name="sbp-api" content="artifact:db">', page, count=1, flags=re.S)
+    page = re.sub(r'<title>.*?</title>', '<title>SBP AirCare ทดสอบ</title><meta name="sbp-api" content="artifact:db">', page, count=1, flags=re.S)
     assert 'content="artifact:db"' in page
     out = os.path.join(DIST, 'art', f'test-{tv}.html')
     open(out, 'w', encoding='utf-8').write(page)
