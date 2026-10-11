@@ -162,6 +162,9 @@ if '--test' in sys.argv:
         return '\n'.join([
             "import { loadData as __ld } from './assets/sbp-core.js';",
             "import { mountBoard as __mb } from './assets/backoffice-board.js';",
+            "import { handle as __api } from './assets/artifact-api.js';",
+            "import { useLocalBackend as __use } from './assets/ticket.js';",
+            '__use(__api);',
             *imports,
             "const __BO = location.hash === '#backoffice';",
             "addEventListener('hashchange', () => { if ((location.hash === '#backoffice') !== __BO) location.reload(); });",

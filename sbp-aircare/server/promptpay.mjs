@@ -1,13 +1,14 @@
 // SBP AirCare server — PromptPay (Thai QR, EMVCo merchant-presented, tag 29) payload + QR image. Rev.10. No network.
 // The QR pays straight into the company's own PromptPay (13-digit tax id, 10-digit phone or 15-digit e-wallet id);
 // nothing is confirmed automatically — the office checks the bank statement before marking a payment as received.
+// Browser-safe (no Buffer / node: imports): the artifact test site (assets/artifact-api.js) bundles this same file.
 import { qrcode } from './vendor/qrcode.mjs';
 
 const tlv = (id, v) => id + String(v.length).padStart(2, '0') + v;
 export function crc16(str) {   // CRC-16/CCITT-FALSE, as the Thai QR standard requires
   let crc = 0xffff;
-  for (const b of Buffer.from(str, 'ascii')) {
-    crc ^= b << 8;
+  for (let j = 0; j < str.length; j++) {   // one byte per UTF-16 unit, low 8 bits (= Buffer.from(str, 'ascii'))
+    crc ^= (str.charCodeAt(j) & 0xff) << 8;
     for (let i = 0; i < 8; i++) crc = crc & 0x8000 ? ((crc << 1) ^ 0x1021) & 0xffff : (crc << 1) & 0xffff;
   }
   return crc.toString(16).toUpperCase().padStart(4, '0');
@@ -33,7 +34,7 @@ export function qrDataUrl(text, { cell = 8, margin = 4 } = {}) {
   let d = '';
   for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) d += `M${(c + margin) * cell} ${(r + margin) * cell}h${cell}v${cell}h-${cell}z`;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path fill="#000" d="${d}"/></svg>`;
-  return 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64');
+  return 'data:image/svg+xml;base64,' + btoa(svg);   // the SVG is plain ASCII, so btoa = Buffer base64
 }
 
 // show only the last digits of the account the money goes to (customers still see the payee name)

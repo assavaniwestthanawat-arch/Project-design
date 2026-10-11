@@ -124,9 +124,12 @@ try {
   await s.waitForSelector('.bo-pay', { timeout: 15000 });
   await s.selectOption('#bo-st', 'confirmed').catch(() => {});
   const save = await s.$('.bo-edit button[type=submit]'); if (save) { await save.click(); await s.waitForTimeout(800); }
-  ok(/4,500/.test(await text(s, '.bo-pay .bo-sug')), 'suggested amount 4,500 from the server-side price check', await text(s, '.bo-pay .bo-sug'));
+  // a booking from the form carries no quote → no suggested amount: staff type the amount agreed with the customer
   await s.locator('.bo-pay details.bo-pf > summary', { hasText: 'สร้างรายการเรียกเก็บเงิน' }).first().click();
+  ok(!(await s.$('.bo-pay .bo-sug')), 'no quote → no suggested amount');
   await s.click('.bo-pay form:has(#bo-pr-amt) button[type=submit]');
+  ok((await text(s, '.bo-pay form:has(#bo-pr-amt) .bo-err')).length > 0, 'empty amount without a suggestion: Thai error');
+  await s.fill('#bo-pr-amt', '1500'); await s.click('.bo-pay form:has(#bo-pr-amt) button[type=submit]');
   await s.waitForFunction(() => /รอชำระ/.test(document.querySelector('.bo-pay .bo-ph')?.textContent || ''), null, { timeout: 15000 }).catch(() => {});
   ok(/รอชำระ/.test(await text(s, '.bo-pay .bo-ph')), 'payment request created');
 
@@ -134,7 +137,7 @@ try {
   await p.reload(); await p.waitForSelector('#bookRoot .bk-track', { timeout: 90000 });
   await p.fill('input[id^="bk-tid"]', id); await p.fill('input[id^="bk-ttel"]', TEL); await p.click('.bk-track button[type=submit]');
   await p.waitForSelector('.pay .pay-m button', { timeout: 20000 }).catch(() => {});
-  ok(/4,500/.test(await text(p, '.pay')), 'customer sees the payment request', (await text(p, '.pay')).slice(0, 160));
+  ok(/1,500/.test(await text(p, '.pay')), 'customer sees the payment request', (await text(p, '.pay')).slice(0, 160));
   await p.click('.pay .pay-m button:has-text("พร้อมเพย์")').catch(() => {});
   await p.waitForSelector('.pay-qr', { timeout: 20000 }).catch(() => {});
   ok(await p.$eval('.pay-qr', e => e.complete && e.naturalWidth > 100).catch(() => false), 'PromptPay QR rendered');

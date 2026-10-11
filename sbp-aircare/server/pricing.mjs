@@ -4,24 +4,35 @@
 // pricebook extract (internal/sbp_real.json): special / project rates stay out of the server's answers entirely.
 // Every cart line is priced from its key (P- I- IN- CL- C- CX- R- RP- A- K- S- SV- PJ-), never from the number the
 // browser sent; the browser's figures are kept beside the server's so staff can see any difference.
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
-import { sha256, str, own } from './util.mjs';
+// Browser-safe module graph: the artifact test site (assets/artifact-api.js) bundles this file and calls initPricing() with
+// the page's own sbp-core.js; the Node-only imports live inside loadPricing() (non-literal import(), so bundlers skip them).
+
+// same as util.mjs str / own (util.mjs imports node:crypto, which a browser bundle cannot carry)
+const str = (v, max = 120) => (v == null ? '' : String(v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim().slice(0, max));
+const own = (o, k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k);
+const nodeImport = s => import(s);
 
 let core = null;
 const SKU = new Map();
 export const pricing = { version: '', sha: '', loaded: false };
 
+// server: reads assets/sbp-data.json under the site root and loads assets/sbp-core.js from there
 export async function loadPricing(root) {
   if (pricing.loaded) return pricing;
+  const [{ readFileSync }, { join }, { pathToFileURL }, { sha256 }] = await Promise.all(['node:fs', 'node:path', 'node:url', './util.mjs'].map(nodeImport));
   const raw = readFileSync(join(root, 'assets', 'sbp-data.json'), 'utf8');
   globalThis.__SBP_DATA = JSON.parse(raw);   // sbp-core.loadData() reads the inlined data first (no fetch of file: URLs in Node)
-  core = await import(pathToFileURL(join(root, 'assets', 'sbp-core.js')).href);
-  await core.loadData();
+  const m = await import(pathToFileURL(join(root, 'assets', 'sbp-core.js')).href);
+  await m.loadData();
   delete globalThis.__SBP_DATA;
-  for (const m of core.DEMO.models) for (const s of m.skus) SKU.set(s.sku, { px: s.px, type: m.type, btu: s.btu, brand: m.brand });
-  Object.assign(pricing, { version: core.DATA.version, sha: sha256(raw).slice(0, 12), loaded: true, skus: SKU.size });
+  return initPricing(m, { sha: sha256(raw).slice(0, 12) });
+}
+// browser (or a caller that already loaded sbp-core.js): m = the sbp-core module after loadData()
+export function initPricing(m, { sha = '' } = {}) {
+  if (pricing.loaded) return pricing;
+  core = m; SKU.clear();
+  for (const x of core.DEMO.models) for (const s of x.skus) SKU.set(s.sku, { px: s.px, type: x.type, btu: s.btu, brand: x.brand });
+  Object.assign(pricing, { version: core.DATA.version, sha, loaded: true, skus: SKU.size });
   return pricing;
 }
 export const coreApi = () => core;
