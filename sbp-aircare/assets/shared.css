@@ -48,6 +48,9 @@
 .s-sum{display:grid;grid-template-columns:1fr auto;gap:6px 12px;margin:0;padding:12px 14px;border-radius:var(--s-r);background:var(--s-accent-soft);font-size:14px}
 .s-sum dt{color:var(--s-ink-2)}.s-sum dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
 .s-sum .tot{font-size:18px;font-weight:700;color:var(--s-ink);padding-top:6px;border-top:1px solid var(--s-line)}
+/* Rev.10 UX: the basket totals box = the dl + its notes (a dl may hold only dt/dd) */
+.s-sum-w{display:grid;gap:6px;padding:12px 14px;border-radius:var(--s-r);background:var(--s-accent-soft)}
+.s-sum-w>.s-sum{padding:0;background:none;border-radius:0}.s-sum-w>.s-note{margin:0}
 .s-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .s-form .s-btn{grid-column:1/-1}
 @media (max-width:420px){.s-form{grid-template-columns:1fr}}

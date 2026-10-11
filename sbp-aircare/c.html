@@ -369,9 +369,18 @@ html.sx-on .sec-h h2{font-size:clamp(28px,3vw,40px);line-height:1.22}
 :root[data-theme="light"] .sx-vh h1{text-shadow:none}
 /* r18: between 1081 and 1239 px the six-item menu did not fit beside the logo and tools (clipped, scrolled) — it takes the second header row there too */
 @media (min-width:1081px) and (max-width:1239px){html.sx-on .hdr .vsw{margin-left:auto}html.sx-on .hdr .wrap{flex-wrap:wrap;height:auto;padding-block:8px 0;row-gap:0}html.sx-on .hdr .nav{order:9;flex:1 0 100%;margin:0 0 6px}html.sx-on{scroll-padding-top:120px}}
+/* ---- Rev.10 UX audit (chrome) ---- */
+/* skip link: the first Tab stop jumps past the Beta bar, header and showroom controls */
+.skip{position:absolute;left:12px;top:-100px;z-index:100;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:12px;background:var(--panel);color:var(--ink);border:1px solid var(--cool);font-weight:600;text-decoration:none}
+.skip:focus{top:12px}
+main:focus{outline:none}
+/* phones: a focused field never ends up under the fixed bottom bar (WCAG 2.4.11) — nor under the compare tray when it shows */
+@media (max-width:640px){html{scroll-padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}html:has(.tray:not([hidden])){scroll-padding-bottom:calc(140px + env(safe-area-inset-bottom,0px))}}
+@media (min-width:641px){html:has(.tray:not([hidden])){scroll-padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}}
 </style>
 </head>
 <body>
+<a class="skip" href="#main">ข้ามไปที่เนื้อหา</a>
 <aside class="proto" aria-label="สถานะต้นแบบ">ต้นแบบแบบ C · ราคาสินค้าและค่าบริการจาก Pricebook 2569 ของบริษัท · ฉาก 3 มิติและห้องจำลองเป็นแบบจำลองเพื่ออธิบาย · ฟอร์มยังไม่ส่งข้อมูลจริง · <a href="./">กลับหน้ารวม</a></aside>
 <header class="hdr"><div class="wrap">
   <a class="logo" href="#top"><img class="logo-mk" src="assets/logos/sbp.png" alt="" width="41" height="30">SBP AirCare</a>
@@ -415,7 +424,7 @@ html.sx-on .sec-h h2{font-size:clamp(28px,3vw,40px);line-height:1.22}
   <div class="panel" id="howRoot"></div>
 </section>
 
-<main class="wrap">
+<main class="wrap" id="main" tabindex="-1">
   <!-- START: WHAT DO YOU NEED (Rev.09 r5) -->
   <!-- r20 QUICK QUOTE: the job card priced from the Pricebook, straight to booking or the quote -->
   <section class="sec" id="quick">
