@@ -35,9 +35,10 @@ Render สร้างเว็บจาก `render.yaml` (อยู่ที่
 แผนฟรีของ Render **ไม่มีดิสก์ถาวร** ข้อมูลจะหายทุกครั้งที่ระบบเริ่มใหม่ จึงห้ามใช้รับลูกค้าจริง
 
 1. สมัคร Render ที่ render.com ด้วยบัญชี GitHub ของบริษัท แล้วใส่บัตรสำหรับค่าบริการ
-2. เปิดลิงก์ `https://render.com/deploy?repo=https://github.com/assavaniwestthanawat-arch/Project-design`
+2. เปิดลิงก์ `https://render.com/deploy?repo=https://github.com/assavaniwestthanawat-arch/Project-design/tree/claude/focused-cerf-4t4idx`
+   (ใช้ branch ที่มีโค้ดล่าสุด — เมื่อรวมโค้ดเข้า `main` แล้วใช้ลิงก์ที่ไม่มี `/tree/…`)
+   - ถ้าลิงก์ไม่ขึ้นหน้าตั้งค่า: Render → **New** → **Blueprint** → เลือก repo `Project-design` และ branch เดียวกัน
    - ถ้า repo เป็นแบบส่วนตัว ให้อนุญาต Render เข้าถึง repo นี้เมื่อระบบถาม
-   - เลือก branch ที่มีโค้ดล่าสุด (ตอนนี้ `claude/focused-cerf-4t4idx` หรือ `main` หลังรวมโค้ดแล้ว)
 3. Render ถามค่าตั้งครั้งเดียว:
 
    | ค่า | กรอกอะไร |
