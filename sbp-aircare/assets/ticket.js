@@ -6,6 +6,8 @@
 // Not connected (no endpoint) or blocked (a claude.ai artifact cannot call other sites) → the call rejects with
 // {code:'not_connected'|'network'|'timeout'|<server error>} and the page falls back to the honest hand-off summary.
 // Never sends internal prices: tickets carry only what the customer saw on the page.
+// Rev.10 UX: errTh(e, action) — one plain Thai sentence per failure (cause + fix), per action; timeouts are recognised by name.
+import { COMPANY } from './sbp-core.js';
 
 // ▼ Production: paste the Apps Script web-app URL (…/exec) here once it is deployed. Empty = not connected.
 export const TICKET_ENDPOINT = '';
@@ -28,26 +30,47 @@ export const testSite = () => endpoint() === 'artifact:db';
 let local = null;
 export const useLocalBackend = fn => { local = typeof fn === 'function' ? fn : null; };
 
+// Rev.10 UX: every message is one plain sentence — what happened, then what to do — with no brackets and no system code on screen
+// (an unknown code goes to the console). The test site never offers the company phone (test data only, CLAUDE.md §6.6 #23).
+const callUs = () => (testSite() ? '' : ` หรือโทร ${COMPANY.tel}`);
 const ERR_TH = {
-  not_connected: 'หน้านี้ยังไม่ได้เชื่อมกับระบบหลังบ้าน', read_only: 'ลิงก์นี้เปิดดูได้อย่างเดียว ส่งคำขอในเว็บทดสอบได้เฉพาะผู้ทดสอบที่ได้รับเชิญ', network: 'ส่งเข้าระบบไม่ได้ (เครือข่าย หรือหน้านี้ถูกจำกัดการเชื่อมต่อ)', timeout: 'ระบบหลังบ้านตอบช้าเกินไป',
-  rate_limited: 'ส่งคำขอจากเบอร์นี้หลายครั้งเกินไป กรุณารอสักครู่ หรือโทรหาเรา', bad_tel: 'เบอร์โทรไม่ถูกต้อง', bad_name: 'กรุณากรอกชื่อ', no_consent: 'กรุณายืนยันการใช้ข้อมูลเพื่อติดต่อกลับ',
-  bad_date: 'วันที่ต้องเป็นวันนี้หรือหลังจากนี้', bad_email: 'รูปแบบอีเมลไม่ถูกต้อง', not_found: 'ไม่พบคำขอ ตรวจเลขที่คำขอและเบอร์โทรอีกครั้ง', unauthorized: 'รหัสเจ้าหน้าที่ไม่ถูกต้อง',
-  staff_disabled: 'ยังไม่ได้ตั้งรหัสเจ้าหน้าที่ (STAFF_TOKEN) ในระบบหลังบ้าน', server: 'ระบบหลังบ้านขัดข้อง', rejected: 'ระบบปฏิเสธคำขอ',
+  not_connected: 'หน้านี้ยังไม่ได้เชื่อมกับระบบหลังบ้าน', read_only: 'เว็บทดสอบ: ลิงก์นี้ดูได้อย่างเดียว ขอสิทธิ์ผู้ทดสอบจากเจ้าของเพื่อทดลองส่ง',
+  network: 'เชื่อมต่อระบบไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง', timeout: 'ระบบตอบช้าเกินไปจึงยังไม่ทราบผล ตรวจรายการอีกครั้งก่อนทำซ้ำ',
+  server: 'ระบบขัดข้องชั่วคราว ลองอีกครั้งในอีกสักครู่', quota_exceeded: 'พื้นที่เก็บข้อมูลของเว็บทดสอบเต็มแล้ว แจ้งเจ้าของเว็บทดสอบ',
+  // the limits count per phone, per network address and site-wide — never blame "this phone"
+  rate_limited: () => `ทำรายการถี่เกินไป กรุณารอสักครู่แล้วลองใหม่${callUs()}`,
+  bad_tel: 'เบอร์โทรไม่ถูกต้อง ใส่ 9–10 หลัก ขึ้นต้นด้วย 0', bad_name: 'กรุณากรอกชื่อ', no_consent: 'กรุณาติ๊กยืนยันการใช้ข้อมูลก่อนส่ง',
+  bad_date: 'วันที่ต้องเป็นวันนี้หรือหลังจากนี้', bad_email: 'รูปแบบอีเมลไม่ถูกต้อง เช่น name@company.com', not_found: 'ไม่พบคำขอ ตรวจเลขที่คำขอและเบอร์โทรอีกครั้ง', unauthorized: 'รหัสเจ้าหน้าที่ไม่ถูกต้อง',
+  staff_disabled: 'ยังไม่ได้ตั้งรหัสเจ้าหน้าที่ (STAFF_TOKEN) ในระบบหลังบ้าน', rejected: 'ระบบไม่รับคำขอนี้',
   // Rev.10 payments + staff accounts
-  pay_closed: 'รายการชำระนี้ปิดแล้ว (ชำระครบ ยกเลิก หรือหมดอายุ) ตรวจสถานะอีกครั้ง', pay_unavailable: 'ช่องทางชำระนี้ยังไม่เปิดใช้ เลือกช่องทางอื่น หรือโทรหาเรา',
-  bad_method: 'ช่องทางชำระไม่ถูกต้อง', bad_amount: 'จำนวนเงินไม่ถูกต้อง (อย่างน้อย 1 บาท ทศนิยมไม่เกิน 2 ตำแหน่ง)', amount_required: 'ใบเสนอราคายังมีรายการที่ต้องประเมิน กรุณาใส่จำนวนเงินที่ยืนยันกับลูกค้าแล้ว',
+  pay_closed: 'รายการชำระนี้ปิดแล้ว เพราะชำระครบ ยกเลิก หรือหมดอายุ ตรวจสถานะอีกครั้ง', pay_unavailable: () => `ช่องทางชำระนี้ยังไม่เปิดใช้ เลือกช่องทางอื่น${callUs()}`,
+  bad_method: 'ช่องทางชำระไม่ถูกต้อง', bad_amount: 'จำนวนเงินไม่ถูกต้อง ใส่อย่างน้อย 1 บาท ทศนิยมไม่เกิน 2 ตำแหน่ง', amount_required: 'ใบเสนอราคายังมีรายการที่ต้องประเมิน กรุณาใส่จำนวนเงินที่ยืนยันกับลูกค้าแล้ว',
   forbidden: 'บัญชีนี้ไม่มีสิทธิ์ทำรายการนี้', ticket_cancelled: 'คำขอนี้ถูกยกเลิกแล้ว', has_payments: 'รายการนี้มียอดชำระแล้ว ยกเลิกไม่ได้ ใช้การคืนเงินแทน',
   reason_required: 'กรุณาระบุเหตุผล', refund_too_large: 'คืนเงินได้ไม่เกินยอดที่ได้รับสุทธิ', gateway_error: 'ระบบรับชำระออนไลน์ขัดข้อง ลองใหม่หรือเลือกช่องทางอื่น',
   bad_json: 'ข้อมูลที่ส่งไม่ถูกต้อง', too_large: 'ข้อมูลยาวเกินไป', bad_status: 'สถานะไม่ถูกต้อง', bad_team: 'ไม่มีทีมนี้ในระบบ', bad_decision: 'คำสั่งไม่ถูกต้อง',
 };
-export const errTh = e => ERR_TH[(e && e.code) || e] || `ส่งไม่สำเร็จ (${(e && e.code) || e})`;
+// errTh(e, action?) — the action (send · track · pay · report) names what failed, so a status check never reads like a failed send
+const ACT_TH = { send: 'ส่งคำขอไม่สำเร็จ', track: 'ตรวจสถานะไม่ได้ตอนนี้', pay: 'โหลดข้อมูลการชำระไม่ได้', report: 'แจ้งโอนไม่สำเร็จ' };
+const TRANSIENT = { network: 'เชื่อมต่อระบบไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง', timeout: 'ระบบตอบช้าเกินไป ลองอีกครั้งในอีกสักครู่', server: 'ระบบขัดข้องชั่วคราว ลองอีกครั้งในอีกสักครู่' };
+// a timeout leaves the result unknown: resending the same form is safe (same request id → the ticket already stored)
+const UNSURE = { send: 'ระบบตอบช้าเกินไปจึงยังไม่ทราบว่าคำขอถึงบริษัทหรือไม่ กดลองส่งอีกครั้งได้ ระบบไม่สร้างคำขอซ้ำ', report: 'ระบบตอบช้าเกินไปจึงยังไม่ทราบว่าแจ้งโอนสำเร็จหรือไม่ ตรวจสถานะการชำระก่อนแจ้งซ้ำ' };
+export function errTh(e, action = '') {
+  const code = typeof e === 'string' ? e : e && typeof e.code === 'string' ? e.code : '';
+  if (code === 'timeout' && UNSURE[action]) return UNSURE[action];
+  if (TRANSIENT[code] && ACT_TH[action]) return `${ACT_TH[action]} เพราะ${TRANSIENT[code]}`;
+  if (code === 'rate_limited' && (action === 'track' || action === 'pay')) return 'ตรวจสถานะถี่เกินไป กรุณารอสักครู่แล้วลองใหม่';
+  const m = Object.prototype.hasOwnProperty.call(ERR_TH, code) ? ERR_TH[code] : null;
+  if (m) return typeof m === 'function' ? m() : m;
+  console.warn('[ticket] error without Thai text:', code || e);
+  return `${ACT_TH[action] || 'ทำรายการไม่สำเร็จ'} ลองอีกครั้ง${callUs()}`;
+}
 
 async function call(body) {
   const url = endpoint();
   if (!url) throw { code: 'not_connected' };
   if (url === 'artifact:db') {
     if (!local) throw { code: 'not_connected' };
-    try { return await local(body); } catch (e) { throw e && e.code ? e : { code: 'server' }; }
+    try { return await local(body); } catch (e) { throw e && typeof e.code === 'string' ? e : { code: 'server' }; }
   }
   const ctl = typeof AbortController === 'function' ? new AbortController() : null;
   const t = setTimeout(() => ctl && ctl.abort(), TIMEOUT_MS);
@@ -58,10 +81,19 @@ async function call(body) {
     if (!j || !j.ok) throw { code: (j && j.error) || 'server' };
     return j;
   } catch (e) {
-    if (e && e.code) throw e;
-    throw { code: e && e.name === 'AbortError' ? 'timeout' : 'network' };
+    // an AbortError is a DOMException whose legacy numeric code (20) is truthy: test the name first, rethrow only our {code:'…'}
+    if (e && e.name === 'AbortError') throw { code: 'timeout' };
+    if (e && typeof e.code === 'string') throw e;
+    throw { code: e instanceof SyntaxError ? 'server' : 'network' };   // an answer that is not JSON (a proxy error page) is a server fault
   } finally { clearTimeout(t); }
 }
+// Rev.10 UX test site: whether this viewer can only look (the store answers read_only before any action runs) — the Beta bar says so
+// up front. The probe action does not exist, so a viewer who may write gets unknown_action and nothing is stored.
+export const viewerReadOnly = async () => {
+  if (!testSite() || !local) return false;
+  try { await local({ action: 'access' }); } catch (e) { return !!e && e.code === 'read_only'; }
+  return false;
+};
 
 export const sendTicket = ticket => call({ action: 'create', ticket });
 export const fetchSlots = (from, days = 14) => call({ action: 'slots', from, days });
