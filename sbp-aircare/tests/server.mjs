@@ -335,7 +335,7 @@ try {
   ok((await api({ action: 'pay', id: PT.id, tel: PTEL, req: 'PR-NOPE', method: 'promptpay' })).error === 'pay_closed', 'pay: unknown request = closed');
   // the customer reports the transfer → SUBMITTED, not paid
   const pdn = await api({ action: 'paid', id: PT.id, tel: PTEL, req: rq.id, method: 'promptpay', reference: 'TX-0001' });
-  ok(pdn.ok && pdn.payment && pdn.payment.pending === true && pdn.payment.status === 'unpaid' && pdn.payment.paid === 0 && pdn.payment.requests[0].submitted === true, 'paid → submitted + pending (not paid yet)', pdn.payment);
+  ok(pdn.ok && pdn.payment && pdn.payment.pending === true && pdn.payment.status === 'checking' && pdn.payment.statusTh === 'รอตรวจยอด' && pdn.payment.paid === 0 && pdn.payment.due === tot6 && pdn.payment.requests[0].submitted === true && pdn.payment.requests[0].rejected === false, 'paid → submitted + pending: รอตรวจยอด, nothing counted as paid', pdn.payment);
   await api({ action: 'paid', id: PT.id, tel: PTEL, req: rq.id, method: 'promptpay', reference: 'TX-0001' });
   const pd1 = await api({ action: 'paydetail', id: PT.id, ...A }), pm = pd1.payments || [];
   ok(pm.length === 1 && pm[0].status === 'submitted' && pm[0].byWho === 'ลูกค้า' && pm[0].receiptNo == null && pm[0].amount === tot6 && pd1.summary.pending === 1, 'one submitted payment (a repeated report is not doubled)', pm);
@@ -394,7 +394,9 @@ try {
   await api({ action: 'paid', id: P1.id, tel: '0831000001', req: rq1b.id, method: 'promptpay' });
   ok((await api({ action: 'payvoid', req: rq1b.id, reason: 'x', ...A })).error === 'has_payments', 'payvoid: a request with a reported (unchecked) transfer cannot be voided');
   const sub1b = ((await api({ action: 'paydetail', id: P1.id, ...A })).payments || []).find(x => x.reqId === rq1b.id && x.status === 'submitted') || {};
-  await api({ action: 'payverify', payment: sub1b.id, decision: 'reject', ...A });
+  await api({ action: 'payverify', payment: sub1b.id, decision: 'reject', note: 'ไม่พบในบัญชี', ...A });
+  const trj = await api({ action: 'track', id: P1.id, tel: '0831000001' }), rj = (((trj.ticket || {}).payment || {}).requests || []).find(r => r.id === rq1b.id) || {};
+  ok(rj.rejected === true && rj.submitted === false && trj.ticket.payment.status === 'unpaid' && trj.ticket.payment.methods.length === 3 && !/ไม่พบในบัญชี|แอดมินทดสอบ/.test(JSON.stringify(trj)), 'a rejected report: rejected:true on the request (no staff note / name), payable again', rj);
   ok((await api({ action: 'payvoid', req: rq1b.id, reason: 'ไม่พบยอด', ...A })).ok, 'after the office rejects the report the request can be voided');
   const tv = await api({ action: 'track', id: P1.id, tel: '0831000001' });
   ok(tv.ok && (!tv.ticket.payment || !tv.ticket.payment.requests.length), 'the customer does not see a void request', tv.ticket && tv.ticket.payment);
@@ -404,6 +406,26 @@ try {
   // money with 2 decimals recorded at once by the office → verified with the next receipt number
   const r99 = await api({ action: 'payrecord', id: r4.id, method: 'transfer', amount: '99.99', reference: 'TX-99', ...A }), p99 = (r99.payments || [])[0] || {};
   ok(r99.ok && p99.amount === 99.99 && p99.status === 'verified' && p99.receiptNo === RC0 + '0003' && r99.summary.paid === 99.99, 'admin payrecord: verified at once, 99.99 kept exactly, RC…-0003', p99);
+  // UX audit: deposit-only "paid" label, an expired request with money owed, no on-site payment once done, nothing payable once cancelled
+  IP = '127.0.4.2';
+  const T4 = '0831000004', pq4 = await api({ action: 'payreq', id: P4.id, kind: 'deposit', amount: '1000', ...A }), rq4 = (pq4.requests || [])[0] || {};
+  const pr4 = await api({ action: 'payrecord', id: P4.id, req: rq4.id, method: 'cash', amount: '1000', ...A });
+  ok(pr4.ok && pr4.summary.status === 'paid' && pr4.summary.statusTh === 'ชำระตามที่เรียกเก็บแล้ว', 'only a deposit settled: status paid, label ชำระตามที่เรียกเก็บแล้ว (not ชำระครบแล้ว)', pr4.summary);
+  const bq4 = await api({ action: 'payreq', id: P4.id, kind: 'balance', amount: '500', ...A }), rb4 = (bq4.requests || []).find(r => r.kind === 'balance') || {};
+  ok(bq4.ok && bq4.summary.status === 'partial' && bq4.summary.due === 500, 'balance asked: partial, due 500', bq4.summary);
+  dbRows(D1, `UPDATE payreq SET expiresAt = ? WHERE id = ?`, day(-1), rb4.id);
+  const te4 = await api({ action: 'track', id: P4.id, tel: T4 }), pe4 = (te4.ticket || {}).payment || {};
+  ok(pe4.status === 'expired' && pe4.statusTh === 'มีรายการชำระเงินหมดอายุ' && pe4.due === 0 && pe4.paid === 1000 && (pe4.requests || []).some(r => r.id === rb4.id && r.status === 'expired' && r.remaining === 500), 'an expired balance with money owed never reads as paid: status expired', pe4);
+  ok((await api({ action: 'paydetail', id: P4.id, ...A })).summary.status === 'expired', 'the board summary says expired too');
+  const xq4 = await api({ action: 'payreq', id: P4.id, kind: 'extra', amount: '300', ...A }), rx4 = (xq4.requests || []).find(r => r.kind === 'extra') || {};
+  await api({ action: 'update', id: P4.id, patch: { status: 'done' }, ...A });
+  const td4 = await api({ action: 'track', id: P4.id, tel: T4 });
+  ok(td4.ticket.payment.methods.join() === 'promptpay,transfer', 'job done: on-site payment is no longer offered', td4.ticket.payment.methods);
+  ok((await api({ action: 'pay', id: P4.id, tel: T4, req: rx4.id, method: 'onsite' })).error === 'pay_unavailable' && (await api({ action: 'pay', id: P4.id, tel: T4, req: rx4.id, method: 'promptpay' })).ok, 'job done: pay onsite → pay_unavailable, PromptPay still works');
+  await api({ action: 'update', id: P4.id, patch: { status: 'cancelled' }, ...A });
+  const tc4 = await api({ action: 'track', id: P4.id, tel: T4 });
+  ok(tc4.ok && tc4.ticket.payment.methods.length === 0, 'cancelled ticket: no payment methods offered', tc4.ticket && tc4.ticket.payment.methods);
+  ok((await api({ action: 'pay', id: P4.id, tel: T4, req: rx4.id, method: 'promptpay' })).error === 'ticket_cancelled' && (await api({ action: 'paid', id: P4.id, tel: T4, req: rx4.id, method: 'transfer' })).error === 'ticket_cancelled', 'cancelled ticket: pay / paid → ticket_cancelled');
   const lp = (await listAll()).find(t => t.id === PT.id);
   ok(lp && lp.pay && lp.pay.status === 'paid' && lp.pay.paid === tot6 && lp.pay.asked === tot6 && lp.pay.open === 0 && lp.priceCheck.payable === true, 'list carries the money summary (baht) + price check', lp && lp.pay);
 

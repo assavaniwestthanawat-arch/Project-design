@@ -370,7 +370,7 @@ try {
   ok((await C({ action: 'pay', id: BP.id, tel: '0899999999', req: rq.id, method: 'promptpay' })).error === 'not_found', 'pay: wrong phone → not_found');
   ok((await C({ action: 'pay', id: BP.id, tel: BTEL, req: 'PR-NOPE', method: 'promptpay' })).error === 'pay_closed', 'pay: unknown request → pay_closed');
   const pdn = await C({ action: 'paid', id: BP.id, tel: BTEL, req: rq.id, method: 'promptpay', reference: 'TX-0001' });
-  ok(pdn.ok && pdn.payment.pending === true && pdn.payment.status === 'unpaid' && pdn.payment.paid === 0 && pdn.payment.requests[0].submitted === true, 'paid → submitted + pending (never paid by itself)', pdn.payment);
+  ok(pdn.ok && pdn.payment.pending === true && pdn.payment.status === 'checking' && pdn.payment.statusTh === 'รอตรวจยอด' && pdn.payment.paid === 0 && pdn.payment.requests[0].submitted === true && pdn.payment.requests[0].rejected === false, 'paid → submitted + pending: รอตรวจยอด (never paid by itself)', pdn.payment);
   await C({ action: 'paid', id: BP.id, tel: BTEL, req: rq.id, method: 'promptpay', reference: 'TX-0001' });
   const pd1 = await C({ action: 'paydetail', id: BP.id, ...A }), pm = pd1.payments || [];
   ok(pm.length === 1 && pm[0].status === 'submitted' && pm[0].statusTh === 'รอตรวจยอด' && pm[0].byWho === 'ลูกค้า' && pm[0].receiptNo === null && pm[0].amount === 4500 && pd1.summary.pending === 1, 'one submitted payment (a repeated report is not doubled)', pm);
@@ -418,11 +418,14 @@ try {
   const sub = ((await C({ action: 'paydetail', id: P2.id, ...A })).payments || []).find(x => x.reqId === rqb.id) || {};
   const rj = await C({ action: 'payverify', payment: sub.id, decision: 'reject', note: 'ไม่พบยอด', ...A });
   ok(rj.ok && rj.payments[0].status === 'rejected' && rj.payments[0].receiptNo === null && rj.summary.paid === 0, 'reject → ไม่พบยอด, no receipt, nothing counted', rj.payments);
+  const trj = await C({ action: 'track', id: P2.id, tel: '0831000002' }), rjq = ((trj.ticket || {}).payment || { requests: [] }).requests.find(x => x.id === rqb.id) || {};
+  ok(rjq.rejected === true && rjq.submitted === false && trj.ticket.payment.status === 'unpaid' && !/ไม่พบยอด|ผู้ดูแล/.test(JSON.stringify(trj)), 'customer view after a rejection: rejected:true, no staff note / name', rjq);
   ok((await C({ action: 'payvoid', req: rqb.id, reason: 'ไม่พบยอด', ...A })).ok, 'after the office rejects the report the request can be voided');
   const tv = await C({ action: 'track', id: P2.id, tel: '0831000002' });
   ok(tv.ok && tv.ticket.payment && !tv.ticket.payment.requests.length && (await C({ action: 'pay', id: P2.id, tel: '0831000002', req: rqv.id, method: 'promptpay' })).error === 'pay_closed', 'void requests are hidden from the customer and cannot be paid');
   await C({ action: 'update', id: P2.id, patch: { status: 'cancelled' }, ...A });
   ok((await C({ action: 'payreq', id: P2.id, kind: 'full', amount: '100', ...A })).error === 'ticket_cancelled', 'no payment request on a cancelled ticket → ticket_cancelled');
+  ok((await C({ action: 'pay', id: P2.id, tel: '0831000002', req: rqb.id, method: 'promptpay' })).error === 'ticket_cancelled' && (await C({ action: 'track', id: P2.id, tel: '0831000002' })).ticket.payment.methods.length === 0, 'cancelled ticket: nothing payable (pay → ticket_cancelled, no methods)');
   const r99 = await C({ action: 'payrecord', id: P5.id, method: 'transfer', amount: '99.99', reference: 'TX-99', ...A }), p99 = (r99.payments || [])[0] || {};
   ok(r99.ok && p99.amount === 99.99 && p99.status === 'verified' && p99.receiptNo === RC0 + '0003' && r99.summary.paid === 99.99 && r99.summary.status === 'paid', 'admin payrecord (no request) → verified at once, 99.99 exact, RC…-0003', p99);
   const lp = ((await C({ action: 'list', ...A })).tickets || []).find(t => t.id === BP.id) || {};
@@ -431,7 +434,7 @@ try {
   { const prx = await C({ action: 'payreq', id: r1.id, kind: 'deposit', amount: '500', ...A }), rx = prx.requests[0], b0 = Date.now();
     testHooks.setClock(() => b0 + 8 * 864e5);
     const tx = await C({ action: 'track', id: r1.id, tel: TEL });
-    ok(tx.ticket.payment.requests[0].status === 'expired' && tx.ticket.payment.due === 0 && (await C({ action: 'pay', id: r1.id, tel: TEL, req: rx.id, method: 'promptpay' })).error === 'pay_closed', 'after its last day a request is expired and cannot be paid', tx.ticket.payment);
+    ok(tx.ticket.payment.requests[0].status === 'expired' && tx.ticket.payment.due === 0 && tx.ticket.payment.status === 'expired' && tx.ticket.payment.statusTh === 'มีรายการชำระเงินหมดอายุ' && (await C({ action: 'pay', id: r1.id, tel: TEL, req: rx.id, method: 'promptpay' })).error === 'pay_closed', 'after its last day a request is expired and cannot be paid', tx.ticket.payment);
     testHooks.setClock(null); }
 
   /* ======== I · store robustness ======== */
@@ -553,6 +556,7 @@ try {
     await s('payvoid ok', { action: 'payvoid', req: pv.requests[0].id, reason: 'ลูกค้าเปลี่ยนวิธีชำระ', ...A }); await s('payvoid twice', { action: 'payvoid', req: pv.requests[0].id, reason: 'x', ...A });
     await s('track void', { action: 'track', id: c2.id, tel: '0831000002' });
     await s('update cancel', { action: 'update', id: c2.id, patch: { status: 'cancelled' }, ...A }); await s('payreq cancelled', { action: 'payreq', id: c2.id, kind: 'full', amount: '100', ...A });
+    await s('track cancelled', { action: 'track', id: c2.id, tel: '0831000002' }); await s('pay cancelled', { action: 'pay', id: c2.id, tel: '0831000002', req: pv.requests[0].id, method: 'promptpay' });
     await s('payrecord admin', { action: 'payrecord', id: c4.id, method: 'transfer', amount: '99.99', reference: 'TX-99', ...A });
     await s('list', { action: 'list', ...A }); await s('slots after', { action: 'slots', from: day(0), days: 7 });
     await s('logout', { action: 'logout', ...St }); await s('me after logout', { action: 'me', ...St });
