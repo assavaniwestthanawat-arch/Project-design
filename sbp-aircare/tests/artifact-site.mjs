@@ -119,8 +119,8 @@ try {
   await s.fill('#bo-tok', 'ทดสอบ1234'); await s.click('.bo-login button[type=submit]');
   await s.waitForSelector('.bo-t tbody th', { timeout: 20000 });
   ok(/ผู้ดูแล/.test(await text(s, '.bo-who')), 'admin test login');
-  ok(await s.$(`.bo-t tbody tr:has(th:text-is("${id}"))`) !== null, 'the booking is in the list');
-  await s.click(`.bo-t tbody tr:has(th:text-is("${id}"))`);
+  ok(await s.$(`.bo-t tbody tr[data-id="${id}"]`) !== null, 'the booking is in the list');
+  await s.click(`.bo-t tbody tr[data-id="${id}"]`);
   await s.waitForSelector('.bo-pay', { timeout: 15000 });
   await s.selectOption('#bo-st', 'confirmed').catch(() => {});
   const save = await s.$('.bo-edit button[type=submit]'); if (save) { await save.click(); await s.waitForTimeout(800); }
@@ -147,7 +147,7 @@ try {
 
   // 4 · office verifies (in-page confirmation) → receipt number
   await s.reload(); await s.waitForSelector('.bo-t tbody th', { timeout: 30000 });
-  await s.click(`.bo-t tbody tr:has(th:text-is("${id}"))`); await s.waitForSelector('.bo-pay [data-pay]', { timeout: 15000 });
+  await s.click(`.bo-t tbody tr[data-id="${id}"]`); await s.waitForSelector('.bo-pay [data-pay]', { timeout: 15000 });
   await s.click('.bo-pay [data-pay] button:has-text("ยืนยันได้รับเงิน")');
   await s.waitForSelector('.bo-pay .bo-sure', { timeout: 5000 }); await s.click('.bo-pay .bo-sure button:has-text("ยืนยัน")');
   await s.waitForSelector('.bo-pay .bo-rc', { timeout: 15000 }).catch(() => {});

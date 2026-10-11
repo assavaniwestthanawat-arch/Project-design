@@ -238,7 +238,7 @@ try {
   ok(y1.priceCheck && y1.priceCheck.verified && y1.priceCheck.match && y1.priceCheck.payable && !y1.priceCheck.issues.length && y1.quoteTotalEx === MIN && y1.travelFee === '' && y1.zoneTier === 'core', 'honest quote: verified, matching, payable; server total stored', y1.priceCheck);
   ok(y2.priceCheck && y2.priceCheck.match === false && y2.priceCheck.issues.some(i => i.line === 0 && i.check === 'mismatch' && i.client === 100 && i.server === CLR) && y2.priceCheck.issues.some(i => i.total === 'totalEx' && i.client === 600 && i.server === MIN),
     'tampered unitEx is flagged in list priceCheck', y2.priceCheck);
-  ok(y2.quoteTotalEx === MIN && y2.quoteTotalEx !== 600 && y2.quoteLines.includes(`× 6 = ${6 * CLR}`), 'stored quoteTotalEx / lines are the server\'s figures, not the browser\'s', [y2.quoteTotalEx, y2.quoteLines]);
+  ok(y2.quoteTotalEx === MIN && y2.quoteTotalEx !== 600 && y2.quoteLines.includes(`× 6 = ฿${(6 * CLR).toLocaleString('en-US')}`) && y2.quoteLines.includes('ส่วนเติมยอดขั้นต่ำงานล้าง'), 'stored quoteTotalEx / lines are the server\'s figures, not the browser\'s', [y2.quoteTotalEx, y2.quoteLines]);
   const pd2 = await api({ action: 'paydetail', id: P2.id, token: TOKEN });
   ok(pd2.ok && pd2.quote.lines[0].unitEx === CLR && pd2.quote.lines[0].clientUnitEx === 100 && pd2.quote.client.totalEx === 600 && pd2.quote.totals.totalEx === MIN, 'quote lines re-priced from their keys (browser figure kept beside)', pd2.quote && pd2.quote.lines);
   const pd3 = await api({ action: 'paydetail', id: P3.id, token: TOKEN }), q3 = pd3.quote || { lines: [{}, {}], totals: {} };
@@ -404,8 +404,23 @@ try {
   // money with 2 decimals recorded at once by the office → verified with the next receipt number
   const r99 = await api({ action: 'payrecord', id: r4.id, method: 'transfer', amount: '99.99', reference: 'TX-99', ...A }), p99 = (r99.payments || [])[0] || {};
   ok(r99.ok && p99.amount === 99.99 && p99.status === 'verified' && p99.receiptNo === RC0 + '0003' && r99.summary.paid === 99.99, 'admin payrecord: verified at once, 99.99 kept exactly, RC…-0003', p99);
+  // Rev.10 UX: a money action repeated with the same request id (the board retries after a timeout) is answered from the stored reply
+  { const ra = await api({ action: 'payrecord', id: r4.id, method: 'cash', amount: '1000', rid: 'srv-pay-rid-0001', ...A });
+  const rb = await api({ action: 'payrecord', id: r4.id, method: 'cash', amount: '1000', rid: 'srv-pay-rid-0001', ...A });
+  const rcpA = (ra.payments || []).find(x => x.id === ra.created) || {};
+  ok(ra.ok && !ra.repeat && /^PM-/.test(ra.created) && rcpA.receiptNo === RC0 + '0004', 'payrecord with a rid: recorded once, reply names the created payment', [ra.created, rcpA.receiptNo]);
+  ok(rb.ok && rb.repeat === true && rb.created === ra.created && rb.payments.length === ra.payments.length && (await api({ action: 'paydetail', id: r4.id, ...A })).payments.length === ra.payments.length, 'the same rid again → the stored reply (repeat:true), no second payment or receipt', [rb.repeat, rb.payments && rb.payments.length]);
+  const rs = await api({ action: 'payrecord', id: r4.id, method: 'cash', amount: '1000', rid: 'srv-pay-rid-0001', ...St });
+  ok(rs.ok && !rs.repeat && rs.created !== ra.created, 'the same rid from another staff account is a new action', rs.created);
+  ok((await api({ action: 'payrecord', id: r4.id, method: 'cash', amount: '0', rid: 'srv-pay-rid-0002', ...A })).error === 'bad_amount' && (await api({ action: 'payrecord', id: r4.id, method: 'cash', amount: '50', rid: 'srv-pay-rid-0002', ...A })).ok, 'a refused reply is not stored: the corrected form can be sent with the same rid');
+  const qa = await api({ action: 'payreq', id: r4.id, kind: 'extra', amount: '300', rid: 'srv-req-rid-0001', ...A }), qb = await api({ action: 'payreq', id: r4.id, kind: 'extra', amount: '300', rid: 'srv-req-rid-0001', ...A });
+  ok(qa.ok && qb.repeat === true && qb.created === qa.created && (await api({ action: 'paydetail', id: r4.id, ...A })).requests.length === 1, 'payreq with a rid: one request however often it is sent', qb.created);
+  const va = await api({ action: 'payvoid', req: qa.created, reason: 'ทดสอบ', rid: 'srv-void-rid-0001', ...A }), vb2 = await api({ action: 'payvoid', req: qa.created, reason: 'ทดสอบ', rid: 'srv-void-rid-0001', ...A });
+  ok(va.ok && vb2.ok && vb2.repeat === true && (await api({ action: 'payvoid', req: qa.created, reason: 'ทดสอบ', ...A })).error === 'pay_closed', 'payvoid repeated with its rid → the stored success (without a rid → pay_closed)');
+  ok(dbRows(D1, `SELECT COUNT(*) n FROM idem`)[0].n === 5, 'idem table (migration 3) keeps one row per successful (staff, action, rid)'); }
   const lp = (await listAll()).find(t => t.id === PT.id);
   ok(lp && lp.pay && lp.pay.status === 'paid' && lp.pay.paid === tot6 && lp.pay.asked === tot6 && lp.pay.open === 0 && lp.priceCheck.payable === true, 'list carries the money summary (baht) + price check', lp && lp.pay);
+  ok(lp.pay.unasked === 0 && lp.pay.refs.includes(rq.ref) && lp.pay.refs.includes(RC0 + '0001'), 'list summary: nothing left to ask + the request ref and receipt number for search', lp.pay);
 
   /* ======== F · notifications ======== */
   const OB = dbRows(D1, `SELECT channel, recipient, subject, body, ticketId FROM outbox ORDER BY id`);

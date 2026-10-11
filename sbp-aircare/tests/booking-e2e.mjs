@@ -61,8 +61,11 @@ try {
   await s.fill('#bo-tok', TOKEN); await s.click('.bo-login button');
   await s.waitForSelector('.bo-t tbody th', { timeout: 15000 });
   ok(await s.$$eval('.bo-t tbody th', x => x.map(e => e.textContent)).then(a => a.includes(id)), 'board lists the new ticket');
-  await s.click(`.bo-t tbody tr:has(th:text("${id}"))`);
+  await s.click(`.bo-t tbody tr[data-id="${id}"]`);
   await s.waitForSelector('#bo-st');
+  // Rev.10 UX: the customer's preferred date is only a hint — the appointment field stays empty until staff choose it
+  ok(await s.inputValue('#bo-sd') === '' && /ลูกค้าขอ/.test(await s.textContent('.bo-pref')), 'appointment empty until staff set it; the preferred date is a hint');
+  await s.click('.bo-pref button:has-text("ใช้วันที่ลูกค้าขอ")');
   await s.selectOption('#bo-st', 'confirmed'); await s.selectOption('#bo-team', 'ทีม 1'); await s.selectOption('#bo-sl', 'PM');
   await s.fill('#bo-note', 'ลูกค้าขอให้โทรก่อน'); await s.click('.bo-edit button[type=submit]');
   await s.waitForFunction(() => /บันทึก .* แล้ว/.test(document.querySelector('.bo-toast')?.textContent || ''), null, { timeout: 10000 });

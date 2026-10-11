@@ -9,7 +9,7 @@
 //     money status is derived from the rows (no hand-kept "paid" flag)
 //   · customers see only their own requests and receipt numbers after id + phone (same check as track)
 import { tx, audit } from './db.mjs';
-import { str, own, now, today, addDays, beYear, token, code, toSatang, fmtBaht } from './util.mjs';
+import { str, own, now, nowMs, today, addDays, beYear, token, code, toSatang, fmtBaht } from './util.mjs';
 import { promptpayPayload, qrDataUrl, maskId } from './promptpay.mjs';
 import { findByIdTel } from './tickets.mjs';
 
@@ -173,7 +173,7 @@ export function createPayments(ctx) {
       audit(db, staff.name, 'pay.request', t.id, { req: r.id, kind: b.kind, amount, basis });
     });
     if (ctx.notifyPayRequest) ctx.notifyPayRequest(t, { id: r.id, kind: b.kind, amount, ref: r.ref, expiresAt: r.expiresAt });
-    return { ok: true, ...detail({ id: t.id }, staff) };
+    return { ok: true, ...detail({ id: t.id }, staff), created: r.id };
   }
   function voidReq(b, staff) {
     if (!role(staff, 'admin', 'staff')) return fail('forbidden');
@@ -183,7 +183,7 @@ export function createPayments(ctx) {
     if (db.prepare(`SELECT COUNT(*) n FROM payments WHERE reqId = ? AND status IN ('verified', 'submitted', 'pending')`).get(r.id).n) return fail('has_payments');
     db.prepare(`UPDATE payreq SET status = 'void', closedAt = ?, note = ? WHERE id = ?`).run(now(), str([r.note, 'ยกเลิก: ' + str(b.reason, 200)].filter(Boolean).join(' · '), 400), r.id);
     audit(db, staff.name, 'pay.void', r.ticketId, { req: r.id, reason: str(b.reason, 200) });
-    return { ok: true, ...detail({ id: r.ticketId }, staff) };
+    return { ok: true, ...detail({ id: r.ticketId }, staff), created: r.id };
   }
   // money received on site / by transfer, typed in by staff (a technician's entry waits for the office to verify)
   function record(b, staff) {
@@ -201,7 +201,7 @@ export function createPayments(ctx) {
       audit(db, staff.name, 'pay.record', t.id, { payment: id, req: reqId, method: b.method, amount, verified });
     });
     if (verified && ctx.notifyPaid) ctx.notifyPaid(t, db.prepare(`SELECT * FROM payments WHERE id = ?`).get(id));
-    return { ok: true, ...detail({ id: t.id }, staff) };
+    return { ok: true, ...detail({ id: t.id }, staff), created: id };
   }
   function verify(b, staff) {
     if (!role(staff, 'admin', 'staff')) return fail('forbidden');
@@ -218,7 +218,7 @@ export function createPayments(ctx) {
       audit(db, staff.name, ok ? 'pay.verify' : 'pay.reject', p.ticketId, { payment: p.id, amount });
     });
     if (ok && ctx.notifyPaid) ctx.notifyPaid(ticketOr404(p.ticketId), db.prepare(`SELECT * FROM payments WHERE id = ?`).get(p.id));
-    return { ok: true, ...detail({ id: p.ticketId }, staff) };
+    return { ok: true, ...detail({ id: p.ticketId }, staff), created: p.id };
   }
   function refund(b, staff) {
     if (!role(staff, 'admin')) return fail('forbidden');
@@ -226,23 +226,46 @@ export function createPayments(ctx) {
     const amount = amountSatang(b.amount); if (!amount) return fail('bad_amount');
     if (!['transfer', 'cash', 'promptpay', 'gateway', 'other'].includes(b.method)) return fail('bad_method');
     if (!str(b.reason, 200)) return fail('reason_required');
-    let res;
+    let res, created = '';
     tx(db, () => {
       const s = summary(t.id) || { paid: 0, refunded: 0 };
       if (amount > s.paid - s.refunded) { res = fail('refund_too_large'); return; }
-      const id = rid('RF');
+      const id = rid('RF'); created = id;
       db.prepare(`INSERT INTO refunds (id, ticketId, paymentId, amount, method, status, reason, reference, byWho, createdAt, completedAt) VALUES (?, ?, ?, ?, ?, 'done', ?, ?, ?, ?, ?)`)
         .run(id, t.id, str(b.payment, 40), amount, b.method, str(b.reason, 200), str(b.reference, 120), staff.name, now(), now());
       audit(db, staff.name, 'pay.refund', t.id, { refund: id, amount, method: b.method });
       res = { ok: true };
     });
-    return res.ok ? { ok: true, ...detail({ id: t.id }, staff) } : res;
+    return res.ok ? { ok: true, ...detail({ id: t.id }, staff), created } : res;
+  }
+  // Rev.10 UX: a staff money action sent again with the same request id (the board retries after a timeout or a dropped
+  // connection) answers with the stored reply + repeat:true instead of a second request / payment / receipt / refund.
+  // Only successful replies are stored (a refused one can be corrected and sent again); kept 2 days.
+  const RID = /^[A-Za-z0-9_-]{8,64}$/;
+  function once(action, b, staff, run) {
+    const r = typeof b.rid === 'string' && RID.test(b.rid) ? b.rid : '';
+    if (!r) return run();
+    const who = staff.legacy ? 'legacy:' + str(staff.name, 120) : 'id:' + staff.id;
+    db.prepare(`DELETE FROM idem WHERE at < ?`).run(now(nowMs() - 2 * 864e5));
+    const prev = db.prepare(`SELECT reply FROM idem WHERE who = ? AND action = ? AND rid = ?`).get(who, action, r);
+    if (prev) return { ...JSON.parse(prev.reply), repeat: true };
+    const res = run();   // synchronous: nothing else runs between the check above and the insert below
+    if (res && res.ok) {
+      db.prepare(`INSERT OR IGNORE INTO idem (who, action, rid, ticketId, reply, at) VALUES (?, ?, ?, ?, ?, ?)`).run(who, action, r, res.id || '', JSON.stringify(res), now());
+    }
+    return res;
+  }
+  // list extras (board): what the server quote still leaves to ask for, and the codes staff search for (request refs, receipts)
+  function listExtras(id) {
+    const t = ticketOr404(id), sg = t ? suggested(t) : null;
+    return { unasked: sg ? sg.amount / 100 : 0, refs: [...reqs(id).map(r => r.ref), ...pays(id).filter(p => p.receiptNo).map(p => p.receiptNo)] };
   }
   function summaries(ids) {
     const out = {};
     if (!ids.length) return out;
     const have = new Set(db.prepare(`SELECT DISTINCT ticketId FROM payreq WHERE ticketId IN (${ids.map(() => '?').join(',')}) UNION SELECT DISTINCT ticketId FROM payments WHERE ticketId IN (${ids.map(() => '?').join(',')})`).all(...ids, ...ids).map(r => r.ticketId));
     for (const id of have) { const s = summary(id); if (s) out[id] = { ...s, due: s.due / 100, paid: s.paid / 100, refunded: s.refunded / 100, asked: s.asked / 100 }; }
+    for (const id of Object.keys(out)) Object.assign(out[id], listExtras(id));
     return out;
   }
   // phase 2: a gateway reports a charge (already signature-checked and re-fetched by the provider module)
@@ -286,5 +309,8 @@ export function createPayments(ctx) {
   }
   function methodsForPublic() { const m = methodsFor(); return ctx.omise && ctx.omise.enabled ? ['gateway', ...m] : m; }
 
-  return { publicView, summaries, summary, suggested, pay, paid, payGateway, detail, request, voidReq, record, verify, refund, gatewayResult, methodsFor: methodsForPublic };
+  return { publicView, summaries, summary, suggested, pay, paid, payGateway, detail, gatewayResult, methodsFor: methodsForPublic,
+    request: (b, st) => once('payreq', b, st, () => request(b, st)), voidReq: (b, st) => once('payvoid', b, st, () => voidReq(b, st)),
+    record: (b, st) => once('payrecord', b, st, () => record(b, st)), verify: (b, st) => once('payverify', b, st, () => verify(b, st)),
+    refund: (b, st) => once('refund', b, st, () => refund(b, st)) };
 }

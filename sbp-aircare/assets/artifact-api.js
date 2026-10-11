@@ -12,6 +12,7 @@
 //                     reqs[] / pays[] / refs[] (payreq / payments / refunds rows) + reqIds[] / payIds[] / receiptNos[] for lookups
 //   counters/ticket   {k:'T<พ.ศ.><MMDD>', n}  ·  counters/receipt {k:'R<พ.ศ.><MM>', n}  — taken under an acquire() lease
 //   sessions/<sha-256 of the token>  {user, createdAt, expiresMs}  — 12-hour staff sessions (role comes from TEST_ACCOUNTS)
+//   idem/<sha-256 of staff|action|rid>  {reply, expiresMs}  — a repeated staff money action returns this reply (server idem table)
 // Every read-modify-write of a ticket holds that document's lease (other tabs wait) and runs one at a time in this tab.
 // No db in this view (signed out / not granted / not served / revoked) → reject {code:'not_connected'}: the page shows its honest
 // hand-off. Published with db rules [{path:'', read:'interact', write:'interact'}]: a viewer below Contributor (user.can('data.write')
@@ -254,7 +255,7 @@ async function slots(b) {
   }
   return { ok: true, capacity: CAPACITY, days: out };
 }
-const listRow = t => { const x = sheetRow(t); x.priceCheck = t.priceCheck || null; const s = summaryBaht(t); if (s) x.pay = s; return x; };
+const listRow = t => { const x = sheetRow(t); x.priceCheck = t.priceCheck || null; const s = summaryBaht(t); if (s) x.pay = { ...s, ...listExtras(t) }; return x; };
 async function list(b) {
   let q = DB.collection('tickets');
   if (b.status && own(STATUSES, b.status)) q = q.where('status', '==', b.status);
@@ -312,6 +313,8 @@ function suggested(t) {
   const s = summary(t), already = s ? s.asked : 0, total = toSatang(rq.totals.total);
   return total - already >= 100 ? { amount: total - already, basis: 'server_quote', tax: rq.tax, totalEx: rq.totals.totalEx, vat: rq.totals.vat } : null;
 }
+// list extras (server listExtras): what the server quote still leaves to ask for + the codes staff search for
+const listExtras = t => { const sg = suggested(t); return { unasked: sg ? sg.amount / 100 : 0, refs: [...t.reqs.map(r => r.ref), ...t.pays.filter(p => p.receiptNo).map(p => p.receiptNo)] }; };
 const payee = () => ({ name: P.payee, promptpay: P.promptpayId ? maskId(P.promptpayId) : '', bank: P.bank && P.accountNo ? { name: P.bank, accountName: P.accountName || P.payee, accountNo: P.accountNo } : null });
 const methodsFor = () => [P.promptpayId ? 'promptpay' : null, P.bank && P.accountNo ? 'transfer' : null, P.onsite ? 'onsite' : null].filter(Boolean);
 // what the customer may see after id + phone: amounts, request references, receipt numbers — no staff names or notes
@@ -383,17 +386,18 @@ function detail(t, staff) {
 async function payDetail(b, staff) { const t = await loadTicket(b.id); if (!t) throw fail('not_found'); return detail(t, staff); }
 async function request(b, staff) {
   if (!role(staff, 'admin', 'staff')) throw fail('forbidden');
+  let created = '';
   const t = await mutate(b.id, t => {
     if (t.status === 'cancelled') throw fail('ticket_cancelled');
     if (!own(REQ_KINDS, b.kind)) throw fail('bad_kind');
     let amount = b.amount === '' || b.amount == null ? null : amountSatang(b.amount), basis = 'staff_confirmed';
     if (b.amount === '' || b.amount == null) { const s = suggested(t); if (!s) throw fail('amount_required'); amount = s.amount; basis = 'server_quote'; }
     if (!amount) throw fail('bad_amount');
-    const id = rid('PR');
+    const id = rid('PR'); created = id;
     t.reqs.push({ id, ticketId: t.id, kind: b.kind, amount, status: 'open', ref: code(6), note: str(b.note, 400), basis, createdAt: now(), createdBy: staff.name, expiresAt: addDays(today(), Math.max(1, P.requestDays)), closedAt: '' });
     t.reqIds.push(id);
   });
-  return detail(t, staff);
+  return { ...detail(t, staff), created };
 }
 // the ticket holding payment request / payment `id` (rows live inside their ticket's document)
 const ticketOf = async (field, id) => { const s = str(id, 40); return s ? ((await query(DB.collection('tickets').where(field, 'array-contains', s).limit(1)))[0] || null) : null; };
@@ -407,21 +411,22 @@ async function voidReq(b, staff) {
     if (t.pays.some(p => p.reqId === r.id && ['verified', 'submitted', 'pending'].includes(p.status))) throw fail('has_payments');
     Object.assign(r, { status: 'void', closedAt: now(), note: str([r.note, 'ยกเลิก: ' + str(b.reason, 200)].filter(Boolean).join(' · '), 400) });
   });
-  return detail(t, staff);
+  return { ...detail(t, staff), created: reqId };
 }
 // money received on site / by transfer, typed in by staff (a technician's entry waits for the office to verify it)
 async function record(b, staff) {
+  let created = '';
   const t = await mutate(b.id, async t => {
     if (!own(PAY_METHODS, b.method) || b.method === 'gateway') throw fail('bad_method');
     const amount = amountSatang(b.amount); if (!amount) throw fail('bad_amount');
     let reqId = '';
     if (b.req) { const r = t.reqs.find(x => x.id === str(b.req, 40)); if (!r) throw fail('not_found'); reqId = r.id; }
-    const verified = role(staff, 'admin', 'staff'), id = rid('PM'), receiptNo = verified ? await nextReceipt() : null;
+    const verified = role(staff, 'admin', 'staff'), id = rid('PM'), receiptNo = verified ? await nextReceipt() : null; created = id;
     t.pays.push({ id, ticketId: t.id, reqId, method: b.method, provider: 'manual', providerRef: '', amount, status: verified ? 'verified' : 'submitted', reference: str(b.reference, 120), note: str(b.note, 400), byWho: staff.name, createdAt: now(), verifiedBy: verified ? staff.name : '', verifiedAt: verified ? now() : '', receiptNo });
     t.payIds.push(id); if (receiptNo) t.receiptNos.push(receiptNo);
     if (reqId) settle(t, reqId);
   });
-  return detail(t, staff);
+  return { ...detail(t, staff), created };
 }
 async function verify(b, staff) {
   if (!role(staff, 'admin', 'staff')) throw fail('forbidden');
@@ -438,7 +443,7 @@ async function verify(b, staff) {
     else Object.assign(p, { status: 'rejected', verifiedBy: staff.name, verifiedAt: now(), note });
     if (ok && p.reqId) settle(t, p.reqId);
   });
-  return detail(t, staff);
+  return { ...detail(t, staff), created: pid };
 }
 async function refund(b, staff) {
   if (!role(staff, 'admin')) throw fail('forbidden');
@@ -446,12 +451,29 @@ async function refund(b, staff) {
   const amount = amountSatang(b.amount); if (!amount) throw fail('bad_amount');
   if (!['transfer', 'cash', 'promptpay', 'gateway', 'other'].includes(b.method)) throw fail('bad_method');
   if (!str(b.reason, 200)) throw fail('reason_required');
+  let created = '';
   const t = await mutate(b.id, t => {
     const s = summary(t) || { paid: 0, refunded: 0 };
     if (amount > s.paid - s.refunded) throw fail('refund_too_large');
-    t.refs.push({ id: rid('RF'), ticketId: t.id, paymentId: str(b.payment, 40), amount, method: b.method, status: 'done', reason: str(b.reason, 200), reference: str(b.reference, 120), byWho: staff.name, createdAt: now(), completedAt: now() });
+    created = rid('RF');
+    t.refs.push({ id: created, ticketId: t.id, paymentId: str(b.payment, 40), amount, method: b.method, status: 'done', reason: str(b.reason, 200), reference: str(b.reference, 120), byWho: staff.name, createdAt: now(), completedAt: now() });
   });
-  return detail(t, staff);
+  return { ...detail(t, staff), created };
+}
+
+// a staff money action sent again with the same request id answers with the stored reply + repeat:true (server/payments.mjs once)
+const RID = /^[A-Za-z0-9_-]{8,64}$/;
+async function once(action, b, staff, run) {
+  const r = typeof b.rid === 'string' && RID.test(b.rid) ? b.rid : '';
+  if (!r) return run();
+  const path = 'idem/' + await sha256('id:' + staff.id + '|' + action + '|' + r);
+  return serial(path, async () => {
+    const prev = await getDoc(path);
+    if (prev && prev.reply && +prev.expiresMs > nowMs()) return { ...prev.reply, repeat: true };
+    const res = await run();
+    if (res && res.ok) await putDoc(path, { reply: res, expiresMs: nowMs() + 2 * DAY }).catch(() => {});   // the action itself already succeeded
+    return res;
+  });
 }
 
 /* ---------------- staff accounts (TEST) ---------------- */
@@ -462,7 +484,7 @@ async function login(b) {
   const a = own(TEST_ACCOUNTS, user) ? TEST_ACCOUNTS[user] : null;
   if (!a || String(b.password == null ? '' : b.password) !== TEST_PASSWORD) { rl.hit('login:ip', max, W); rl.hit('login:u:' + user, max, W); throw fail('unauthorized'); }
   const tk = token(32);
-  try { for (const x of (await retry(() => DB.collection('sessions').where('expiresMs', '<', nowMs()).limit(50).get())).docs) await delDoc('sessions/' + x.id); } catch (e) {}   // tidy up expired sessions
+  for (const c of ['sessions', 'idem']) try { for (const x of (await retry(() => DB.collection(c).where('expiresMs', '<', nowMs()).limit(50).get())).docs) await delDoc(c + '/' + x.id); } catch (e) {}   // tidy up expired sessions / stored replies
   await putDoc('sessions/' + await sha256(tk), { user, createdAt: now(), expiresMs: nowMs() + SESSION_MS });
   return { ok: true, token: tk, name: a.name, role: a.role, roleTh: ROLES[a.role] };
 }
@@ -485,7 +507,8 @@ const STAFF = {
   list: (b, st) => list(b),
   update: (b, st) => update(b, st),
   me: (b, st) => ({ ok: true, name: st.name, role: st.role, roleTh: ROLES[st.role] }),
-  paydetail: payDetail, payreq: request, payvoid: voidReq, payrecord: record, payverify: verify, refund,
+  paydetail: payDetail, payreq: (b, st) => once('payreq', b, st, () => request(b, st)), payvoid: (b, st) => once('payvoid', b, st, () => voidReq(b, st)),
+  payrecord: (b, st) => once('payrecord', b, st, () => record(b, st)), payverify: (b, st) => once('payverify', b, st, () => verify(b, st)), refund: (b, st) => once('refund', b, st, () => refund(b, st)),
 };
 async function dispatch(b) {
   switch (b.action) {

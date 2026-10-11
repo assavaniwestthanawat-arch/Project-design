@@ -147,5 +147,8 @@ export function recompute(q, fallbackArea = '') {
   };
 }
 
-// '• name × qty = amount' lines for the sheet/board column (server prices; surveys marked like Code.gs)
-export const quoteLinesText = rq => rq.lines.map(L => '• ' + L.name + (L.detail ? ` (${L.detail})` : '') + ' × ' + L.qty + (L.unitEx == null ? ' (ประเมินหน้างาน)' : ' = ' + L.unitEx * L.qty)).join('\n');
+// '• name × qty = ฿amount' lines for the sheet/board column (server prices; surveys marked like Code.gs) — Rev.10 UX: baht sign +
+// thousands separators, plus the cleaning-minimum top-up and the travel fee as their own lines so the lines add up to รวมก่อน VAT
+const thb = n => '฿' + n.toLocaleString('en-US');
+export const quoteLinesText = rq => [...rq.lines.map(L => '• ' + L.name + (L.detail ? ` (${L.detail})` : '') + ' × ' + L.qty + (L.unitEx == null ? ' (ประเมินหน้างาน)' : ' = ' + thb(L.unitEx * L.qty))),
+  rq.totals && rq.totals.minGap > 0 ? '• ส่วนเติมยอดขั้นต่ำงานล้าง ' + thb(rq.totals.minGap) : '', rq.totals && rq.totals.travel > 0 ? '• ค่าเดินทาง ' + thb(rq.totals.travel) : ''].filter(Boolean).join('\n');

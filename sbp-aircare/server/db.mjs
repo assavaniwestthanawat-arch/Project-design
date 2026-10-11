@@ -50,6 +50,11 @@ const MIGRATIONS = [
     ticketId TEXT NOT NULL DEFAULT '', createdAt TEXT NOT NULL, sentAt TEXT NOT NULL DEFAULT '');
   CREATE INDEX outbox_pending ON outbox(status, nextMs);
   CREATE TABLE webhook_events (provider TEXT NOT NULL, eventId TEXT NOT NULL, receivedAt TEXT NOT NULL, PRIMARY KEY (provider, eventId));`,
+  // 3 — idempotent staff money actions: the board sends a request id (rid) with each money form; a repeat of the same
+  //     (staff, action, rid) — a retry after a timeout — gets the stored reply instead of a second row / receipt
+  `CREATE TABLE idem (who TEXT NOT NULL, action TEXT NOT NULL, rid TEXT NOT NULL, ticketId TEXT NOT NULL DEFAULT '', reply TEXT NOT NULL, at TEXT NOT NULL,
+    PRIMARY KEY (who, action, rid));
+  CREATE INDEX idem_at ON idem(at);`,
 ];
 
 export function openDb(file) {
