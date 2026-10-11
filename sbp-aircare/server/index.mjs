@@ -7,6 +7,7 @@
 import http from 'node:http';
 import { loadConfig, checkConfig, VERSION } from './config.mjs';
 import { createApp } from './app.mjs';
+import { addStaff } from './staff.mjs';
 import { backupNow } from './backup.mjs';
 import { anonymizeOld } from './retention.mjs';
 import { now, today } from './util.mjs';
@@ -17,6 +18,10 @@ warnings.forEach(w => console.warn('⚠', w));
 if (errors.length) { errors.forEach(e => console.error('✗', e)); process.exit(1); }
 
 const app = await createApp(cfg);
+if (cfg.bootstrapAdmin && !app.db.prepare(`SELECT COUNT(*) AS n FROM staff`).get().n) {
+  try { addStaff(app.db, { ...cfg.bootstrapAdmin, role: 'admin' }); console.log(`created the first admin account "${cfg.bootstrapAdmin.username}" from ADMIN_USER / ADMIN_PASSWORD`); }
+  catch (e) { console.error('✗ ADMIN_USER / ADMIN_PASSWORD:', e.message); process.exit(1); }
+}
 const server = http.createServer(app.handler);
 server.keepAliveTimeout = 65e3; server.headersTimeout = 70e3; server.requestTimeout = 30e3;
 server.listen(cfg.port, cfg.host, () => console.log(`SBP AirCare ${VERSION} · http://${cfg.host}:${cfg.port}/ · home ${cfg.home} · db ${cfg.dbFile} · mail ${cfg.mailTransport}${cfg.dev ? ' · DEV' : ''}`));

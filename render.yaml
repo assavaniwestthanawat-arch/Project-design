@@ -1,0 +1,59 @@
+# SBP AirCare — one-click hosting on Render (Rev.10). The fastest way to a public site without a domain or a server:
+# Render builds sbp-aircare/deploy/Dockerfile, serves it at https://<name>.onrender.com (HTTPS included) and keeps the
+# database on a persistent disk at /data (snapshotted daily by Render). Steps in Thai: sbp-aircare/deploy/DEPLOY_TH.md
+# "ทางลัด · Render". Values marked `sync: false` are asked once when the Blueprint is created (secrets never go in git).
+services:
+  - type: web
+    name: sbp-aircare
+    runtime: docker
+    region: singapore                 # closest Render region to Thailand
+    plan: starter                     # a persistent disk needs a paid instance (the free plan has no disk → data loss)
+    dockerfilePath: ./sbp-aircare/deploy/Dockerfile.render
+    dockerContext: ./sbp-aircare
+    healthCheckPath: /healthz
+    numInstances: 1                   # one instance: SQLite lives on the attached disk
+    buildFilter:
+      paths:
+        - sbp-aircare/**
+        - render.yaml
+    disk:
+      name: aircare-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      # site — SITE_URL is optional here: the server uses Render's own https address until a domain is added
+      - key: SITE_MODE
+        value: live                   # real customers: no Beta bar / design switcher (use "beta" for a test round)
+      - key: HOME_PAGE
+        value: c.html
+      - key: TRUST_PROXY
+        value: "1"
+      - key: TRUST_PROXY_HOPS
+        value: "2"                    # Render's proxy adds one hop after the visitor's address
+      - key: BACKUP_AT
+        value: "03:15"                # nightly copy to /data/backups (plus Render's daily disk snapshot)
+      # first admin for the back office (/backoffice.html) — created once while no staff account exists
+      - key: ADMIN_USER
+        sync: false
+      - key: ADMIN_NAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false                   # at least 10 characters
+      # payments — leave empty to switch a method off (owner to confirm the real accounts, CLAUDE.md §6.6 #24)
+      - key: PROMPTPAY_ID
+        sync: false
+      - key: BANK_NAME
+        sync: false
+      - key: BANK_ACCOUNT_NAME
+        sync: false
+      - key: BANK_ACCOUNT_NO
+        sync: false
+      # staff alerts by e-mail (company Gmail + App Password) — optional
+      - key: NOTIFY_EMAIL
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false

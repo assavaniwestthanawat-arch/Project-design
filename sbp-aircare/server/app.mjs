@@ -29,7 +29,10 @@ export async function createApp(cfg, { root = ROOT, log = console } = {}) {
   const stat = createStatic(cfg, root);
   const started = Date.now();
 
-  const clientIp = req => (cfg.trustProxy ? String(req.headers['x-forwarded-for'] || '').split(',').pop().trim() : '') || req.socket.remoteAddress || '';
+  const clientIp = req => {
+    if (cfg.trustProxy) { const xs = String(req.headers['x-forwarded-for'] || '').split(',').map(x => x.trim()).filter(Boolean); const ip = xs[Math.max(0, xs.length - (cfg.proxyHops || 1))]; if (ip) return ip; }
+    return req.socket.remoteAddress || '';
+  };
   const json = (req, res, status, o) => {
     const body = JSON.stringify(o);
     res.writeHead(status, { ...securityHeaders(req, cfg), 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'Content-Length': Buffer.byteLength(body) });

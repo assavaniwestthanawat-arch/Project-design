@@ -1,0 +1,26 @@
+# SBP AirCare — image for Render (Rev.10, render.yaml at the repo root). Same content as deploy/Dockerfile; the only
+# difference is the start: Render mounts its persistent disk at /data owned by root, so the container starts as root,
+# hands /data to the 'node' user and then runs the server as 'node' (setpriv, util-linux). The compose/VPS path keeps
+# deploy/Dockerfile (USER node, cap_drop ALL) unchanged.
+FROM node:24-bookworm-slim AS site
+WORKDIR /src
+COPY package.json ./
+COPY server/ server/
+COPY assets/ assets/
+COPY a.html b.html c.html d.html a2.html b2.html c2.html d2.html a3.html b3.html c3.html backoffice.html privacy.html terms.html refund.html ./
+RUN find . \( -name '*.md' -o -name '*.txt' -o -name 'README*' -o -name '.*' -o -name '*.py' \) -type f -delete \
+ && rm -f assets/photos/photos.json \
+ && find . -type d -empty -delete
+
+FROM node:24-bookworm-slim
+ENV NODE_ENV=production HOST=0.0.0.0 PORT=8080 DATA_DIR=/data
+WORKDIR /app
+# code stays root-owned (read-only for the app); only /data is writable by the 'node' user
+COPY --from=site /src/ ./
+RUN mkdir -p /data && chown node:node /data && chmod 750 /data
+VOLUME ["/data"]
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD ["node", "-e", "fetch('http://127.0.0.1:' + (process.env.PORT || 8080) + '/healthz').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+STOPSIGNAL SIGTERM
+CMD ["sh", "-c", "chown -R node:node /data && exec setpriv --reuid=node --regid=node --init-groups -- node --disable-warning=ExperimentalWarning server/index.mjs"]

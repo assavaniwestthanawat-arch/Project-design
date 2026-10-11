@@ -23,8 +23,14 @@ export function loadConfig(env = process.env) {
   const cfg = {
     prod, dev: !prod && bool(env.DEV, false),
     host: env.HOST || '127.0.0.1', port: int(env.PORT, 8080),
-    siteUrl: String(env.SITE_URL || '').replace(/\/+$/, ''),
-    trustProxy: bool(env.TRUST_PROXY, false),
+    // hosted platforms publish the service address themselves (Render: RENDER_EXTERNAL_URL · Railway: RAILWAY_PUBLIC_DOMAIN)
+    siteUrl: String(env.SITE_URL || env.RENDER_EXTERNAL_URL || (env.RAILWAY_PUBLIC_DOMAIN ? 'https://' + env.RAILWAY_PUBLIC_DOMAIN : '')).replace(/\/+$/, ''),
+    // behind a proxy: X-Forwarded-For entry counted from the right (1 = Caddy/nginx appends the client last; Render's own
+    // proxy appends one more hop, so its default is 2). Entries further left are client-supplied and never trusted.
+    trustProxy: bool(env.TRUST_PROXY, !!env.RENDER),
+    proxyHops: Math.max(1, int(env.TRUST_PROXY_HOPS, env.RENDER ? 2 : 1)),
+    // first admin for hosted installs without a shell: created at start only while the staff table is empty
+    bootstrapAdmin: env.ADMIN_USER && env.ADMIN_PASSWORD ? { username: env.ADMIN_USER, name: env.ADMIN_NAME || env.ADMIN_USER, password: env.ADMIN_PASSWORD } : null,
     dataDir, dbFile: resolve(env.DB_FILE || join(dataDir, 'aircare.sqlite')),
     backupDir: resolve(env.BACKUP_DIR || join(dataDir, 'backups')), backupKeep: int(env.BACKUP_KEEP, 14),
     home: PAGES.includes(home) ? home : 'c.html',
@@ -67,6 +73,7 @@ export function checkConfig(cfg) {
     if (!cfg.siteUrl.startsWith('https://')) errors.push('SITE_URL must be the public https:// address in production');
     if (cfg.staffToken && cfg.staffToken.length < 24) errors.push('STAFF_TOKEN must be at least 24 characters (or unset it and use staff accounts)');
     if (cfg.mailTransport === 'smtp' && (!cfg.smtp.user || !cfg.smtp.pass)) errors.push('SMTP_USER and SMTP_PASS are required when SMTP_HOST is set');
+    if (cfg.bootstrapAdmin && cfg.bootstrapAdmin.password.length < 10) errors.push('ADMIN_PASSWORD must be at least 10 characters');
     if (!cfg.trustProxy) warnings.push('TRUST_PROXY is off — behind Caddy/nginx every visitor shares the proxy address for the per-address limits (set TRUST_PROXY=1)');
     if (!cfg.notifyEmail.length && !cfg.line.token) warnings.push('NOTIFY_EMAIL / LINE_TOKEN not set — new tickets reach staff only through the back office');
   }
