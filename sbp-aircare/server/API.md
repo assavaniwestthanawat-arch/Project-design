@@ -50,6 +50,8 @@ Every staff action takes `{token, staff?}`. `token` is either the session token 
 | `payverify` | `{payment, decision:'verify'\|'reject', amount?, note?}` | paydetail. admin/staff only |
 | `refund` | `{id, payment?, amount, method:'transfer'\|'cash'\|'promptpay'\|'gateway'\|'other', reference?, reason}` | paydetail. admin only. Rejected with `refund_too_large` when the amount exceeds paid − refunded |
 
+Rev.10 UX: `payreq`, `payvoid`, `payrecord`, `payverify` and `refund` accept an optional `rid` (8–64 chars `[A-Za-z0-9_-]`, one per opened money form on the board). The same staff account sending the same action with the same `rid` again — a retry after a timeout — gets the stored reply plus `repeat:true` instead of a second request / payment / receipt / refund (table `idem`, migration 3, kept 2 days; only successful replies are stored). Every successful reply of these five actions also carries `created`: the id of the request / payment / refund it created or acted on. `list` → `pay` also carries `unasked` (what the server quote still leaves to ask for, baht) and `refs` (request reference codes + receipt numbers, for the board's search).
+
 ## Error codes
 
 **Existing:** `too_large bad_json unknown_action server rejected bad_kind bad_tel bad_name no_consent bad_email bad_date rate_limited not_found staff_disabled unauthorized bad_status bad_team`

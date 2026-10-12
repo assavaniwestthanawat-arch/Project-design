@@ -334,7 +334,7 @@ try {
   ok([BP, P2, P3, P5].every(x => x.ok), 'pricing tickets stored', [BP, P2, P3, P5]);
   const LC = await C({ action: 'list', ...A }), y = id => (LC.tickets || []).find(t => t.id === id) || {};
   ok(y(BP.id).priceCheck && y(BP.id).priceCheck.verified && y(BP.id).priceCheck.match && y(BP.id).priceCheck.payable && y(BP.id).quoteTotalEx === 4500 && y(BP.id).zoneTier === 'core', 'board-pay cleaning quote: verified, matching, payable, server total 4,500', y(BP.id).priceCheck);
-  ok(y(P2.id).priceCheck.match === false && y(P2.id).priceCheck.issues.some(i => i.line === 0 && i.check === 'mismatch' && i.client === 100 && i.server === CLR) && y(P2.id).quoteTotalEx === MIN && y(P2.id).quoteLines.includes(`× 6 = ${6 * CLR}`), 'a tampered unit price is flagged; the stored totals are the server\'s', y(P2.id).priceCheck);
+  ok(y(P2.id).priceCheck.match === false && y(P2.id).priceCheck.issues.some(i => i.line === 0 && i.check === 'mismatch' && i.client === 100 && i.server === CLR) && y(P2.id).quoteTotalEx === MIN && y(P2.id).quoteLines.includes(`× 6 = ฿${(6 * CLR).toLocaleString('en-US')}`), 'a tampered unit price is flagged; the stored totals are the server\'s', y(P2.id).priceCheck);
   const zNP = core.checkZone('นครปฐม'), ex3 = CLR + zNP.fee + (MIN - CLR), q3 = (await C({ action: 'paydetail', id: P3.id, ...A })).quote || { lines: [{}, {}], totals: {} };
   ok(q3.lines[1].unitEx === null && q3.lines[1].check === 'survey_has_price' && y(P3.id).travelFee === zNP.fee && q3.totals.totalEx === ex3 && q3.totals.vat === core.vatOf(ex3) && y(P3.id).priceCheck.payable === false, 'survey line never priced; travel + VAT computed; not payable', q3.totals);
   ok(y(P5.id).priceCheck.verified && y(P5.id).priceCheck.payable === false && y(P5.id).quoteTotalEx === SKU.px, 'a product line is priced but not payable');
@@ -428,6 +428,7 @@ try {
   ok((await C({ action: 'pay', id: P2.id, tel: '0831000002', req: rqb.id, method: 'promptpay' })).error === 'ticket_cancelled' && (await C({ action: 'track', id: P2.id, tel: '0831000002' })).ticket.payment.methods.length === 0, 'cancelled ticket: nothing payable (pay → ticket_cancelled, no methods)');
   const r99 = await C({ action: 'payrecord', id: P5.id, method: 'transfer', amount: '99.99', reference: 'TX-99', ...A }), p99 = (r99.payments || [])[0] || {};
   ok(r99.ok && p99.amount === 99.99 && p99.status === 'verified' && p99.receiptNo === RC0 + '0003' && r99.summary.paid === 99.99 && r99.summary.status === 'paid', 'admin payrecord (no request) → verified at once, 99.99 exact, RC…-0003', p99);
+  ok(r99.created === p99.id, 'a money reply names the row it created');
   const lp = ((await C({ action: 'list', ...A })).tickets || []).find(t => t.id === BP.id) || {};
   ok(lp.pay && lp.pay.status === 'paid' && lp.pay.paid === 4500 && lp.pay.asked === 4500 && lp.pay.open === 0 && lp.pay.pending === 0 && lp.priceCheck.payable === true, 'list carries the money summary (baht) + price check', lp.pay);
   // a request expires the day after expiresAt (injectable clock)
@@ -558,6 +559,11 @@ try {
     await s('update cancel', { action: 'update', id: c2.id, patch: { status: 'cancelled' }, ...A }); await s('payreq cancelled', { action: 'payreq', id: c2.id, kind: 'full', amount: '100', ...A });
     await s('track cancelled', { action: 'track', id: c2.id, tel: '0831000002' }); await s('pay cancelled', { action: 'pay', id: c2.id, tel: '0831000002', req: pv.requests[0].id, method: 'promptpay' });
     await s('payrecord admin', { action: 'payrecord', id: c4.id, method: 'transfer', amount: '99.99', reference: 'TX-99', ...A });
+    // Rev.10 UX: the same request id again → the stored reply (repeat:true), never a second row / receipt (one row per ticket per
+    // second: rows created in the same second are ordered by their random id on the server)
+    await s('payrecord rid', { action: 'payrecord', id: c2.id, method: 'cash', amount: '10', rid: 'cmp-pay-rid-0001', ...A }); await s('payrecord rid repeat', { action: 'payrecord', id: c2.id, method: 'cash', amount: '10', rid: 'cmp-pay-rid-0001', ...A });
+    const prr = await s('payreq rid', { action: 'payreq', id: c4.id, kind: 'extra', amount: '200', rid: 'cmp-req-rid-0001', ...A }); await s('payreq rid repeat', { action: 'payreq', id: c4.id, kind: 'extra', amount: '200', rid: 'cmp-req-rid-0001', ...A });
+    await s('payvoid rid', { action: 'payvoid', req: prr.created, reason: 'ทดสอบ', rid: 'cmp-void-rid-0001', ...A }); await s('payvoid rid repeat', { action: 'payvoid', req: prr.created, reason: 'ทดสอบ', rid: 'cmp-void-rid-0001', ...A });
     await s('list', { action: 'list', ...A }); await s('slots after', { action: 'slots', from: day(0), days: 7 });
     await s('logout', { action: 'logout', ...St }); await s('me after logout', { action: 'me', ...St });
     return R;
@@ -565,7 +571,7 @@ try {
   const RS = await scenario(viaServer, SRV_PW), RA = await scenario(viaArtifact, PW);
   ok(RS.length === RA.length && RS.every(([l], i) => RA[i][0] === l), 'both runs made the same calls', [RS.length, RA.length]);
   const kind = v => (v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v);
-  const VOLATILE = new Set(['token', 'ref', 'createdAt', 'updatedAt', 'verifiedAt', 'completedAt', 'closedAt', 'consentAt', 'history']);
+  const VOLATILE = new Set(['token', 'ref', 'refs', 'createdAt', 'updatedAt', 'verifiedAt', 'completedAt', 'closedAt', 'consentAt', 'history']);
   const INTENDED = /\.test$/;   // test:true on every money reply of the artifact (TEST site)
   const shapeDiffs = [], valueDiffs = [];
   function compare(a, b, path) {
