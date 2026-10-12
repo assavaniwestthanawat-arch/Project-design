@@ -19,6 +19,11 @@
 <link rel="stylesheet" href="assets/booking.css">
 <link rel="stylesheet" href="assets/studio.css">
 <link rel="stylesheet" href="assets/services.css">
+<link rel="stylesheet" href="assets/wow-talk.css">
+<link rel="stylesheet" href="assets/wow-sound.css">
+<link rel="stylesheet" href="assets/wow-mine.css">
+<link rel="stylesheet" href="assets/wow-motion.css">
+<link rel="stylesheet" href="assets/wow-ar.css">
 <style>
 /* Layout concept C — "Virtual showroom": a dark stage where the product is the light source. Cool air = cyan, heat = orange, used as meaning, not decoration. Full-bleed 3D first, content in solid panels below. */
 :root{
@@ -473,6 +478,11 @@ html[data-sx-boot=home]:not(.sx-on) :is(#journey,main>section:not(#quick):not(#s
     <div id="startRoot"></div>
   </section>
 
+  <section class="sec" id="talk">
+    <div class="sec-h"><p class="eyebrow">ใหม่ · คุยกับเว็บ</p><h2>เล่าให้ฟัง แล้วเราจัดให้</h2><p>พูดหรือพิมพ์เหมือนคุยกับช่าง ระบบสรุปงานและราคามาตรฐาน แล้วกรอกฟอร์มจองคิวให้ หรือเปิดเสียงแอร์ตัวอย่างเทียบกับเสียงที่บ้าน</p></div>
+    <div class="wow-talk"><div class="panel" id="talkRoot"></div><div class="panel" id="soundRoot"></div></div>
+  </section>
+
   <!-- WORKFLOW -->
   <section class="sec" id="flow">
     <div class="panel" id="flowRoot"></div>
@@ -605,6 +615,11 @@ html[data-sx-boot=home]:not(.sx-on) :is(#journey,main>section:not(#quick):not(#s
     <div id="bookRoot"></div>
   </section>
 
+  <section class="sec" id="mine">
+    <div class="sec-h"><p class="eyebrow">เก็บไว้ในเครื่องนี้</p><h2>แอร์ของฉัน</h2><p>จดแอร์แต่ละเครื่องกับวันที่ล้างล่าสุด ดูว่ารอบถัดไปควรเป็นเมื่อไร แล้วกดจองซ้ำได้ทันที ข้อมูลอยู่ในเครื่องนี้เท่านั้น บริษัทได้รับเมื่อคุณส่งคำขอจองคิว</p></div>
+    <div class="panel" id="mineRoot"></div>
+  </section>
+
   <section class="sec" id="quote" data-reveal><div class="panel" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px;align-items:center">
     <div><h2 style="font-size:30px">ให้ทีมติดต่อกลับ</h2><p style="color:var(--ink-2);margin-top:6px">ฝากชื่อและเบอร์ ทีมจะโทรกลับเพื่อสอบถามรายละเอียด</p><p class="sx-qalt">หรือโทร <a data-co="tel" href="#contact">02</a> · อีเมล <span class="sx-sel" data-co="email"></span></p></div>
     <form id="qform" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label class="field">ชื่อ<input id="qc-name" autocomplete="name" required></label><label class="field">เบอร์โทร<input id="qc-tel" type="tel" inputmode="tel" autocomplete="tel" required></label><button class="btn-primary" style="grid-column:1/-1">ส่งข้อมูล</button></form>
@@ -635,6 +650,7 @@ import { mountRoomFit } from './assets/roomfit.js';
 import { mountKnowledge } from './assets/knowledge.js';
 import { mountJobGuide } from './assets/jobguide.js';
 import { mountSite } from './assets/site.js';
+import { mountWow } from './assets/wow.js';
 import { mountJobCard } from './assets/jobcard.js';
 import { requestBooking } from './assets/contact.js';
 import { thaiPhrases, zoneMarks } from './assets/typeset.js';
@@ -766,7 +782,7 @@ mountSite({
   // r6 search: open a model's detail · jump to a price item (tab + filter)
   openModel: m => openProduct(m, 0),
   priceItem: (tab, q) => { ensure('service'); PC.show(tab); const x = $('#pc-search'); if (x) { x.value = q; x.dispatchEvent(new Event('input')); } },
-  views: { home: ['top', 'quick', 'start', 'flow'], shop: ['catalog', 'room', 'fit'], service: ['cleanflow', 'howto', 'prices', 'quality'], business: ['amc', 'b2b', 'sop', 'projects'], knowledge: ['journey', 'learn'], contact: ['booking', 'about', 'area', 'faq', 'quote'] },
+  views: { home: ['top', 'quick', 'start', 'talk', 'flow'], shop: ['catalog', 'room', 'fit'], service: ['cleanflow', 'howto', 'prices', 'quality'], business: ['amc', 'b2b', 'sop', 'projects'], knowledge: ['journey', 'learn'], contact: ['booking', 'mine', 'about', 'area', 'faq', 'quote'] },
   labels: { howto: 'ช่างทำงานในบ้านจำลอง', cleanflow: 'ทีมช่างล้าง · ติดตั้ง' },
   hooks: {
     onView: v => ensure(v),
@@ -781,6 +797,8 @@ mountSite({
 // r18: Thai headings keep each phrase on one line when it fits · section eyebrows carry the number of their jump link
 thaiPhrases('.sx-vh h1, .sx-lead, .sec-h h2, .sec-h h2 + p, #start .sx-int h3, #start .sx-int-s, .sx-next h2');
 zoneMarks();
+// Rev.11: unexpected experiences — talk / sound match / แอร์ของฉัน / tilt (wow.js) · AR in the product detail
+mountWow({ variant: 'C' });
 mountSeo({ page: document.title });
 </script>
 </body>

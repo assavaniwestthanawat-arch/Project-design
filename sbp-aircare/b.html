@@ -17,6 +17,11 @@
 <link rel="stylesheet" href="assets/booking.css">
 <link rel="stylesheet" href="assets/studio.css">
 <link rel="stylesheet" href="assets/services.css">
+<link rel="stylesheet" href="assets/wow-talk.css">
+<link rel="stylesheet" href="assets/wow-sound.css">
+<link rel="stylesheet" href="assets/wow-mine.css">
+<link rel="stylesheet" href="assets/wow-motion.css">
+<link rel="stylesheet" href="assets/wow-ar.css">
 <style>
 /* Layout concept B — "Engineering sheet": a drawing set. Visible column grid, title blocks, leader lines, schedules and mono labels. Built for facility managers and procurement. */
 :root{
@@ -449,6 +454,13 @@ html.sx-on .sx-jump a:hover{border-color:var(--line)}
     </div>
   </section>
 
+  <section class="s" id="talk">
+    <div class="sheet">
+      <div class="sheet-h"><div><p class="lbl">Sheet T · คุยกับเว็บ</p><h2>เล่าให้ฟัง แล้วเราจัดให้</h2><p>พูดหรือพิมพ์เหมือนคุยกับช่าง ระบบสรุปงานและราคามาตรฐาน แล้วกรอกฟอร์มจองคิวให้ หรือเปิดเสียงแอร์ตัวอย่างเทียบกับเสียงที่บ้าน</p></div></div>
+      <div class="wow-talk" style="padding:14px 20px 18px"><div id="talkRoot"></div><div id="soundRoot"></div></div>
+    </div>
+  </section>
+
   <!-- WORKFLOW -->
   <section class="s" id="flow">
     <div class="sheet"><div id="flowRoot" style="padding:14px 20px 16px"></div></div>
@@ -654,6 +666,13 @@ html.sx-on .sx-jump a:hover{border-color:var(--line)}
     </div>
   </section>
 
+  <section class="s" id="mine">
+    <div class="sheet">
+      <div class="sheet-h"><div><p class="lbl">Sheet M · แอร์ของฉัน</p><h2>แอร์ของฉัน</h2><p>จดแอร์แต่ละเครื่องกับวันที่ล้างล่าสุด ดูว่ารอบถัดไปควรเป็นเมื่อไร แล้วกดจองซ้ำได้ทันที ข้อมูลอยู่ในเครื่องนี้เท่านั้น บริษัทได้รับเมื่อคุณส่งคำขอจองคิว</p></div></div>
+      <div id="mineRoot" style="padding:14px 20px 18px"></div>
+    </div>
+  </section>
+
   <section class="s" id="quote"><div class="sheet" style="padding:20px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:20px">
     <div><p class="lbl">Contact</p><h2 style="font-size:26px">ให้ทีมขายติดต่อกลับ</h2><p style="color:var(--ink-2)">สำหรับองค์กร พิมพ์รายการเครื่อง (ประเภท ขนาด จำนวน) ในช่องรายละเอียด หรือส่งไฟล์รายการทางอีเมลพร้อมเลขอ้างอิง</p><p class="sx-qalt">หรือโทร <a data-co="tel" href="#contact">02</a> · อีเมล <span class="sx-sel" data-co="email"></span></p></div>
     <form id="qform" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -688,6 +707,7 @@ import { mountRoomFit } from './assets/roomfit.js';
 import { mountKnowledge } from './assets/knowledge.js';
 import { mountJobGuide } from './assets/jobguide.js';
 import { mountSite } from './assets/site.js';
+import { mountWow } from './assets/wow.js';
 import { mountJobCard } from './assets/jobcard.js';
 import { requestBooking } from './assets/contact.js';
 import { thaiPhrases, zoneMarks } from './assets/typeset.js';
@@ -833,13 +853,15 @@ mountSite({
   priceItem: (tab, q) => { ensure('service'); PC.show(tab); const x = $('#pc-search'); if (x) { x.value = q; x.dispatchEvent(new Event('input')); } },
   order: ['home', 'business', 'service', 'shop', 'knowledge', 'contact'],
   navFmt: (i, th) => `${String(i).padStart(2, '0')} ${th}`,
-  views: { home: ['hero', 'quick', 'start', 'flow'], business: ['amc', 'b2b', 'sop', 'projects'], service: ['cleanflow', 'howto', 'prices', 'quality'], shop: ['catalog', 'fit', 'studio'], knowledge: ['learn', 'inside'], contact: ['booking', 'about', 'area', 'faq', 'quote'] },
+  views: { home: ['hero', 'quick', 'start', 'talk', 'flow'], business: ['amc', 'b2b', 'sop', 'projects'], service: ['cleanflow', 'howto', 'prices', 'quality'], shop: ['catalog', 'fit', 'studio'], knowledge: ['learn', 'inside'], contact: ['booking', 'mine', 'about', 'area', 'faq', 'quote'] },
   labels: { howto: 'SOP · ลำดับการทำงานของระบบ', cleanflow: 'ทีมช่าง · SOP ล้าง / ติดตั้ง', inside: 'ข้างในแอร์ · ล้างเสมือนจริง' },
   hooks: { onView: v => ensure(v), clean: () => { ensure('service'); JOB.setJob('clean'); }, install: () => { ensure('service'); JOB.setJob('install'); }, repair: () => { ensure('service'); SVX.set('repair'); } },
 });
 // r18: Thai headings keep each phrase on one line when it fits · section eyebrows carry the number of their jump link
 thaiPhrases('.sx-vh h1, .sx-lead, .sec-h h2, .sec-h h2 + p, .sheet-h h2, .sheet-h h2 + p, #start .sx-int h3, #start .sx-int-s, .sx-next h2');
 zoneMarks();
+// Rev.11: unexpected experiences — talk / sound match / แอร์ของฉัน / tilt (wow.js) · AR in the product detail
+mountWow({ variant: 'B' });
 mountSeo({ page: document.title });
 </script>
 </body>

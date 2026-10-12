@@ -1,0 +1,5 @@
+/* SBP AirCare — Rev.11 talk (styles filled by its package; shared alias tokens only: --s-*) */
+/* the "เล่าให้ฟัง" section: talk panel + sound matcher side by side, stacked on phones */
+.wow-talk{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.wow-talk{grid-template-columns:minmax(0,1fr)}}
+.wow-talk>:empty,#mineRoot:empty{min-height:120px}

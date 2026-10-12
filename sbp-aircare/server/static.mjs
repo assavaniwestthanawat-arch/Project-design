@@ -21,7 +21,7 @@ const TEXTY = /^(text\/|application\/(json|xml)|image\/svg)/;
 export function securityHeaders(req, cfg) {
   const h = {
     'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'X-Frame-Options': 'DENY',
-    'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()', 'Cross-Origin-Opener-Policy': 'same-origin',
+    'Permissions-Policy': 'camera=(), microphone=(self), geolocation=(), payment=(), usb=(), xr-spatial-tracking=(self)', 'Cross-Origin-Opener-Policy': 'same-origin',
   };
   const https = cfg.trustProxy ? String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim() === 'https' : !!req.socket.encrypted;
   if (https || cfg.siteUrl.startsWith('https://')) h['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';

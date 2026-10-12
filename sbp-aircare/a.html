@@ -17,6 +17,11 @@
 <link rel="stylesheet" href="assets/booking.css">
 <link rel="stylesheet" href="assets/studio.css">
 <link rel="stylesheet" href="assets/services.css">
+<link rel="stylesheet" href="assets/wow-talk.css">
+<link rel="stylesheet" href="assets/wow-sound.css">
+<link rel="stylesheet" href="assets/wow-mine.css">
+<link rel="stylesheet" href="assets/wow-motion.css">
+<link rel="stylesheet" href="assets/wow-ar.css">
 <style>
 /* Layout concept A — "Bento Clean": calm neutral ground, white tiles on a 4-col named grid, one dark feature tile, brand orange only on primary CTAs.
    Rev.09 r9 brand (owner logos 2 ต.ค. 2569): FUJIVA blue #1B51A4 · SP / FUJIVA orange #EF4E2E / #F15A2B — orange fills that carry white text use #C4401F (AA). */
@@ -480,6 +485,11 @@ html.sx-on .sec-h h2{font-size:clamp(26px,2.8vw,36px)}
     <div id="startRoot"></div>
   </section>
 
+  <section class="sec" id="talk">
+    <div class="sec-h"><div><p class="eyebrow">ใหม่ · คุยกับเว็บ</p><h2>เล่าให้ฟัง แล้วเราจัดให้</h2><p>พูดหรือพิมพ์เหมือนคุยกับช่าง ระบบสรุปงานและราคามาตรฐาน แล้วกรอกฟอร์มจองคิวให้ หรือเปิดเสียงแอร์ตัวอย่างเทียบกับเสียงที่บ้าน</p></div></div>
+    <div class="wow-talk"><div class="tile" id="talkRoot"></div><div class="tile" id="soundRoot"></div></div>
+  </section>
+
   <!-- CUSTOMER WORKFLOW -->
   <section class="sec" id="flow" style="padding-top:8px">
     <div class="tile" id="flowRoot"></div>
@@ -694,6 +704,11 @@ html.sx-on .sec-h h2{font-size:clamp(26px,2.8vw,36px)}
     <div class="sec-h"><div><p class="eyebrow">จองคิว · ส่งเข้าระบบของบริษัท</p><h2>จองคิวล้าง ติดตั้ง ซ่อม หรือนัดสำรวจ</h2><p>เลือกงาน วันและช่วงเวลาที่สะดวก แล้วส่งคำขอเข้าระบบของบริษัท ได้เลขที่คำขอไว้ตรวจสถานะ ทีมโทรยืนยันวัน เวลา และราคาก่อนเข้างานทุกครั้ง</p></div></div>
     <div id="bookRoot"></div>
   </section>
+
+  <section class="sec" id="mine">
+    <div class="sec-h"><div><p class="eyebrow">เก็บไว้ในเครื่องนี้</p><h2>แอร์ของฉัน</h2><p>จดแอร์แต่ละเครื่องกับวันที่ล้างล่าสุด ดูว่ารอบถัดไปควรเป็นเมื่อไร แล้วกดจองซ้ำได้ทันที ข้อมูลอยู่ในเครื่องนี้เท่านั้น บริษัทได้รับเมื่อคุณส่งคำขอจองคิว</p></div></div>
+    <div class="tile" id="mineRoot"></div>
+  </section>
   <section class="sec" id="quote" data-reveal>
     <div class="tile" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:center">
       <div><h2 style="font-size:28px">ให้ทีมโทรกลับ</h2><p style="color:var(--ink-2);margin-top:6px">ฝากชื่อ เบอร์ และจำนวนเครื่อง ทีมขายติดต่อกลับในเวลาทำการ</p><p class="sx-qalt">หรือโทร <a data-co="tel" href="#contact">02</a> · อีเมล <span class="sx-sel" data-co="email"></span></p></div>
@@ -731,6 +746,7 @@ import { mountRoomFit } from './assets/roomfit.js';
 import { mountKnowledge } from './assets/knowledge.js';
 import { mountJobGuide } from './assets/jobguide.js';
 import { mountSite } from './assets/site.js';
+import { mountWow } from './assets/wow.js';
 import { mountJobCard } from './assets/jobcard.js';
 import { requestBooking } from './assets/contact.js';
 import { thaiPhrases, zoneMarks } from './assets/typeset.js';
@@ -883,12 +899,14 @@ mountSite({
   // r6 search: open a model's detail · jump to a price item (tab + filter)
   openModel: m => openProduct(m, 0),
   priceItem: (tab, q) => { ensure('service'); PC.show(tab); const x = $('#pc-search'); if (x) { x.value = q; x.dispatchEvent(new Event('input')); } },
-  views: { home: ['hero', 'quick', 'start', 'flow', 'services'], shop: ['catalog', 'studio', 'fit'], service: ['cleanflow', 'prices', 'quality', 'story', 'inside'], business: ['amc', 'b2b', 'sop', 'projects'], knowledge: ['learn', 'howto'], contact: ['booking', 'about', 'area', 'faq', 'quote'] },
+  views: { home: ['hero', 'quick', 'start', 'talk', 'flow', 'services'], shop: ['catalog', 'studio', 'fit'], service: ['cleanflow', 'prices', 'quality', 'story', 'inside'], business: ['amc', 'b2b', 'sop', 'projects'], knowledge: ['learn', 'howto'], contact: ['booking', 'mine', 'about', 'area', 'faq', 'quote'] },
   hooks: { onView: v => ensure(v), clean: () => { ensure('service'); JOB.setJob('clean'); }, install: () => { ensure('service'); JOB.setJob('install'); }, repair: () => { ensure('knowledge'); SVX.set('repair'); } },
 });
 // r18: Thai headings keep each phrase on one line when it fits · section eyebrows carry the number of their jump link
 thaiPhrases('.sx-vh h1, .sx-lead, .sec-h h2, .sec-h h2 + p, #start .sx-int h3, #start .sx-int-s, .sx-next h2');
 zoneMarks();
+// Rev.11: unexpected experiences — talk / sound match / แอร์ของฉัน / tilt (wow.js) · AR in the product detail
+mountWow({ variant: 'A' });
 mountSeo({ page: document.title });
 </script>
 </body>
