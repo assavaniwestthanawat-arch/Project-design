@@ -68,7 +68,7 @@ export function arSupport() {
 function whyNot(sc) {
   const real = TX[sc.type].real;
   let site = false; try { site = testSite(); } catch (_) {}
-  if (site) return `เว็บทดสอบบน Claude เปิดกล้องไม่ได้ · บนเว็บจริงเปิดหน้านี้บนมือถือ iPhone หรือ Android เพื่อ${real}`;
+  if (site) return `เว็บทดสอบ: เปิดกล้องจากหน้านี้ไม่ได้ · บนเว็บจริงเปิดหน้านี้บนมือถือ iPhone หรือ Android เพื่อ${real}`;
   if (INAPP.test(navigator.userAgent || '')) return `เปิดลิงก์นี้ใน Safari หรือ Chrome เพื่อ${real}`;
   if (matchMedia('(pointer: coarse)').matches) return `เบราว์เซอร์นี้ยังเปิดกล้อง AR ไม่ได้ · เปิดหน้านี้ใน Safari บน iPhone หรือ Chrome บน Android เพื่อ${real}`;
   return `เปิดหน้านี้บนมือถือ iPhone หรือ Android เพื่อ${real}`;
