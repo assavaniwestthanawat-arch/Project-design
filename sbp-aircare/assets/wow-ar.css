@@ -18,6 +18,8 @@
 .ar-tip:empty,.ar-msg:empty{display:none}
 .ar-msg{flex:1 1 100%;margin:0;font-size:13px;line-height:1.55;color:var(--s-ink-2)}
 .ar-ql{display:none}
+.ar-nw{white-space:nowrap}
+@media (max-width:340px){.ar-nw{white-space:normal}}
 /* room-fit side panel: the same entry, narrower */
 .ar.compact .ar-go{flex:1 1 100%}
 .ar.compact .ar-info{padding:8px 10px}
@@ -38,6 +40,8 @@
 .ar-xr-s{font-size:15px;font-weight:600;min-height:1.55em}
 .ar-xr-b{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
 .ar-xr-b .s-btn{min-height:48px;padding:0 6px;font-size:15px}
+/* not available right now: dashed and quiet (never told by fading alone — CLAUDE.md §5.4) */
+.ar-xr-b .s-btn:disabled{opacity:1;background:var(--s-card-2);border:1px dashed var(--s-line);color:var(--s-ink-3)}
 .ar-xr.wait .ar-xr-b .s-btn:not([data-a=close]){visibility:hidden}
 .ar-xr-book{width:100%;margin-top:8px;min-height:48px}
 .ar-xr-f{margin-top:8px!important;font-size:12.5px;color:var(--s-ink-3)}

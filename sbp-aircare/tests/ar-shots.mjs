@@ -40,6 +40,7 @@ if (mode === 'xr') {
   await show('xr-aim');
   await p.click('.ar-xr [data-a=place]'); await p.waitForTimeout(400);
   await show('xr-placed');
+  console.log(JSON.stringify(await p.evaluate(() => { const r = s => { const e = document.querySelector(s); if (!e) return null; const b = e.getBoundingClientRect(); return [Math.round(b.top), Math.round(b.bottom), Math.round(b.height)]; }; return { vh: innerHeight, ov: r('.ar-xr'), top: r('.ar-xr-top'), bot: r('.ar-xr-bot'), body: getComputedStyle(document.body).transform, fs: getComputedStyle(document.querySelector('.ar-xr')).fontSize }; })));
   await p.click('.ar-xr [data-a=close]'); await p.waitForTimeout(400);
 }
 console.log(JSON.stringify({ tag, errs }));

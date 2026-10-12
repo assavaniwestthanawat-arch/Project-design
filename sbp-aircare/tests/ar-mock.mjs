@@ -54,6 +54,9 @@ export async function openModel(p, typeTh = 'ติดผนัง') {
   await p.evaluate(() => { location.hash = 'shop'; });
   await p.waitForSelector('[data-cat-grid] .card .open', { timeout: 120000 });
   await p.waitForTimeout(600);
+  // narrow the catalogue to the type (the facet checkbox works in the hidden phone sheet too)
+  const tid = { 'ติดผนัง': 'wall', 'แขวนใต้ฝ้า': 'ceiling', 'สี่ทิศทาง': 'cassette', 'ตู้ตั้งพื้น': 'floor', 'ซ่อนในฝ้า': 'duct' }[typeTh];
+  if (tid) { await p.evaluate(id => { const i = document.getElementById('f-type-' + id); if (i && !i.checked) i.click(); }, tid); await p.waitForTimeout(800); }
   const ok = await p.evaluate(th => { const c = [...document.querySelectorAll('[data-cat-grid] .card')].find(x => x.textContent.includes(th)); const b = c && c.querySelector('.open'); if (b) b.click(); return !!b; }, typeTh);
   if (!ok) throw new Error('no catalogue card of type ' + typeTh);
   await p.waitForSelector('#drawerBody .m3d', { state: 'attached', timeout: 30000 });

@@ -17,16 +17,16 @@ import { closeDrawer } from './proto-ui.js';
 import { FIT_RULES } from './roomfit.js';
 import { trapFocus } from './feedback.js';
 
-// per type: the button, where it goes, what the camera should look at (WebXR) and the Quick Look tip
+// per type: the button, where it goes, what the camera should look at (WebXR) and the Quick Look tip (' · ' = where a line may break)
 const TX = {
   wall: { go: 'วางบนผนังบ้านคุณ', real: 'วางบนผนังจริง', aim: 'ส่องกล้องไปที่ผนังช้า ๆ จนเห็นวงกลมบนผนัง', need: 'แอร์ติดผนังต้องวางบนผนัง',
-    ql: 'แตะแล้วส่องกล้องไปที่ผนัง แบบจำลองจะติดผนังให้เอง ลากนิ้วเพื่อเลื่อน' },
+    ql: 'แตะแล้วส่องกล้องไปที่ผนัง · แบบจำลองจะติดผนังให้เอง · ลากนิ้วเพื่อเลื่อน' },
   ceiling: { go: 'วางใต้ฝ้าบ้านคุณ', real: 'วางใต้ฝ้าจริง', aim: 'ส่องกล้องไปที่ฝ้าเพดาน หรือผนังใต้ฝ้า', need: 'แอร์แขวนใต้ฝ้าวางที่ฝ้าหรือผนังใต้ฝ้า',
-    ql: 'แตะแล้วส่องกล้องไปที่ผนัง วางแล้วลากขึ้นไปชิดฝ้า' },
+    ql: 'แตะแล้วส่องกล้องไปที่ผนัง · วางแล้วลากขึ้นไปชิดฝ้า' },
   cassette: { go: 'วางบนฝ้าบ้านคุณ', real: 'วางบนฝ้าจริง', aim: 'ส่องกล้องไปที่ฝ้าเพดาน (หรือพื้น เพื่อดูขนาดตัวเครื่อง)', need: 'แอร์สี่ทิศทางวางที่ฝ้าเพดาน',
-    ql: 'iPhone วางแบบจำลองบนฝ้าไม่ได้ จะตั้งบนพื้นให้ดูขนาดตัวเครื่องจริงแทน', qlGo: 'ดูขนาดจริงในห้องคุณ' },
+    ql: 'iPhone วางแบบจำลองบนฝ้าไม่ได้ · จะตั้งบนพื้นให้ดูขนาดตัวเครื่องจริงแทน', qlGo: 'ดูขนาดจริงในห้องคุณ' },
   floor: { go: 'ตั้งในห้องบ้านคุณ', real: 'ตั้งในห้องจริง', aim: 'ส่องกล้องไปที่พื้นช้า ๆ จนเห็นวงกลมบนพื้น', need: 'แอร์ตู้ตั้งพื้นวางบนพื้น',
-    ql: 'แตะแล้วส่องกล้องไปที่พื้น แบบจำลองจะตั้งบนพื้นให้เอง ลากนิ้วเพื่อเลื่อนชิดผนัง' },
+    ql: 'แตะแล้วส่องกล้องไปที่พื้น · แบบจำลองจะตั้งบนพื้นให้เอง · ลากนิ้วเพื่อเลื่อนชิดผนัง' },
 };
 const SURF_TH = { wall: 'ผนัง', floor: 'พื้น', ceiling: 'ฝ้าเพดาน' };
 const FINE = 'แบบจำลองเพื่ออธิบาย · ตัวเครื่องจริงแตกต่างตามรุ่น · ไม่มีโลโก้แบรนด์';
@@ -36,6 +36,8 @@ const IC_AR = svg('<path d="M3.5 8V5a1.5 1.5 0 0 1 1.5-1.5h3M16 3.5h3A1.5 1.5 0 
 const IC_PHONE = svg('<rect x="7" y="2.8" width="10" height="18.4" rx="2.2"/><path d="M11 17.6h2"/>');
 
 const cm = v => String(Math.round(v * 1000) / 10);
+// Thai lines break only between phrases (' · '), never inside one — no orphaned 'วาง', no 'กว้าง 84 ×' / 'สูง …'
+const phr = t => t.split(' · ').flatMap((x, i) => [i ? ' · ' : null, h('span', { class: 'ar-nw' }, x)]).filter(Boolean);
 export const dimsTh = sc => `กว้าง ${cm(sc.w)} × สูง ${cm(sc.h)} × ลึก ${cm(sc.d)} ซม.`;
 export const srcTh = sc => (sc.src === 'spec' ? 'ขนาดตามสเปก' : 'ขนาดทั่วไปของประเภทนี้') + (sc.type === 'cassette' ? ' (ตัวเครื่อง ไม่รวมหน้ากาก)' : '');
 
@@ -112,10 +114,10 @@ function overlay(cx) {
   const el = h('div', { class: 'ar-xr wait', role: 'dialog', 'aria-modal': 'true', 'aria-label': `${T.go} · ${b ? b.name + ' ' : ''}${s.sku}`, tabindex: '-1' },
     h('div', { class: 'ar-xr-top' },
       h('p', { class: 'ar-xr-t' }, b ? b.name + ' ' : '', h('b', {}, s.sku)),
-      h('p', { class: 'ar-xr-d' }, h('span', { class: 'ar-src' }, srcTh(sc)), ' ', dimsTh(sc)),
+      h('p', { class: 'ar-xr-d' }, h('span', { class: 'ar-src' }, srcTh(sc)), ' ', h('span', { class: 'ar-nw' }, dimsTh(sc))),
       tall),
     h('div', { class: 'ar-xr-aim', 'aria-hidden': 'true' }),
-    h('div', { class: 'ar-xr-bot' }, status, h('div', { class: 'ar-xr-b', role: 'group', 'aria-label': 'ควบคุมแบบจำลอง' }, place, turn, move, close), bookB, h('p', { class: 'ar-xr-f' }, FINE)));
+    h('div', { class: 'ar-xr-bot' }, status, h('div', { class: 'ar-xr-b', role: 'group', 'aria-label': 'ควบคุมแบบจำลอง' }, place, turn, move, close), bookB, h('p', { class: 'ar-xr-f' }, phr(FINE))));
   trapFocus(el);
   // taps on the controls never reach the session as a "select" (that would place the body behind the button)
   ['ar-xr-top', 'ar-xr-bot'].forEach(c => el.querySelector('.' + c).addEventListener('beforexrselect', e => e.preventDefault()));
@@ -135,8 +137,8 @@ function overlay(cx) {
       el.dataset.mode = st.mode; el.dataset.ok = String(!!st.ok);
       place.disabled = !(st.mode === 'aim' && st.ok); turn.disabled = !st.turn; move.disabled = st.mode !== 'placed'; bookB.hidden = st.mode !== 'placed';
       let t;
-      if (st.mode === 'placed') t = `วางแล้ว · กด ย้าย เพื่อเลือกที่ใหม่${st.turn ? ' · กด หมุน ทีละ 15 องศา' : ''}`;
-      else if (st.ok) t = `พบ${SURF_TH[st.surf]}แล้ว · กด วาง หรือแตะจอ`;
+      if (st.mode === 'placed') t = `วางแล้ว · กด\u00a0ย้าย เพื่อเลือกที่ใหม่${st.turn ? ' · กด\u00a0หมุน ทีละ 15\u00a0องศา' : ''}`;
+      else if (st.ok) t = `พบ${SURF_TH[st.surf]}แล้ว · กด\u00a0วาง หรือแตะจอ`;
       else if (st.surf) t = `ตรงนี้เป็น${SURF_TH[st.surf]} · ${T.need}`;
       else t = T.aim;
       if (status.textContent !== t) status.textContent = t;
@@ -198,7 +200,7 @@ export function arButton(m, s, sc, { compact = false } = {}) {
   const msg = h('p', { class: 'ar-msg', role: 'status', 'aria-live': 'polite' });
   const tip = h('p', { class: 'ar-tip' });
   const info = h('div', { class: 'ar-info', id, hidden: true },
-    h('p', { class: 'ar-dim' }, h('span', { class: 'ar-src' }, srcTh(sc)), ' ', dimsTh(sc)), tip, h('p', { class: 'ar-fine' }, FINE));
+    h('p', { class: 'ar-dim' }, h('span', { class: 'ar-src' }, srcTh(sc)), ' ', h('span', { class: 'ar-nw' }, dimsTh(sc))), tip, h('p', { class: 'ar-fine' }, phr(FINE)));
   const hint = h('p', { class: 'ar-hint', hidden: true }, h('span', { class: 'ar-ic', html: IC_PHONE }), h('span', {}, ''));
   root.append(btn, hint, info, msg);
   const cx = { m, s, sc, btn, root, say: t => { if (msg.textContent !== t) msg.textContent = t; }, after: null, cancel: () => {} };
@@ -207,12 +209,12 @@ export function arButton(m, s, sc, { compact = false } = {}) {
     if (mode === 'none') { hint.lastChild.textContent = whyNot(sc); hint.hidden = false; return; }
     if (mode === 'quicklook') {
       if (T.qlGo) label.textContent = T.qlGo;
-      tip.textContent = `${T.ql} · ขนาดล็อกไว้ตามจริง`;
+      tip.replaceChildren(...phr(`${T.ql} · ขนาดล็อกไว้ตามจริง`));
       btn.addEventListener('click', () => quickLook(cx));
       // start making the model as soon as the visitor reaches for the button (Quick Look must open from the same tap)
       ['pointerdown', 'focus'].forEach(t => btn.addEventListener(t, () => { usdzUrl(sc).catch(() => {}); }, { once: true, passive: true }));
     } else {
-      tip.textContent = `แตะแล้วอนุญาตให้ใช้กล้อง ส่อง${sc.type === 'floor' ? 'พื้น' : sc.type === 'wall' ? 'ผนัง' : 'ฝ้า'}ช้า ๆ จนเห็นวงกลม แล้วกด วาง`;
+      tip.replaceChildren(...phr(`แตะแล้วอนุญาตให้ใช้กล้อง · ส่อง${sc.type === 'floor' ? 'พื้น' : sc.type === 'wall' ? 'ผนัง' : 'ฝ้า'}ช้า ๆ จนเห็นวงกลม · แล้วกด\u00a0วาง`));
       btn.addEventListener('click', () => webXR(cx));
       btn.addEventListener('pointerdown', () => { import('./ar3d.js').catch(() => {}); }, { once: true, passive: true });
     }
