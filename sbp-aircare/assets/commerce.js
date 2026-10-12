@@ -217,10 +217,11 @@ export function mountCart({ buttons = '[data-cart-btn]' } = {}) {
     f.addEventListener('submit', async e => {
       e.preventDefault(); const v = id => (f.querySelector('#' + id)?.value || '').trim(), ref = 'Q' + Date.now().toString().slice(-7);
       const text = [`ขอใบเสนอราคาอย่างเป็นทางการ · เลขอ้างอิง ${ref}`, `ชื่อ / บริษัท: ${v('s-q-name')}`, `โทร: ${v('s-q-tel')}`, v('s-q-date') ? `วันที่สะดวก: ${v('s-q-date')}` : null, v('s-q-tax') ? `ใบกำกับภาษีในนาม: ${v('s-q-tax')}` : null, '', quoteText()].filter(x => x != null).join('\n');
-      const out = h('div');
+      const out = h('div'), sb = f.querySelector('button[type=submit]'); sb && sb.setAttribute('aria-busy', 'true');   // spinner while sending (shared.css)
       const ticket = { kind: 'quote', service: guessService(), prefDate: v('s-q-date'), consent: true, website: f.querySelector('[name=website]').value, source: sourceTag(),
         customer: { name: v('s-q-name'), tel: v('s-q-tel'), taxInvoice: cart.tax === 'invoice', taxName: v('s-q-tax') }, site: { area: cart.zoneInput, zoneTier: cart.zone ? cart.zone.tier : '', travelFee: cart.totals().travel }, quote: quoteFromCart(cart) };
       const r = await submitTicket(ticket, { out, form: f, label: 'คำขอใบเสนอราคา', fallback: { ref, title: 'ใบเสนอราคาเบื้องต้นของคุณ', text, subject: 'ขอใบเสนอราคา SBP AirCare' } });
+      sb && sb.removeAttribute('aria-busy');
       if (!r.ok && ['bad_tel', 'bad_name', 'no_consent', 'bad_date', 'bad_email', 'rate_limited'].includes(r.code)) { f.querySelector('.s-tkerr')?.remove(); out.classList.add('s-tkerr'); f.append(out); return; }   // fixable: stay on the form
       sent = { ref, node: out };
       render();

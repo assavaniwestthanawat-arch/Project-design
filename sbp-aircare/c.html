@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SBP AirCare · แบบ C Virtual Showroom</title>
 <meta name="description" content="โชว์รูมแอร์ออนไลน์ ทุกรุ่นดูแบบ 3 มิติได้ ราคาเครื่องพร้อมติดตั้ง ล้าง ซ่อม จองคิวออนไลน์ — SBP AirCare โดย บริษัท สหบูรพากรุ๊ป จำกัด">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#EEF2F8">
 <meta name="theme-color" content="#090E17">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="th_TH">
@@ -23,16 +24,19 @@
   /* Rev.09 r9 brand: navy-black ground from FUJIVA blue · cool = light FUJIVA blue · heat = SP / FUJIVA orange */
   --bg:#090E17; --stage:#0C1320; --panel:#111A28; --panel-2:#172234; --line:rgba(140,180,240,.14); --ink:#EAF0F7; --ink-2:#A6B4C6; --ink-3:#8B9AAE; --on-heat:#0F1C2B;
   --cool:#7FA8F5; --cool-d:#4D86E8; --heat:#F26A3D; --heat-d:#F15A2B; --brand-or:#F15A2B; --plate:#F4F7FC; --ok:#4ED39A; --warn:#FFB35C; --bad:#FF6B6B;
-  --display:'Kanit','Anuphan',Tahoma,sans-serif; --sans:'Anuphan','Noto Sans Thai',Tahoma,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --display:'Kanit','Anuphan',Tahoma,sans-serif; --sans:'Anuphan','Noto Sans Thai',Tahoma,sans-serif; --mono:'IBM Plex Mono','Anuphan',ui-monospace,monospace;
+  --heat-h:var(--heat); --hero-em-2:#A8F0FF;   /* Rev.10 UX: primary-button hover step · end stop of the hero phrase gradient (light: deep blue, ≥ 3:1) */
   --r:18px; --ease:cubic-bezier(.2,.75,.2,1); color-scheme:dark;
   --s-card:var(--panel); --s-card-2:var(--panel-2); --s-ink:var(--ink); --s-ink-2:var(--ink-2); --s-ink-3:var(--ink-3); --s-line:var(--line); --s-accent:var(--heat-d); --s-on-accent:var(--on-heat); --s-accent-soft:color-mix(in oklab,var(--cool) 12%,var(--panel)); --s-ok:var(--ok); --s-warn:var(--warn); --s-bad:var(--bad); --s-r:12px; --s-mono:var(--mono);
+  /* Rev.10 UX: chosen chips / tabs and the keyboard focus ring are cool light — orange is left for commit actions and heat */
+  --s-sel:var(--cool); --s-on-sel:var(--bg); --s-focus:var(--cool);
 }
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
   --bg:#EEF2F8; --stage:#E3EAF4; --panel:#FFFFFF; --panel-2:#F3F6FB; --line:rgba(27,81,164,.12); --ink:#0F1C2E; --ink-2:#4B5B70; --ink-3:#586477; --on-heat:#FFFFFF;
-  --cool:#1B51A4; --cool-d:#163F80; --heat:#C4401F; --heat-d:#C4401F; --brand-or:#EF4E2E; --plate:transparent; --ok:#1B7A45; --warn:#B4560D; --bad:#B02A26; color-scheme:light;}}
+  --cool:#1B51A4; --cool-d:#163F80; --heat:#C4401F; --heat-d:#C4401F; --heat-h:#A9361A; --hero-em-2:#163F80; --brand-or:#EF4E2E; --plate:transparent; --ok:#1B7A45; --warn:#B4560D; --bad:#B02A26; color-scheme:light;}}
 :root[data-theme="light"]{
   --bg:#EEF2F8; --stage:#E3EAF4; --panel:#FFFFFF; --panel-2:#F3F6FB; --line:rgba(27,81,164,.12); --ink:#0F1C2E; --ink-2:#4B5B70; --ink-3:#586477; --on-heat:#FFFFFF;
-  --cool:#1B51A4; --cool-d:#163F80; --heat:#C4401F; --heat-d:#C4401F; --brand-or:#EF4E2E; --plate:transparent; --ok:#1B7A45; --warn:#B4560D; --bad:#B02A26; color-scheme:light;}
+  --cool:#1B51A4; --cool-d:#163F80; --heat:#C4401F; --heat-d:#C4401F; --heat-h:#A9361A; --hero-em-2:#163F80; --brand-or:#EF4E2E; --plate:transparent; --ok:#1B7A45; --warn:#B4560D; --bad:#B02A26; color-scheme:light;}
 *{box-sizing:border-box}[hidden]{display:none!important}
 html{scroll-behavior:smooth;scroll-padding-top:70px}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
@@ -40,13 +44,13 @@ body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 var(--sans
 body.lock{overflow:hidden}
 h1,h2,h3,h4{font-family:var(--display);font-weight:500;line-height:1.25;margin:0;text-wrap:balance}p{margin:0}
 button{font:inherit;color:inherit;cursor:pointer}a{color:inherit}
-:focus-visible{outline:2px solid var(--cool);outline-offset:2px;border-radius:8px}
+:focus-visible{outline:2px solid var(--s-focus);outline-offset:2px}   /* Rev.10 UX: no border-radius here — the ring follows each component's own shape */
 .wrap{max-width:1280px;margin:0 auto;padding-inline:clamp(16px,3vw,32px)}
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .eyebrow{font:500 13px var(--sans);color:var(--cool);letter-spacing:.02em}
 .btn-primary,.btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border-radius:12px;font-weight:600;text-decoration:none;border:1px solid transparent;transition:transform .15s,background .2s,box-shadow .2s}
 .btn-primary{background:var(--heat-d);color:var(--on-heat);box-shadow:0 8px 24px -10px var(--heat)}
-.btn-primary:hover{background:var(--heat)}
+.btn-primary:hover{background:var(--heat-h)}
 .btn-ghost{border-color:var(--line);background:color-mix(in oklab,var(--panel) 70%,transparent);color:var(--ink)}
 .btn-ghost:hover{border-color:var(--cool)}
 .btn-primary:active,.btn-ghost:active{transform:scale(.97)}
@@ -85,7 +89,7 @@ button{font:inherit;color:inherit;cursor:pointer}a{color:inherit}
 .hero-copy .wrap{display:flex;justify-content:space-between;align-items:end;gap:24px}
 .hero-copy .t{max-width:640px;pointer-events:auto}
 .hero-copy h1{font-size:clamp(34px,5vw,66px);font-weight:500;letter-spacing:-.005em;line-height:1.14}
-.hero-copy h1 em{font-style:normal;background:linear-gradient(90deg,var(--cool),#A8F0FF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-copy h1 em{font-style:normal;background:linear-gradient(90deg,var(--cool),var(--hero-em-2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero-copy p{color:var(--ink-2);margin-top:10px;font-size:17px;max-width:34em}
 .hero-copy .ctas{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
 .dock{position:absolute;right:clamp(16px,3vw,32px);top:22px;z-index:3;width:300px;display:grid;gap:10px}
@@ -164,7 +168,7 @@ section.sec{padding-block:80px 0}
 .chips3{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 .chips3 input{position:absolute;opacity:0}
 .chips3 span{display:block;text-align:center;padding:7px;border-radius:10px;background:var(--panel-2);font-size:13.5px;border:1px solid transparent}
-.chips3 input:checked+span{border-color:var(--heat);color:var(--heat)}
+.chips3 input:checked+span{border-color:var(--cool);color:var(--cool)}
 .chips3 input:focus-visible+span{outline:2px solid var(--cool)}
 .fit{font-weight:600}.fit[data-fit="ok"]{color:var(--ok)}.fit[data-fit="low"]{color:var(--bad)}.fit[data-fit="high"]{color:var(--warn)}
 .cool-bar{height:6px;border-radius:3px;background:var(--panel-2);overflow:hidden}
@@ -177,7 +181,7 @@ section.sec{padding-block:80px 0}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px}
 .presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:14px}
 .presets button{border:1px solid var(--line);background:var(--panel-2);border-radius:14px;padding:12px;text-align:left;line-height:1.3}
-.presets button small{display:block;color:var(--ink-3);font-size:12px}
+.presets button small{display:block;color:var(--ink-3);font-size:12.5px}
 .presets button[aria-pressed="true"]{border-color:var(--cool);box-shadow:0 0 0 1px var(--cool),0 0 24px -8px var(--cool)}
 .urows{display:grid;gap:8px}
 .urow{display:grid;grid-template-columns:70px 1fr 150px;gap:14px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--panel-2)}
@@ -196,7 +200,7 @@ section.sec{padding-block:80px 0}
 .sum .num{font:500 38px/1.1 var(--display);background:linear-gradient(90deg,var(--ink),var(--cool));-webkit-background-clip:text;background-clip:text;color:transparent}
 .sum dl{display:grid;grid-template-columns:1fr auto;gap:6px 12px;margin:0;font-size:14px}
 .sum dt{color:var(--ink-3)}.sum dd{margin:0;text-align:right;font-family:var(--mono)}
-.disc{font-size:12px;color:var(--ink-3);border-top:1px solid var(--line);padding-top:10px}
+.disc{font-size:12.5px;color:var(--ink-3);border-top:1px solid var(--line);padding-top:10px}
 @media (max-width:1080px){.bld{grid-template-columns:1fr}.sum{position:static}.presets{grid-template-columns:1fr 1fr}}
 @media (max-width:520px){.urow{grid-template-columns:48px 1fr}.urow .art{width:48px}.urow .stp{grid-column:1/-1}}
 
@@ -237,10 +241,11 @@ section.sec{padding-block:80px 0}
 .bchip[aria-checked="true"]{border-color:var(--cool);color:var(--cool);box-shadow:0 0 12px -4px var(--cool)}
 .card .pr{display:flex;justify-content:space-between;align-items:baseline;margin-top:auto}
 .card .pr b{font:500 20px var(--display)}
-.card .st{font-size:12px;color:var(--ok)}.card .st.o{color:var(--ink-3)}
+.card .st{font-size:12.5px;color:var(--ok)}.card .st.o{color:var(--ink-3)}
 .card .inst{font-size:12.5px;color:var(--cool);margin-top:-4px}
 .card .acts{display:flex;gap:6px}.card .acts button{flex:1;min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-size:14px}
-.card .acts .open{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+.card .acts .open{background:var(--panel-2);color:var(--ink);border-color:var(--line);font-weight:600}
+.card .acts button:hover{border-color:color-mix(in oklab,var(--cool) 60%,var(--line))}.card .ph{cursor:pointer}
 .card .acts [aria-pressed="true"]{color:var(--cool);border-color:var(--cool)}
 .skel{border-radius:var(--r);background:var(--panel);border:1px solid var(--line);padding:14px;display:grid;gap:10px}
 .skel i{display:block;border-radius:10px;background:linear-gradient(90deg,var(--panel-2) 25%,color-mix(in oklab,var(--cool) 10%,var(--panel-2)) 50%,var(--panel-2) 75%);background-size:200% 100%;animation:sh 1.3s infinite}
@@ -301,7 +306,7 @@ footer .cols{display:grid;grid-template-columns:2fr 1fr 1fr;gap:20px}
 .pd-spec{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:14.5px;background:var(--panel-2);border-radius:14px;padding:14px}
 .pd-spec dt{color:var(--ink-3)}.pd-spec dd{margin:0}.pd-spec small{color:var(--ink-3)}
 .pd-include :is(h3,h4){font-size:15px;margin:8px 0 4px}.pd-include ul{margin:0;padding-left:20px;font-size:14px;color:var(--ink-2)}.pd-include ul.extra li::marker{color:var(--heat)}
-.pd-cta{display:flex;gap:8px;flex-wrap:wrap}.pd-cta>*{flex:1}.pd-note{font-size:12px;color:var(--ink-3)}
+.pd-cta{display:flex;gap:8px;flex-wrap:wrap}.pd-cta>*{flex:1}.pd-note{font-size:12.5px;color:var(--ink-3)}
 table.cmp{border-collapse:collapse;font-size:14px;width:100%}.cmp th,.cmp td{padding:9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.cmp tr.diff td{background:color-mix(in oklab,var(--heat) 14%,transparent)}.cmp-wrap{overflow:auto}
 #toast{position:fixed;left:50%;top:76px;transform:translate(-50%,-16px);background:var(--panel);border:1px solid var(--cool);padding:10px 18px;border-radius:12px;opacity:0;transition:.25s;z-index:90;pointer-events:none}
 #toast.on{opacity:1;transform:translate(-50%,0)}
@@ -347,7 +352,7 @@ html.sx-on .sx-jump a:hover b{background:var(--cool);color:#04121C}
 .sec-h .eyebrow[data-sec-n]::before{content:attr(data-sec-n);content:attr(data-sec-n) / "";display:inline-grid;place-items:center;vertical-align:middle;margin-right:10px;width:28px;height:28px;border-radius:9px;font:500 14px var(--display);color:var(--cool);background:color-mix(in oklab,var(--cool) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--cool) 32%,transparent),0 0 20px -6px var(--cool)}
 html.sx-on .sec-h h2{font-size:clamp(28px,3vw,40px);line-height:1.22}
 /* legibility floor (Thai below 12px is unreadable on a dark ground) */
-.own-tag{font-size:12px}.demo{font-size:12.5px}.gauge li small{font-size:12.5px}.opt .n{font-size:12.5px}.vsw a{font-size:12.5px}
+.own-tag{font-size:12.5px}.demo{font-size:12.5px}.gauge li small{font-size:12.5px}.opt .n{font-size:12.5px}.vsw a{font-size:12.5px}
 /* touch: hotspot hit areas and the edition switch reach 44 px on phones; the dot itself stays small */
 @media (pointer:coarse){
   .hs{width:44px;height:44px;margin:-22px 0 0 -22px}.hs::before{inset:16px}.hs span{left:40px;top:10px}
@@ -405,7 +410,7 @@ main:focus{outline:none}
       <label for="vc-dirt" style="font-size:14px">ฝุ่นสะสม (จำลอง)</label>
       <input type="range" id="vc-dirt" min="0" max="1" step="0.01" value="0.6" data-v-dirt>
       <p class="lvl" data-v-dirt-out></p>
-      <button type="button" class="btn-primary" data-v-clean>ล้างเสมือนจริง</button>
+      <button type="button" class="btn-ghost" data-v-clean>ล้างเสมือนจริง</button>
     </div>
     <div class="glass info" data-v-info></div>
     <div class="parts" data-v-parts></div>
@@ -570,12 +575,12 @@ main:focus{outline:none}
   </section>
 
   <section class="sec" id="quote" data-reveal><div class="panel" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px;align-items:center">
-    <div><h2 style="font-size:30px">ให้ทีมติดต่อกลับ</h2><p style="color:var(--ink-2);margin-top:6px">ฝากชื่อและเบอร์ ทีมขายโทรกลับในเวลาทำการ</p><p class="sx-qalt">หรือโทร <a data-co="tel" href="#contact">02</a> · อีเมล <span class="sx-sel" data-co="email"></span></p></div>
-    <form id="qform" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label class="field">ชื่อ<input id="qc-name" required></label><label class="field">เบอร์โทร<input id="qc-tel" inputmode="tel" required></label><button class="btn-primary" style="grid-column:1/-1">ส่งข้อมูล</button></form>
+    <div><h2 style="font-size:30px">ให้ทีมติดต่อกลับ</h2><p style="color:var(--ink-2);margin-top:6px">ฝากชื่อและเบอร์ ทีมจะโทรกลับเพื่อสอบถามรายละเอียด</p><p class="sx-qalt">หรือโทร <a data-co="tel" href="#contact">02</a> · อีเมล <span class="sx-sel" data-co="email"></span></p></div>
+    <form id="qform" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label class="field">ชื่อ<input id="qc-name" autocomplete="name" required></label><label class="field">เบอร์โทร<input id="qc-tel" type="tel" inputmode="tel" autocomplete="tel" required></label><button class="btn-primary" style="grid-column:1/-1">ส่งข้อมูล</button></form>
   </div></section>
 </main>
 <footer></footer>
-<nav class="mbar" aria-label="ติดต่อด่วน"><a class="btn-ghost" href="#booking">จองคิว</a><button type="button" class="btn-primary" data-cart-btn style="border-radius:12px">ใบเสนอราคา <span data-cart-n>0</span></button></nav>
+<nav class="mbar" aria-label="ติดต่อด่วน"><button type="button" class="btn-ghost s-mmenu" aria-haspopup="dialog">เมนู</button><a class="btn-primary" href="#booking" data-mbar-book>จองคิว</a><button type="button" class="btn-ghost" data-cart-btn style="border-radius:12px">ใบเสนอราคา <span data-cart-n>0</span></button></nav>
 <div class="tray" data-compare hidden><ul data-compare-list></ul><button type="button" class="btn-primary" data-compare-go>เทียบ</button></div>
 <div class="drawer" data-drawer id="drawer" hidden><div class="dp" role="dialog" aria-modal="true" aria-label="รายละเอียด"><button type="button" class="x" data-close aria-label="ปิด">×</button><div id="drawerBody"></div></div></div>
 
@@ -608,6 +613,10 @@ enhanceQuoteForm();
 $$('[data-ask]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); askTeam(a.dataset.ask); }));
 const CART = mountCart();
 mountQuotePill(CART.open);
+// Rev.10 UX: bottom bar — 'จองคิว' is the main action while the quote is empty; once it has lines, 'ใบเสนอราคา' takes over
+{ const bk = $('.mbar [data-mbar-book]'), qb = $('.mbar [data-cart-btn]');
+  const swap = () => { const has = cart.items.length > 0; bk.classList.toggle('btn-primary', !has); bk.classList.toggle('btn-ghost', has); qb.classList.toggle('btn-primary', has); qb.classList.toggle('btn-ghost', !has); };
+  if (bk && qb) { cart.subs.add(swap); swap(); } }
 mountFlow(document.getElementById('flowRoot'), { room: 'room', product: 'catalog', service: 'cleanflow', area: 'area', quote: 'quote' }, { openCart: CART.open });
 mountMobileMenu();
 
@@ -651,7 +660,7 @@ cat = mountCatalog($('[data-catalog]'), {
   pageSize: 12, toast,
   skeleton: () => h('div', { class: 'skel' }, h('i', { style: 'aspect-ratio:4/3' }), h('i', { style: 'height:14px;width:50%' }), h('i', { style: 'height:32px' })),
   cardTpl: (m, skus, si, act) => { const b = BRAND_BY_ID[m.brand], s = skus[si];
-    return tilt(h('article', { class: 'card' }, h('div', { class: 'ph' }, productVisual(m, s)), h('p', { class: 'br' }, b.name, b.own ? h('b', { class: 'own-tag' }, 'แบรนด์เรา') : null, ' · ', TYPE_BY_ID[m.type].th), h('h3', {}, m.series),
+    return tilt(h('article', { class: 'card' }, h('div', { class: 'ph', onclick: () => openProduct(m, m.skus.indexOf(s)) }, productVisual(m, s)), h('p', { class: 'br' }, b.name, b.own ? h('b', { class: 'own-tag' }, 'แบรนด์เรา') : null, ' · ', TYPE_BY_ID[m.type].th), h('h3', {}, m.series),
       h('div', { class: 'btu-chips', role: 'radiogroup', 'aria-label': 'BTU' }, skus.map((k, i) => h('button', { type: 'button', role: 'radio', class: 'bchip', 'aria-checked': i === si, onclick: () => act.pick(i) }, (k.btu / 1000) + 'k'))),
       h('div', { class: 'pr' }, h('b', {}, baht(s.price)), h('span', { class: 'st o' }, 'ก่อน VAT')),
       h('p', { class: 'inst' }, s.installStdEx ? `พร้อมติดตั้ง ${baht((s.px + s.installStdEx))}` : 'ติดตั้ง: ประเมินหน้างาน'),
@@ -699,7 +708,7 @@ const V = {
     JOB = mountJobGuide($('#cleanRoot'), { theme: dark() ? 'dark' : 'light', start: 'C1', type: 'cassette' });
     mountMaterials($('#qualityRoot'), { theme: dark() ? 'dark' : 'light' });
     mountTechStory($('#storyRoot'), { theme: dark() ? 'dark' : 'light' });
-    SVX = mountServices($('#servicesRoot'), { how: false, onType: t => HWX && HWX.setType(t) });
+    SVX = mountServices($('#servicesRoot'), { how: false, onType: t => HWX && HWX.setType(t), pkgLink: { href: '#prices', open: () => PC && PC.show('clean') } });   // Rev.10 UX: the package guide shows once (price centre)
     PC = mountPriceCenter($('#priceCenter'));
   }),
   business: once(() => {
@@ -734,6 +743,10 @@ mountSite({
     repair: () => { ensure('service'); SVX.set('repair'); const b = $$('#storyRoot [role="tab"]').find(x => /ซ่อม/.test(x.textContent)); if (b && b.getAttribute('aria-selected') !== 'true') b.click(); },
   },
 });
+// Rev.10 UX: the home path buttons say what happens first (site.js writes 'เริ่ม' for every path); C styles them tonal so the
+// hero keeps the one orange action of the screen
+{ const GO = { clean: 'ดูขั้นตอนล้าง', buy: 'หาขนาด BTU', install: 'ดูขั้นตอนติดตั้ง', repair: 'เช็กอาการแอร์', business: 'ดูราคาขั้นบันได', project: 'ดูงานโครงการ' };
+  $$('#start .sx-int').forEach(li => { const b = $('.sx-int-go', li), t = GO[li.dataset.k]; if (b && t) { b.textContent = t; b.setAttribute('aria-label', `${t} · ${$('h3', li)?.textContent || ''}`); } }); }
 // r18: Thai headings keep each phrase on one line when it fits · section eyebrows carry the number of their jump link
 thaiPhrases('.sx-vh h1, .sx-lead, .sec-h h2, .sec-h h2 + p, #start .sx-int h3, #start .sx-int-s, .sx-next h2');
 zoneMarks();
