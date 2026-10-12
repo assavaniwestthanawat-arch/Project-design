@@ -10,9 +10,14 @@
 //     plus limits on track and on failed staff logins
 //   · idempotent create: the same request id (ticket.rid) from the same phone returns the ticket already stored
 //   · consent is recorded with the text the customer agreed to and the time (PDPA)
+// Rev.10 UX: one-purpose consent sentence (counsel to review) · feedback that carries a phone needs consent too · the team summary
+// in Thai words (units like the board, dates with the พ.ศ. year) · the IP is kept only as a keyed hash (HMAC, server-only key).
+import { createHmac, randomBytes } from 'node:crypto';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { tx, sheetRow, audit, HEADERS } from './db.mjs';
-import { str, digits, own, isDate, now, today, addDays, beYear, MAX, sha256, nowMs } from './util.mjs';
-import { recompute, quoteLinesText } from './pricing.mjs';
+import { str, digits, own, isDate, now, today, addDays, beYear, MAX, nowMs } from './util.mjs';
+import { recompute, quoteLinesText, coreApi } from './pricing.mjs';
 
 export const KINDS = { booking: 'จองคิว', quote: 'ขอใบเสนอราคา', inquiry: 'ติดต่อ / สอบถาม', feedback: 'ความเห็นเว็บไซต์' };
 export const SERVICES = { clean: 'ล้างแอร์', install: 'ติดตั้งแอร์', repair: 'ตรวจเช็ก / ซ่อม', move: 'ย้ายแอร์', amc: 'สำรวจสัญญาล้างรายปี', project: 'สำรวจงานโครงการ / รีโนเวต', buy: 'ซื้อแอร์', other: 'อื่น ๆ' };
@@ -20,10 +25,39 @@ export const STATUSES = { new: 'รับคำขอแล้ว รอยื�
 export const SLOTS = { AM: 'ช่วงเช้า', PM: 'ช่วงบ่าย', EVE: 'นอกเวลาทำการ' };
 export const ACTIVE = ['new', 'need_info', 'confirmed', 'assigned', 'in_progress'];
 // the consent sentence the forms show (assets/contact.js CONSENT_TH) — stored with each ticket when the browser does not send its own copy
-export const CONSENT_DEFAULT = 'ยินยอมให้ บริษัท สหบูรพากรุ๊ป จำกัด ใช้ชื่อ เบอร์โทร อีเมล และที่อยู่ที่กรอก เพื่อติดต่อกลับ นัดหมาย เสนอราคา และให้บริการตามคำขอนี้เท่านั้น';
+// (draft wording for the owner's counsel; assets/artifact-api.js carries the same sentence)
+export const CONSENT_DEFAULT = 'ยินยอมให้ บริษัท สหบูรพากรุ๊ป จำกัด ใช้ข้อมูลที่กรอกในแบบฟอร์มนี้เพื่อดำเนินการตามคำขอ ตามประกาศความเป็นส่วนตัว';
 
 const fail = error => ({ ok: false, error });
 const DAY = 864e5;
+// 'yyyy-mm-dd…' → '15 ต.ค. 2569' — the Thai Buddhist year, as on the site and in the ticket ids (anything else is returned as given)
+const MONTHS_TH = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+export const thDate = s => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || '')); return m ? `${+m[3]} ${MONTHS_TH[+m[2] - 1]} ${+m[1] + 543}` : String(s || ''); };
+// units {"wall":2} → 'ติดผนัง 2' — the words the staff board shows (sbp-core TYPES, loaded with the pricing)
+export const unitsTh = u => {
+  let o; try { o = typeof u === 'string' && u ? JSON.parse(u) : u || {}; } catch (e) { return String(u || ''); }
+  const T = (coreApi() && coreApi().TYPE_BY_ID) || {};
+  return Object.entries(o).map(([k, n]) => `${(T[k] || { th: k }).th} ${n}`).join(' · ');
+};
+// The IP is stored as a KEYED hash (HMAC-SHA-256): a plain hash of an IPv4 address is reversed by trying all 2^32 addresses.
+// Key: IP_HASH_SECRET, else a random key made once and kept in DATA_DIR/ip-hash.key (never in the database); no data dir (tests
+// without one) → a key for this process only. Nothing compares hashes across keys, so a new key only starts fresh values.
+function ipKey(ctx) {
+  if (ctx.ipKey) return ctx.ipKey;
+  const cfg = ctx.cfg || {};
+  let k = cfg.ipHashSecret || '';
+  if (!k && cfg.dataDir) {
+    const f = join(cfg.dataDir, 'ip-hash.key');
+    try { k = readFileSync(f, 'utf8').trim(); } catch (e) { /* first start */ }
+    if (!k) {
+      k = randomBytes(32).toString('base64url');
+      try { mkdirSync(cfg.dataDir, { recursive: true }); writeFileSync(f, k + '\n', { mode: 0o600, flag: 'wx' }); }
+      catch (e) { try { k = readFileSync(f, 'utf8').trim() || k; } catch (e2) { /* read-only data dir: process key */ } }   // another process won the race
+    }
+  }
+  return (ctx.ipKey = k || randomBytes(32).toString('base64url'));
+}
+export const ipHashOf = (ctx, ip) => createHmac('sha256', ipKey(ctx)).update('ip:' + ip).digest('hex').slice(0, 16);
 
 function nextId(db) {
   // SBP-<พ.ศ. 2 หลัก><เดือน><วัน>-<ลำดับในวัน> e.g. SBP-691009-007 — Thai Buddhist year, like the company's documents
@@ -35,8 +69,8 @@ function nextId(db) {
 export function summary(o) {
   return [KINDS[o.kind] + (o.service ? ' · ' + (SERVICES[o.service] || o.service) : '') + ' · ' + o.id,
     'ลูกค้า: ' + o.name + (o.company ? ' (' + o.company + ')' : '') + ' · โทร ' + o.tel + (o.email ? ' · ' + o.email : ''),
-    o.prefDate ? 'วันที่ต้องการ: ' + o.prefDate + ' ' + (SLOTS[o.slot] || '') + (o.altDate ? ' · สำรอง ' + o.altDate : '') : '',
-    o.units ? 'จำนวนเครื่อง: ' + o.units : '', o.address || o.area ? 'สถานที่: ' + [o.address, o.area].filter(String).join(' · ') : '',
+    o.prefDate ? 'วันที่ต้องการ: ' + thDate(o.prefDate) + ' ' + (SLOTS[o.slot] || '') + (o.altDate ? ' · สำรอง ' + thDate(o.altDate) : '') : '',
+    o.units ? 'จำนวนเครื่อง: ' + unitsTh(o.units) : '', o.address || o.area ? 'สถานที่: ' + [o.address, o.area].filter(String).join(' · ') : '',
     o.quoteLines ? 'รายการจากใบเสนอราคาเบื้องต้น:\n' + o.quoteLines + (o.quoteTotalEx !== '' && o.quoteTotalEx != null ? '\nรวมก่อน VAT ' + o.quoteTotalEx : '') : '',
     o.details ? 'รายละเอียด: ' + o.details : '', o.notes ? 'หมายเหตุ: ' + o.notes : '', o.taxInvoice ? 'ต้องการใบกำกับภาษี: ' + (o.taxName || '-') + ' ' + (o.taxId || '') : '',
     'ที่มา: ' + (o.source || '-')].filter(String).join('\n');
@@ -53,7 +87,9 @@ export function create(ctx, t, req) {
   const tel = digits(c.tel), fb = kind === 'feedback';                                   // website feedback may stay anonymous
   if (!(fb && !tel) && !/^0\d{8,9}$/.test(tel)) return fail('bad_tel');
   const name = str(c.name) || (fb ? 'ไม่ระบุชื่อ' : ''); if (!name) return fail('bad_name');
-  if (kind !== 'feedback' && t.consent !== true) return fail('no_consent');
+  // consent: every request — and feedback that carries a phone (anonymous feedback stays consent-free, CLAUDE.md §6.6 #23)
+  const needConsent = !fb || !!tel, consented = needConsent || t.consent === true;
+  if (needConsent && t.consent !== true) return fail('no_consent');
   const email = str(c.email, MAX.short); if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('bad_email');
   const pref = str(t.prefDate, 10); let alt = str(t.altDate, 10);
   if (pref && (!isDate(pref) || pref < today() || pref > addDays(today(), 366))) return fail('bad_date');
@@ -89,8 +125,8 @@ export function create(ctx, t, req) {
     history: JSON.stringify([{ at: now(), by: 'เว็บไซต์', s: 'new' }]),
     payload: str(JSON.stringify(t), MAX.payload),
     quoteJson: rq ? JSON.stringify(rq) : '', priceCheck: rq ? JSON.stringify({ verified: rq.verified, match: rq.match, payable: rq.payable, issues: rq.issues.slice(0, 20) }) : '',
-    consentText: kind !== 'feedback' ? str(t.consentText, 600) || CONSENT_DEFAULT : '', consentAt: kind !== 'feedback' ? now() : '',
-    rid, ipHash: ip ? sha256('ip:' + ip).slice(0, 16) : '',
+    consentText: consented ? str(t.consentText, 600) || CONSENT_DEFAULT : '', consentAt: consented ? now() : '',
+    rid, ipHash: ip ? ipHashOf(ctx, ip) : '',
   };
   const cols = [...HEADERS, 'quoteJson', 'priceCheck', 'consentText', 'consentAt', 'rid', 'ipHash'];
   tx(db, () => {

@@ -27,7 +27,7 @@ export const SERVICES = { clean: 'ล้างแอร์', install: 'ติด
 export const STATUSES = { new: 'รับคำขอแล้ว รอยืนยัน', need_info: 'รอข้อมูลเพิ่มจากลูกค้า', confirmed: 'ยืนยันนัดแล้ว', assigned: 'จัดทีมแล้ว', in_progress: 'กำลังดำเนินการ', done: 'เสร็จแล้ว', cancelled: 'ยกเลิก' };
 export const SLOTS = { AM: 'ช่วงเช้า', PM: 'ช่วงบ่าย', EVE: 'นอกเวลาทำการ' };
 export const ACTIVE = ['new', 'need_info', 'confirmed', 'assigned', 'in_progress'];
-export const CONSENT_DEFAULT = 'ยินยอมให้ บริษัท สหบูรพากรุ๊ป จำกัด ใช้ชื่อ เบอร์โทร อีเมล และที่อยู่ที่กรอก เพื่อติดต่อกลับ นัดหมาย เสนอราคา และให้บริการตามคำขอนี้เท่านั้น';
+export const CONSENT_DEFAULT = 'ยินยอมให้ บริษัท สหบูรพากรุ๊ป จำกัด ใช้ข้อมูลที่กรอกในแบบฟอร์มนี้เพื่อดำเนินการตามคำขอ ตามประกาศความเป็นส่วนตัว';   // Rev.10 UX (draft for counsel)
 export const HEADERS = ['id', 'createdAt', 'status', 'kind', 'service', 'units', 'teamDays', 'prefDate', 'slot', 'altDate', 'name', 'tel', 'email', 'company',
   'taxInvoice', 'taxName', 'taxId', 'address', 'area', 'zoneTier', 'travelFee', 'building', 'access', 'quoteTotalEx', 'quoteLines', 'details', 'notes',
   'source', 'team', 'schedDate', 'schedSlot', 'staffNote', 'updatedAt', 'history', 'payload'];
@@ -193,7 +193,9 @@ async function create(t) {
   const tel = digits(c.tel), fb = kind === 'feedback';
   if (!(fb && !tel) && !/^0\d{8,9}$/.test(tel)) throw fail('bad_tel');
   const name = str(c.name) || (fb ? 'ไม่ระบุชื่อ' : ''); if (!name) throw fail('bad_name');
-  if (kind !== 'feedback' && t.consent !== true) throw fail('no_consent');
+  // consent: every request — and feedback that carries a phone (anonymous feedback stays consent-free), like server/tickets.mjs
+  const needConsent = !fb || !!tel, consented = needConsent || t.consent === true;
+  if (needConsent && t.consent !== true) throw fail('no_consent');
   const email = str(c.email, MAX.short); if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw fail('bad_email');
   const pref = str(t.prefDate, 10); let alt = str(t.altDate, 10);
   if (pref && (!isDate(pref) || pref < today() || pref > addDays(today(), 366))) throw fail('bad_date');
@@ -225,7 +227,7 @@ async function create(t) {
     team: '', schedDate: '', schedSlot: '', staffNote: '', updatedAt: '',
     history: JSON.stringify([{ at: now(), by: 'เว็บไซต์', s: 'new' }]),
     quote: rq, priceCheck: rq ? { verified: rq.verified, match: rq.match, payable: rq.payable, issues: rq.issues.slice(0, 20) } : null,
-    consentText: kind !== 'feedback' ? str(t.consentText, 600) || CONSENT_DEFAULT : '', consentAt: kind !== 'feedback' ? now() : '',
+    consentText: consented ? str(t.consentText, 600) || CONSENT_DEFAULT : '', consentAt: consented ? now() : '',
     rid, ipHash: '', anonymizedAt: '', reqs: [], pays: [], refs: [], reqIds: [], payIds: [], receiptNos: [],
   };
   o.id = await nextId();

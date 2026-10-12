@@ -67,7 +67,7 @@ const FAKE = () => {
   };
   const db = Object.freeze({ doc: docRef, collection: colRef });
   const user = Object.freeze({ id: async () => 'u_tester', me: async () => ({ id: 'u_tester', name: '', avatarUrl: 'data:,', color: '#1B51A4', email: null, isOwner: true, canEdit: true }),
-    isOwner: async () => true, canEdit: async () => true, can: async () => !window.__sbpReadOnly, profiles: async ids => Object.fromEntries([].concat(ids).map(i => [i, { id: i, name: '', avatarUrl: 'data:,', color: '#1B51A4', email: null, isMe: i === 'u_tester', guest: false }])),
+    isOwner: async () => true, canEdit: async () => true, can: async () => !(window.__sbpReadOnly || globalThis.__fakeReadOnly), profiles: async ids => Object.fromEntries([].concat(ids).map(i => [i, { id: i, name: '', avatarUrl: 'data:,', color: '#1B51A4', email: null, isMe: i === 'u_tester', guest: false }])),
     name: async () => '', avatarUrl: async () => null, search: async () => [], email: async () => null });
   window.claude = Object.freeze({ use: async name => (name === 'db' ? db : name === 'user' ? user : null) });
 };
@@ -107,6 +107,11 @@ try {
   await p.waitForFunction(() => /SBP-\d{6}-\d{3,5}/.test(document.querySelector('#bookRoot .bk-out')?.textContent || ''), null, { timeout: 30000 }).catch(() => {});
   const id = ((await text(p, '#bookRoot .bk-out')).match(/SBP-\d{6}-\d{3,5}/) || [])[0];
   ok(!!id, 'booking stored: ticket number shown', id);
+  // Rev.10 UX: test data is never presented as reaching the company (CLAUDE.md §6.6 #23 test-site exception)
+  const consent1 = await text(p, '#bookRoot .s-consent');
+  ok(/^เว็บทดสอบ: .*ฐานข้อมูลทดสอบ.*ไม่ส่งถึงบริษัท/.test(consent1) && !(await p.$('#bookRoot .s-consent a')), 'test site: the consent line says fictitious test data stays in the test store (no privacy link)', consent1);
+  const card1 = await text(p, '#bookRoot .bk-out');
+  ok(/บันทึกคำขอจองคิวในระบบทดสอบแล้ว/.test(card1) && !card1.includes('02-459-3291-9') && !/เข้าระบบของบริษัท/.test(card1), 'test site: the ticket card says "saved in the test system", no company phone', card1.slice(0, 200));
 
   // 2 · test back office: login with the test account, confirm the job, create a payment request
   const s = await page(URL0 + '#backoffice');
@@ -174,6 +179,7 @@ try {
   await q.waitForTimeout(4000);
   const out2 = await text(q, '#bookRoot .bk-out, #bookRoot .s-hand');
   ok(!/SBP-\d{6}-\d{3}/.test(out2), 'without the viewer: no ticket number is claimed', out2.slice(0, 160));
+  ok(!/ลองอีกครั้ง|ลองส่งอีกครั้ง|ทีมจะติดต่อกลับ|02-459-3291-9|Sahaburapa\.official/i.test(out2), 'without the viewer: no "try again", no call-back promise, no company contacts for test data', out2.slice(0, 300));
   await ctx2.close();
 
   // 7 · a view-only viewer (below Contributor) learns it before filling the form, and is never pointed at the real company
@@ -183,6 +189,18 @@ try {
   await r3.waitForFunction(() => /ดูได้อย่างเดียว/.test(document.querySelector('#bookRoot .bk-conn')?.textContent || ''), null, { timeout: 30000 }).catch(() => {});
   const conn3 = await text(r3, '#bookRoot .bk-conn');
   ok(/เว็บทดสอบ/.test(conn3) && /ดูได้อย่างเดียว/.test(conn3) && !/ส่งเข้าระบบหลังบ้านของบริษัท/.test(conn3), 'view-only viewer: the side card says so before the form is filled', conn3);
+  // … and the Beta bar says so too; a send never says "try again"
+  const r = r3; r.on('pageerror', e => errs.push(e.message)); r.on('dialog', d => { errs.push('window dialog: ' + d.message()); d.dismiss(); });
+  await r.waitForFunction(() => /ดูได้อย่างเดียว/.test(document.querySelector('.sx-beta')?.textContent || ''), null, { timeout: 15000 }).catch(() => {});
+  ok(/ดูได้อย่างเดียว/.test(await text(r, '.sx-beta')), 'read-only viewer: the Beta bar says ดูได้อย่างเดียว before any form is filled');
+  await r.fill('#bookRoot [data-u="wall"]', '1');
+  const d3 = await r.$('.bk-days button:not([disabled])'); if (d3) await d3.click(); else await r.fill('#bookRoot input[type=date][required]', new Date(Date.now() + 3 * 864e5).toISOString().slice(0, 10));
+  await r.fill('#bookRoot textarea[required]', 'ทดสอบ'); await r.fill('#bookRoot input[placeholder^="เช่น บางนา"]', 'บางขุนเทียน'); await r.waitForTimeout(400);
+  await r.fill('#bookRoot input[autocomplete="name"]', 'ทดสอบ'); await r.fill('#bookRoot input[autocomplete="tel"]', '0899999998');
+  await r.check('#bookRoot .s-consent input'); await r.click('#bookRoot .bk-send button[type=submit]');
+  await r.waitForSelector('#bookRoot .s-hand', { timeout: 20000 }).catch(() => {});
+  const out3 = await text(r, '#bookRoot .s-hand');
+  ok(/ดูได้อย่างเดียว/.test(out3) && !/ลองอีกครั้ง|ลองส่งอีกครั้ง|02-459-3291-9|Sahaburapa\.official/i.test(out3) && !(await r.$('#bookRoot .s-hand a[href^="mailto:"]')), 'read-only viewer: the hand-off says why, never "try again", no company contacts', out3.slice(0, 300));
   await ctx3.close();
 
   ok(!errs.length, 'no console errors and no window dialogs', errs.slice(0, 5));

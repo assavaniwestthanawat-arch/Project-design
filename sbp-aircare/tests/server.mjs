@@ -9,7 +9,7 @@ import { createServer } from 'node:net';
 import { request } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createHash } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 import { gunzipSync, brotliDecompressSync } from 'node:zlib';
 import { DatabaseSync } from 'node:sqlite';
 import jsQR from 'jsqr';
@@ -30,11 +30,13 @@ let fails = 0, n = 0;
 const ok = (c, m, x) => { n++; if (!c) { fails++; console.log('✗', m, x !== undefined ? JSON.stringify(x).slice(0, 700) : ''); } else if (VERBOSE) console.log('✓', m); };
 const day = d => new Date(Date.now() + 7 * 3600e3 + d * 864e5).toISOString().slice(0, 10);   // Bangkok calendar day
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+// '2026-10-15' → '15 ต.ค. 2569' — how customer and team messages write dates (Rev.10 UX)
+const thD = d => `${+d.slice(8, 10)} ${['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'][+d.slice(5, 7) - 1]} ${+d.slice(0, 4) + 543}`;
 const BE = String(+day(0).slice(0, 4) + 543).slice(-2), ID0 = 'SBP-' + BE + day(0).slice(5, 7) + day(0).slice(8, 10) + '-', RC0 = 'RC' + BE + day(0).slice(5, 7) + '-';
 
 /* ---------------- servers ---------------- */
 // a clean environment: nothing from the caller's shell may switch a server feature on or off
-const ENV0 = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^(STAFF_|DEV$|NOTIFY_|CUSTOMER_|PROMPTPAY_|BANK_|PAY|SITE_|HOME_PAGE$|PUBLIC_PAGES$|TEAMS$|SLOT_|SMTP_|MAIL_|LINE_|OMISE_|DB_FILE$|BACKUP_|RETENTION_|TRUST_PROXY$|HOST$|PORT$|DATA_DIR$|NODE_ENV$)/.test(k)));
+const ENV0 = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^(STAFF_|DEV$|NOTIFY_|CUSTOMER_|PROMPTPAY_|BANK_|PAY|SITE_|HOME_PAGE$|PUBLIC_PAGES$|TEAMS$|SLOT_|SMTP_|MAIL_|LINE_|OMISE_|DB_FILE$|BACKUP_|RETENTION_|TRUST_PROXY$|HOST$|PORT$|DATA_DIR$|NODE_ENV$|IP_HASH_SECRET$)/.test(k)));
 const portFree = p => new Promise(res => { const s = createServer().once('error', () => res(false)).listen(p, '127.0.0.1', () => s.close(() => res(true))); });
 let nextPort = +(process.env.PORT_BASE || 8831);
 async function freePort() {
@@ -193,6 +195,15 @@ try {
   ok(fb.ok && xf && xf.name === 'ไม่ระบุชื่อ' && xf.tel === '', 'anonymous feedback stored as ไม่ระบุชื่อ', xf);
   ok((await api({ action: 'track', id: fb.id, tel: '' })).error === 'not_found' && (await api({ action: 'track', id: fb.id, tel: '0' })).error === 'not_found', 'anonymous feedback is not trackable');
   await bad({ kind: 'feedback', customer: { tel: '123' } }, 'bad_tel', 'feedback with a bad phone rejected');
+  // Rev.10 UX: feedback that carries a phone is personal data → consent like every request; anonymous feedback stays consent-free
+  await bad({ kind: 'feedback', customer: { name: 'สมชาย', tel: '0812225555' }, details: 'x' }, 'no_consent', 'feedback with a phone and no consent rejected');
+  const fbc = await api({ action: 'create', ticket: { kind: 'feedback', consent: true, customer: { name: 'สมชาย', tel: '0812225555' }, details: 'x' } });
+  const cRows = dbRows(D1, `SELECT id, consentText, consentAt FROM tickets WHERE id IN (?, ?)`, fb.id, fbc.id || '-');
+  ok(fbc.ok && cRows.find(x => x.id === fbc.id)?.consentText.includes('ตามประกาศความเป็นส่วนตัว') && cRows.find(x => x.id === fb.id)?.consentText === '', 'feedback with a phone + consent stores the consent sentence; anonymous feedback none', cRows);
+  // Rev.10 UX: the IP is kept as an HMAC under a server-only key (DATA_DIR/ip-hash.key), not a plain hash an IPv4 scan reverses
+  const ipKey = existsSync(join(D1, 'ip-hash.key')) ? readFileSync(join(D1, 'ip-hash.key'), 'utf8').trim() : '';
+  const ipRow = dbRows(D1, `SELECT ipHash FROM tickets WHERE id = ?`, r1.id)[0] || {};
+  ok(ipKey.length >= 32 && ipRow.ipHash === createHmac('sha256', ipKey).update('ip:127.0.1.1').digest('hex').slice(0, 16) && ipRow.ipHash !== createHash('sha256').update('ip:127.0.1.1').digest('hex').slice(0, 16), 'ipHash = HMAC with the key kept in DATA_DIR (never the plain sha-256 of the address)', ipRow);
   await bad({ kind: 'inquiry', consent: true, customer: { name: 'ไม่มีเบอร์' } }, 'bad_tel', 'inquiry still needs a phone');
 
   /* ======== B · Rev.10 fixes ======== */
@@ -444,18 +455,30 @@ try {
   ok(lp && lp.pay && lp.pay.status === 'paid' && lp.pay.paid === tot6 && lp.pay.asked === tot6 && lp.pay.open === 0 && lp.priceCheck.payable === true, 'list carries the money summary (baht) + price check', lp && lp.pay);
   ok(lp.pay.unasked === 0 && lp.pay.refs.includes(rq.ref) && lp.pay.refs.includes(RC0 + '0001'), 'list summary: nothing left to ask + the request ref and receipt number for search', lp.pay);
 
+  // Rev.10 UX: status e-mails close with what the customer can do now (need_info → call with the id · cancelled → no appointment)
+  const NI = await api({ action: 'create', ticket: base({ customer: { name: 'คุณข้อมูล เพิ่ม', tel: '0844444441', email: 'info@example.com' } }) }, { ip: '127.0.7.1' });
+  for (const patch of [{ status: 'need_info' }, { status: 'confirmed', schedDate: day(4), schedSlot: 'AM' }, { status: 'cancelled' }]) await api({ action: 'update', token: TOKEN, id: NI.id, staff: 'แอดมิน', patch });
+
   /* ======== F · notifications ======== */
   const OB = dbRows(D1, `SELECT channel, recipient, subject, body, ticketId FROM outbox ORDER BY id`);
   const mails = (id, re) => OB.filter(m => m.ticketId === id && re.test(m.subject));
   ok(mails(r1.id, /\[SBP จองคิว\]/).some(m => m.recipient === 'team@example.com'), 'team email queued for every new ticket', OB.filter(m => m.ticketId === r1.id).map(m => m.subject));
   ok(mails(r1.id, /ได้รับคำขอของคุณแล้ว/).some(m => m.recipient === 'test@example.com' && m.body.includes(r1.id)), 'CUSTOMER_ACK=1: the customer gets an acknowledgement');
-  ok(mails(r1.id, /อัปเดตคำขอ/).some(m => m.recipient === 'test@example.com' && m.body.includes(day(3)) && !m.body.includes('โทรก่อน') && !m.body.includes('ทีม 1')), 'CUSTOMER_NOTIFY=1: status e-mail with the appointment, no staff note / team');
+  ok(mails(r1.id, /อัปเดตคำขอ/).some(m => m.recipient === 'test@example.com' && m.body.includes(`นัดหมาย: ${thD(day(3))} ช่วงบ่าย`) && !m.body.includes('โทรก่อน') && !m.body.includes('ทีม 1')), 'CUSTOMER_NOTIFY=1: status e-mail with the appointment, no staff note / team');
   ok(mails(r1.id, /อัปเดตคำขอ/).length === 1, 'a staff-note-only change sends the customer nothing (one e-mail: the status change)', mails(r1.id, /อัปเดตคำขอ/).length);
   const mReq = mails(PT.id, /รายการชำระเงิน/), mPaid = mails(PT.id, /ได้รับชำระเงินแล้ว/);
-  ok(mReq.length === 1 && mReq[0].recipient === 'pay@example.com' && mReq[0].body.includes(rq.ref) && mReq[0].body.includes(tot6.toLocaleString('en-US')) && mReq[0].body.includes(day(7)), 'payreq → the customer gets the amount, reference and last day (CUSTOMER_NOTIFY on)', mReq.map(m => m.body));
+  ok(mReq.length === 1 && mReq[0].recipient === 'pay@example.com' && mReq[0].body.includes(rq.ref) && mReq[0].body.includes(tot6.toLocaleString('en-US')) && mReq[0].body.includes('ชำระได้ถึง: ' + thD(day(7))), 'payreq → the customer gets the amount, reference and last day (CUSTOMER_NOTIFY on)', mReq.map(m => m.body));
   ok(mPaid.length === 1 && mPaid[0].recipient === 'pay@example.com' && mPaid[0].body.includes(RC0 + '0001'), 'verified payment → the customer gets the receipt number (CUSTOMER_NOTIFY on)', mPaid.map(m => m.body));
   ok(mails(PT.id, /ลูกค้าแจ้งโอนแล้ว/).some(m => m.recipient === 'team@example.com'), 'a customer transfer report notifies the team');
+  ok(mReq.length === 1 && mReq[0].body.includes('รหัสชำระเงิน (ใส่ในบันทึกการโอน): ' + rq.ref) && mReq[0].body.includes('วิธีชำระ: พร้อมเพย์ · โอนเข้าบัญชีบริษัท · ชำระหน้างาน') && mReq[0].body.includes('บริษัทออกเลขที่ใบเสร็จเมื่อตรวจยืนยันยอดที่ได้รับจริงแล้วเท่านั้น'), 'payreq e-mail: รหัสชำระเงิน, the methods this server offers, the receipt sentence', mReq.map(m => m.body));
+  const ni = OB.filter(m => m.ticketId === NI.id && m.recipient === 'info@example.com' && /อัปเดตคำขอ/.test(m.subject)).map(m => m.body);
+  ok(ni.length === 3 && ni[0].includes('สถานะ: รอข้อมูลเพิ่มเติมจากคุณ') && ni[0].includes(`กรุณาโทร 02-459-3291-9 พร้อมแจ้งเลขที่คำขอ ${NI.id}`) && !ni[0].includes('เปลี่ยนวันนัด'), 'need_info e-mail: customer words + call with the ticket id', ni);
+  ok(ni[1] && ni[1].includes(`นัดหมาย: ${thD(day(4))} ช่วงเช้า`) && ni[1].includes('หากต้องการเปลี่ยนวันนัด กรุณาโทร'), 'confirmed e-mail: the appointment with a Thai date + how to change it', ni[1]);
+  ok(ni[2] && ni[2].includes('สถานะ: ยกเลิก') && !/นัดหมาย:|เปลี่ยนวันนัด/.test(ni[2]) && ni[2].includes('หากคุณไม่ได้ขอยกเลิก กรุณาโทร'), 'cancelled e-mail: no appointment line; call if the customer did not cancel', ni[2]);
+  const team1 = mails(r1.id, /\[SBP จองคิว\]/)[0] || {};
+  ok(/จำนวนเครื่อง: ติดผนัง 3 · สี่ทิศทาง 1/.test(team1.body) && !/\{"/.test(team1.body) && team1.body.includes('วันที่ต้องการ: ' + thD(day(2))), 'team e-mail: units in the board words and the date in Thai (no JSON, no ISO date)', team1.body);
   const cust = OB.filter(m => m.recipient !== 'team@example.com');
+  ok(cust.length && cust.every(m => m.body.includes('\nโทร 02-459-3291-9 · Sahaburapa.official@gmail.com')) && !cust.some(m => /\d{4}-\d{2}-\d{2}/.test(m.body.replace(/https?:\S+/g, ''))), 'customer e-mails: company phone + e-mail in the signature, no ISO dates', cust.map(m => m.body.slice(-90)));
   ok(cust.length >= 4 && cust.every(m => !BANNED.some(w => m.body.includes(w) || m.subject.includes(w)) && !PROMISE.test(m.body) && !/แอดมินทดสอบ|เจ้าหน้าที่ทดสอบ|ช่างทดสอบ/.test(m.body)), 'customer e-mails: no banned phrase, no time promise, no staff name', cust.map(m => m.subject));
   // the 15 s outbox worker delivers into the DEV memory outbox (bounded wait)
   let box = [];

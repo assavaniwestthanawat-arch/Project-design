@@ -7,11 +7,13 @@
 // "next step" cards at the bottom, an intent picker on the home view that starts a guided journey (a step strip that follows the
 // customer across views and remembers progress), the company / contact block, the beta notice + feedback form, and the footer.
 // Hidden views do not boot their 3D (scenes start on IntersectionObserver), so each view is lighter than the old page.
+// Rev.10 UX: a journey's send step completes only on a stored ticket ('sbp:sent') · the contact form folds after a sent request ·
+// search opens with Ctrl+K / ⌘K · live footer in customer words.
 import { icon } from './icons.js';
 import { h, $, $$, COMPANY, DEMO, DATA, BRANDS, BRAND_BY_ID, TYPE_BY_ID, PROCESS, SERVICES, FAQ, baht, isVRF, logoSrc } from './sbp-core.js';
 import { GUIDES } from './knowledge.js';
 import { cart } from './commerce.js';
-import { askTeam, handoffBox, guardForm, submitTicket, requestBooking, honeypot } from './contact.js';
+import { askTeam, handoffBox, guardForm, submitTicket, requestBooking, honeypot, clearFieldError } from './contact.js';
 import { quoteFromCart, sourceTag, connected } from './ticket.js';
 import { legalLinks, testNote } from './feedback.js';
 import { openFeedback, trapFocus, perfButton } from './feedback.js';
@@ -188,13 +190,19 @@ export function mountSite(cfg) {
   }
 
   /* ---- 5 · guided journey (intent → steps across views) ---- */
-  let J = store.get('sbp-journey-v1', null); if (J && !JOURNEYS[J.k]) J = null;
+  // Rev.10 UX: a step that SENDS a request (booking / quote) is done only when the back office answered with a ticket id
+  // (contact.js fires 'sbp:sent') — never because its section was on screen or the basket was opened (CLAUDE.md §6.6 #23).
+  // J.sent records that a real send happened; a journey saved before this rule (no J.sent) drops send steps ticked by sight.
+  const SEND = new Set(['booking', 'quote']);
+  let J = store.get('sbp-journey-v1', null); if (J && (!JOURNEYS[J.k] || !Array.isArray(J.done))) J = null;
   const stepsOf = k => JOURNEYS[k].steps.map(([ids, th], i) => ({ i, id: ids === 'quote' ? 'quote' : pick(ids), th })).filter(s => s.id);
   const saveJ = () => store.set('sbp-journey-v1', J);
+  if (J && !J.sent) J.done = J.done.filter(i => !stepsOf(J.k).some(s => s.i === i && SEND.has(s.id)));
+  let sentId = '';   // the ticket id sent during this visit (shown in the strip, never kept in the browser)
   const here = h('div', { class: 'sx-here', hidden: true });
   let hereStep = null;
   function goStep(s) {
-    if (s.id === 'quote') { if (cart.items.length) { openCart(); markDone(s.i); } else askTeam(JOURNEYS[J.k].topic); return; }
+    if (s.id === 'quote') { if (cart.items.length) openCart(); else askTeam(JOURNEYS[J.k].topic); return; }
     if (s.id === 'booking') document.dispatchEvent(new CustomEvent('sbp:book', { detail: { service: JSVC[J.k] || 'other' }, cancelable: true }));   // r10: preset the booking form
     hereStep = s; const el = document.getElementById(s.id);
     if (el) { el.before(here); here.dataset.sx = el.dataset.sx; }
@@ -202,27 +210,41 @@ export function mountSite(cfg) {
     requestAnimationFrame(() => requestAnimationFrame(() => { if (!here.hidden) ORIG.call(here, { behavior: RM() ? 'auto' : 'smooth', block: 'start' }); }));
   }
   function paintHere() {
-    here.innerHTML = '';
+    here.replaceChildren();
     if (!J || !hereStep || !here.isConnected) { here.hidden = true; return; }
     const steps = stepsOf(J.k), k = steps.findIndex(x => x.i === hereStep.i), nx = steps.slice(k + 1).find(x => !J.done.includes(x.i)) || steps.find(x => !J.done.includes(x.i) && x.i !== hereStep.i);
-    here.append(h('p', {}, h('b', {}, `${JOURNEYS[J.k].th} · ขั้นที่ ${k + 1} จาก ${steps.length}`), h('span', {}, hereStep.th)),
-      nx ? h('button', { type: 'button', class: 's-btn primary', onclick: () => goStep(nx) }, `ขั้นต่อไป: ${nx.th}`) : null);
+    const send = SEND.has(hereStep.id) ? (J.done.includes(hereStep.i) ? ' · ส่งคำขอแล้ว' : ' · ยังไม่ได้ส่งคำขอ กรอกแบบฟอร์มด้านล่างแล้วกดส่ง') : '';
+    // append() writes a null argument as the text "null": the button is added only when there is a next step
+    here.append(h('p', {}, h('b', {}, `${JOURNEYS[J.k].th} · ขั้นที่ ${k + 1} จาก ${steps.length}`), h('span', {}, hereStep.th + send)),
+      ...(nx ? [h('button', { type: 'button', class: 's-btn primary', onclick: () => goStep(nx) }, `ขั้นต่อไป: ${nx.th}`)] : []));
     here.hidden = here.dataset.sx !== cur;
   }
   function markDone(i) { if (!J || J.done.includes(i)) return; J.done.push(i); saveJ(); paintJourney(); }
+  // a stored ticket (booking, quote basket or contact form) completes the journey's send step — feedback does not
+  document.addEventListener('sbp:sent', e => {
+    const d = e.detail || {}; if (!J || !d.id || d.kind === 'feedback') return;
+    const s = stepsOf(J.k).find(x => SEND.has(x.id)); if (!s) return;
+    sentId = String(d.id); J.sent = true;
+    if (J.done.includes(s.i)) { saveJ(); paintJourney(); } else markDone(s.i);
+  });
   function startJourney(k) {
-    if (!JOURNEYS[k]) return; J = { k, done: [] }; saveJ();
+    if (!JOURNEYS[k]) return; J = { k, done: [] }; sentId = ''; saveJ();
     hooks[k] && hooks[k]();
     const s = stepsOf(k)[0]; if (s) goStep(s);
     paintJourney();
   }
   function stripEl() {
     const steps = stepsOf(J.k), nextS = steps.find(s => !J.done.includes(s.i)) || null, n = steps.filter(s => J.done.includes(s.i)).length;
+    const sendS = steps.find(s => SEND.has(s.id)), sent = !!sendS && J.done.includes(sendS.i);
+    // sent → the ticket id · the send step is the one left → say plainly that nothing was sent yet, with the way to send it
+    const act = sent ? h('p', { class: 'sx-jsd' }, `ส่งคำขอแล้ว${sentId ? ' เลขที่ ' + sentId : ''} · ตรวจสถานะได้ด้วยเลขที่คำขอและเบอร์โทร`)
+      : nextS && nextS !== sendS ? h('button', { type: 'button', class: 's-btn primary', onclick: () => goStep(nextS) }, `ขั้นต่อไป: ${nextS.th}`)
+      : sendS ? [h('p', { class: 'sx-jsd', style: 'color:var(--s-warn)' }, 'ยังไม่ได้ส่งคำขอ'), h('button', { type: 'button', class: 's-btn primary', onclick: () => goStep(sendS) }, 'ไปส่งคำขอ')]   // pending, not the green "done" colour
+      : h('p', { class: 'sx-jsd' }, 'ครบทุกขั้นแล้ว');
     return h('div', { class: 'sx-jsi' },
       h('p', { class: 'sx-jst' }, h('b', {}, `เส้นทางของคุณ: ${JOURNEYS[J.k].th}`), h('span', {}, ` · ทำแล้ว ${n} จาก ${steps.length} ขั้น`)),
-      h('ol', {}, steps.map((s, k) => h('li', {}, h('button', { type: 'button', class: (J.done.includes(s.i) ? 'done ' : '') + (nextS && s.i === nextS.i ? 'next' : ''), 'aria-label': `ขั้นที่ ${k + 1} ${s.th}${J.done.includes(s.i) ? ' (ทำแล้ว)' : ''}`, onclick: () => goStep(s) }, h('i', {}, J.done.includes(s.i) ? icon('check', { size: 14 }) : String(k + 1)), h('span', {}, s.th))))),
-      h('div', { class: 'sx-jsa' },
-        nextS ? h('button', { type: 'button', class: 's-btn primary', onclick: () => goStep(nextS) }, `ขั้นต่อไป: ${nextS.th}`) : h('p', { class: 'sx-jsd' }, 'ครบทุกขั้นแล้ว ทีมจะติดต่อกลับหลังได้รับสรุปคำขอของคุณ'),
+      h('ol', {}, steps.map((s, k) => h('li', {}, h('button', { type: 'button', class: (J.done.includes(s.i) ? 'done ' : '') + (nextS && s.i === nextS.i ? 'next' : ''), 'aria-label': `ขั้นที่ ${k + 1} ${s.th}${J.done.includes(s.i) ? (SEND.has(s.id) ? ' (ส่งคำขอแล้ว)' : ' (ทำแล้ว)') : SEND.has(s.id) ? ' (ยังไม่ได้ส่งคำขอ)' : ''}`, onclick: () => goStep(s) }, h('i', {}, J.done.includes(s.i) ? icon('check', { size: 14 }) : String(k + 1)), h('span', {}, s.th))))),
+      h('div', { class: 'sx-jsa' }, act,
         h('button', { type: 'button', class: 's-btn ghost', onclick: () => { J = null; saveJ(); paintJourney(); } }, 'ปิดเส้นทางนี้')));
   }
   const homeJ = h('div', { class: 'sx-js sx-js-home', hidden: true });
@@ -234,11 +256,11 @@ export function mountSite(cfg) {
     const tgt = cur === 'home' ? homeJ : INTRO[cur] && INTRO[cur].js; if (!tgt) return;
     tgt.append(stripEl()); tgt.hidden = false;
   }
-  // a step counts as done once its section has been on screen for a moment
+  // a step counts as done once its section has been on screen for a moment — except a send step (SEND: only a ticket id counts)
   let stepIO = null;
   function observeSteps() {
     if (stepIO) stepIO.disconnect(); if (!J) return;
-    const steps = stepsOf(J.k), timers = new Map();
+    const steps = stepsOf(J.k).filter(s => !SEND.has(s.id)), timers = new Map();
     stepIO = new IntersectionObserver(es => es.forEach(e => {
       const s = steps.find(x => document.getElementById(x.id) === e.target); if (!s) return;
       if (e.isIntersecting) timers.set(s.i, setTimeout(() => markDone(s.i), 1800)); else clearTimeout(timers.get(s.i));
@@ -304,6 +326,11 @@ export function mountSite(cfg) {
     const sb = qf.querySelector('button:not([type="button"])'); if (sb) sb.textContent = 'ส่งคำขอให้ทีมติดต่อกลับ';
     const out = h('div', { class: 'sx-qout', hidden: true });
     qf.after(out);
+    // Rev.10 UX: a stored request folds the form away (a second tap cannot send it again) and offers a clean form for a new one;
+    // askTeam() reopens it the same way ('sbp:reopen') when another "ติดต่อสอบถาม" button is used
+    const reopen = () => { qf.reset(); qf.querySelectorAll('[aria-invalid]').forEach(clearFieldError); qf.hidden = false; out.hidden = true; out.replaceChildren(); };
+    const again = h('button', { type: 'button', class: 's-btn ghost sx-qagain', style: 'margin-top:12px', onclick: () => { reopen(); qf.querySelector('input,select,textarea')?.focus(); } }, 'ส่งเรื่องใหม่');
+    qf.addEventListener('sbp:reopen', reopen);
     const TOPIC_SVC = { 'ล้างแอร์': 'clean', 'ติดตั้งแอร์': 'install', 'ซ่อม / ตรวจเช็ก': 'repair', 'สัญญาล้างรายปี': 'amc', 'ซื้อแอร์': 'buy', 'FUJIVA': 'buy', 'ระบบ VRV / VRF': 'project', 'งานโครงการ / รีโนเวต / เปลี่ยนทั้งชุด': 'project', 'งานโครงการอื่น': 'project' };
     qf.addEventListener('submit', async e => {
       e.preventDefault();
@@ -317,8 +344,8 @@ export function mountSite(cfg) {
       const ticket = { kind: 'inquiry', service: TOPIC_SVC[topic] || 'other', consent: true, website: (qf.querySelector('[name=website]') || {}).value || '', source: sourceTag(variant),
         customer: { name: val(/name/), tel: val(/tel/), email: (fields.find(x => x.type === 'email') || {}).value || '' },
         details: [topic ? `เรื่อง: ${topic}` : '', n ? `จำนวนเครื่องโดยประมาณ: ${n}` : ''].filter(Boolean).join('\n'), notes: val(/^q-msg$/), quote: quoteFromCart(cart) };
-      await submitTicket(ticket, { out, form: qf, label: 'คำขอ', fallback: { ref, title: 'คำขอให้ทีมติดต่อกลับ', text: [`คำขอจากเว็บไซต์ SBP AirCare (แบบ ${variant}) · เลขอ้างอิง ${ref}`, ...rows, ...items].join('\n'), subject: 'คำขอให้ทีมติดต่อกลับ' } });
-      if (J) { const q = stepsOf(J.k).find(s => s.id === 'quote'); q && markDone(q.i); }
+      const r = await submitTicket(ticket, { out, form: qf, label: 'คำขอ', fallback: { ref, title: 'คำขอให้ทีมติดต่อกลับ', text: [`คำขอจากเว็บไซต์ SBP AirCare (แบบ ${variant}) · เลขอ้างอิง ${ref}`, ...rows, ...items].join('\n'), subject: 'คำขอให้ทีมติดต่อกลับ' } });
+      if (r.ok) { qf.hidden = true; out.append(again); }   // the journey's send step is marked by the 'sbp:sent' event
       requestAnimationFrame(() => ORIG.call(out, { behavior: RM() ? 'auto' : 'smooth', block: 'nearest' }));
     });
   }
@@ -327,7 +354,7 @@ export function mountSite(cfg) {
   const proto = $('aside.proto');
   // r13: the feedback form lives in feedback.js (D and the v2 editions use it too)
   const feedback = () => openFeedback({ variant, pages: live.map(v => VV[v].th), seen: [...seen].map(v => VV[v].th) });
-  const fbBtn = () => h('button', { type: 'button', class: 'sx-fbb', onclick: feedback }, 'ให้ความเห็น');
+  const fbBtn = (t = 'ให้ความเห็น') => h('button', { type: 'button', class: 'sx-fbb', onclick: feedback }, t);
   if (proto) {
     const hub = proto.querySelector('a');
     proto.innerHTML = ''; proto.classList.add('sx-beta');
@@ -340,13 +367,15 @@ export function mountSite(cfg) {
     foot.append(h('div', { class: 'wrap sx-foot' },
       h('div', {}, h('p', { class: 'sx-fb-marks' }, h('img', { src: logoSrc('sbp'), alt: COMPANY.th, width: 55, height: 40 }), h('img', { class: 'sx-fb-fuj', src: logoSrc('fujiva'), alt: 'FUJIVA แบรนด์แอร์ของบริษัท', width: 97, height: 32 })), h('b', { class: 'sx-fb-brand' }, COMPANY.brand), h('p', {}, COMPANY.th), h('p', {}, COMPANY.addr), h('p', {}, 'โทร ', h('a', { href: COMPANY.telHref }, COMPANY.tel), ' · ', h('span', { class: 'sx-sel' }, COMPANY.email))),
       h('div', {}, h('h2', { class: 'sx-fh' }, 'บริการและสินค้า'), h('ul', {}, live.filter(v => v !== 'home').map(v => h('li', {}, h('a', { href: '#' + v }, VV[v].th))))),
-      document.documentElement.hasAttribute('data-sbp-live')   // Rev.10 SITE_MODE=live (server/static.mjs)
-        ? h('div', {}, h('h2', { class: 'sx-fh' }, 'ความเห็นต่อเว็บไซต์'), h('p', {}, 'ราคาตาม Pricebook 2569 ก่อน VAT ยืนยันอีกครั้งในใบเสนอราคาอย่างเป็นทางการ'), fbBtn())
+      // Rev.10 SITE_MODE=live (server/static.mjs) — Rev.10 UX: a heading that names both things in the column, customer words for
+      // the price list (no internal term "Pricebook")
+      document.documentElement.hasAttribute('data-sbp-live')
+        ? h('div', {}, h('h2', { class: 'sx-fh' }, 'ราคาและความเห็น'), h('p', {}, 'ราคาบนเว็บไซต์ตามรายการราคาปี 2569 ก่อน VAT ยืนยันอีกครั้งในใบเสนอราคาอย่างเป็นทางการ'), fbBtn('ให้ความเห็นต่อเว็บไซต์'))
         : h('div', {}, h('h2', { class: 'sx-fh' }, 'ช่วงทดลองใช้'), h('p', {}, 'เว็บไซต์เวอร์ชันทดลองสำหรับลูกค้ากลุ่มแรก ราคาตาม Pricebook 2569 ยืนยันอีกครั้งในใบเสนอราคาอย่างเป็นทางการ'), fbBtn()),
       h('div', {}, h('h2', { class: 'sx-fh' }, 'บริษัท'), h('ul', {}, h('li', {}, h('a', { href: '#about' }, 'เกี่ยวกับเรา')), h('li', {}, h('a', { href: COMPANY.webUrl, target: '_blank', rel: 'noopener' }, COMPANY.web)), h('li', {}, h('a', { href: '#faq' }, 'คำถามที่พบบ่อย')), ...legalLinks().map(a => h('li', {}, a))))));
   }
 
-  /* ---- 10 · find anything (r6): pages, paths, 705 models, every price item, guides, FAQ — header button or "/" ---- */
+  /* ---- 10 · find anything (r6): pages, paths, 705 models, every price item, guides, FAQ — header button or Ctrl+K / ⌘K ---- */
   const norm = t => (t || '').toLowerCase().replace(/[\s·/()–-]+/g, '');
   const IDX = [];
   const add = (g, th, sub, run, extra = '', btus = null) => IDX.push({ g, th, sub, run, key: norm(`${th} ${sub} ${extra}`), t: norm(th), btus });
@@ -415,9 +444,11 @@ export function mountSite(cfg) {
     trapFocus(sdlg);
     document.body.append(sdlg); de.style.overflow = 'hidden'; paint(); input.focus();
   }
-  const hdrCart = $('header [data-cart-btn]');
-  if (hdrCart) hdrCart.before(h('button', { type: 'button', class: 'sx-sbtn', 'aria-label': 'ค้นหาในเว็บไซต์', 'aria-keyshortcuts': '/', 'aria-haspopup': 'dialog', onclick: openSearch }, icon('search', { size: 18 }), h('span', {}, 'ค้นหา'), h('kbd', { 'aria-hidden': 'true' }, '/')));
-  addEventListener('keydown', e => { if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey || sdlg) return; const t = e.target; if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return; e.preventDefault(); openSearch(); });
+  // Rev.10 UX: Ctrl+K / ⌘K instead of "/" — a single-character shortcut fires by accident for speech-input and keyboard users
+  // (WCAG 2.1.4); with a modifier it never collides with typing
+  const hdrCart = $('header [data-cart-btn]'), MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || '');
+  if (hdrCart) hdrCart.before(h('button', { type: 'button', class: 'sx-sbtn', 'aria-label': 'ค้นหาในเว็บไซต์', 'aria-keyshortcuts': 'Control+K Meta+K', 'aria-haspopup': 'dialog', onclick: openSearch }, icon('search', { size: 18 }), h('span', {}, 'ค้นหา'), h('kbd', { 'aria-hidden': 'true' }, MAC ? '⌘K' : 'Ctrl K')));
+  addEventListener('keydown', e => { if (!(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey || (e.key || '').toLowerCase() !== 'k' || sdlg) return; e.preventDefault(); openSearch(); });
 
   // keep Tab inside an open dialog (search, feedback)
   route(location.hash, true);
