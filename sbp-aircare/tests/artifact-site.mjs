@@ -147,6 +147,7 @@ try {
   await p.waitForSelector('.pay-qr', { timeout: 20000 }).catch(() => {});
   ok(await p.$eval('.pay-qr', e => e.complete && e.naturalWidth > 100).catch(() => false), 'PromptPay QR rendered');
   ok(/ห้ามโอนเงินจริง/.test(await text(p, '.pay-test')) && await p.$('.pay-qrw.test'), 'test QR is marked "ทดสอบ — ห้ามโอนเงินจริง"');
+  ok(!(await p.$('.pay-save')), 'no "บันทึกรูป QR" on the test site (the artifact viewer blocks downloads; the QR is a test code)');
   await p.click('.pay-rep button[type=submit]').catch(() => {});
   // the box re-renders from the reply: "รอตรวจยอด" (never paid by itself), pay buttons folded away
   await p.waitForFunction(() => /รอตรวจยอด/.test(document.querySelector('.pay .pay-st')?.textContent || ''), null, { timeout: 15000 }).catch(() => {});

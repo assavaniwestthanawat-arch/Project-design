@@ -81,7 +81,8 @@ export function paymentBox({ id, tel, payment: P, status = '', onChange = null, 
     const report = p.method === 'gateway' ? null : reportForm(p, r);
     if (p.method === 'promptpay' || p.method === 'gateway') {
       const img = p.qr ? h('img', { class: 'pay-qr', src: p.qr, width: 240, height: 240, alt: `QR พร้อมเพย์ ยอด ${money(p.amount)} ผู้รับเงิน ${p.payee}${p.test ? ' (ทดสอบ ห้ามโอนเงินจริง)' : ''}` }) : null;
-      const save = img && /^data:image\//.test(p.qr) ? saveQr(img, `${id}-${p.ref}`, p) : null;
+      // no save button on the Claude test site: its QR is a test code and the artifact viewer never lets a page hand over a file
+      const save = img && /^data:image\//.test(p.qr) && !testSite() ? saveQr(img, `${id}-${p.ref}`, p) : null;
       // a phone cannot scan its own screen: save the picture, then "scan from album" in the bank app
       const coarse = matchMedia('(pointer:coarse)').matches;
       const first = !coarse ? 'เปิดแอปธนาคารในมือถือ เลือกสแกน QR' : save ? 'กด "บันทึกรูป QR" แล้วเปิดแอปธนาคาร เลือกสแกน และเลือกรูป QR จากอัลบั้ม (หรือสแกนจากอีกเครื่อง)' : 'บันทึกภาพหน้าจอ QR แล้วเปิดแอปธนาคาร เลือกสแกนจากรูปภาพ (หรือสแกนจากอีกเครื่อง)';
