@@ -7,7 +7,7 @@
 // ONE viewer per page (cinema3d, one WebGL context in the gl-pool budget) moves into whichever product panel asks for it —
 // opening the next model re-uses it instead of compiling a new renderer. Reduced motion → still frames.
 // modelViewer(m, s) → element · viewer(host) → Promise<cinema> (the owner's test panel walks every model with the same viewer)
-// modelScene(m, s) → {type, w, h, d, src} (what the viewer is given for a model)
+// modelScene(m, s) → {type, w, h, d, src} (what the viewer is given for a model — and the real-size AR body, ar.js / ar3d.js)
 import { TYPE_BY_ID, BRAND_BY_ID, btuFmt, h, $$ } from './sbp-core.js';
 import { unitDims } from './roomfit.js';
 
@@ -72,8 +72,12 @@ export function modelViewer(m, s) {
     h('div', { class: 'm3d-row' }, shotSeg),
     h('div', { class: 'm3d-row' }, xrB, h('label', { class: 'm3d-ex' }, 'แยกชิ้นส่วน', exR), cleanB, sndB));
   const panel = h('div', { class: 'm3d-panel', hidden: true }, h('div', { class: 'm3d-stage' }, gl, cap), ctl, note);
-  const btn = h('button', { type: 'button', class: 's-btn m3d-open', 'aria-expanded': 'false', onclick: () => toggle(panel.hidden) }, 'ดูรุ่นนี้แบบ 3 มิติ');
-  const wrap = h('div', { class: 'm3d', hidden: !hasGL() }, btn, panel);
+  const btn = h('button', { type: 'button', class: 's-btn m3d-open', 'aria-expanded': 'false', hidden: !hasGL(), onclick: () => toggle(panel.hidden) }, 'ดูรุ่นนี้แบบ 3 มิติ');
+  // Rev.11: "วางบนผนังบ้านคุณ" (ar.js) beside it — the real size on the customer's wall through the phone camera (AR Quick Look /
+  // WebXR), or one line saying where it works; it needs no WebGL on the page, so it shows even where the 3D view cannot
+  const acts = h('div', { class: 'm3d-acts' }, btn);
+  const wrap = h('div', { class: 'm3d', hidden: !hasGL() }, acts, panel);
+  import('./ar.js').then(A => { const el = A.arButton(m, s, sc); if (el) { acts.append(el); wrap.hidden = false; } }).catch(e => console.warn('[ar] not mounted', e));
   let io = null;
   function sync() {   // the shared viewer keeps its state between panels: show this model with the panel's settings
     C.scene({ ...sc, power: st.power, mode: st.mode, swing: st.swing, xray: st.xray, explode: st.explode, shot: st.shot, cut: true, auto: false });
