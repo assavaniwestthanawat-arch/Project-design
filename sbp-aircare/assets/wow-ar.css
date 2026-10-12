@@ -1,1 +1,59 @@
-/* SBP AirCare — Rev.11 ar (styles filled by its package; shared alias tokens only: --s-*) */
+/* SBP AirCare — Rev.11 วางบนผนังบ้านคุณ (ar.js): the AR entry beside "ดูรุ่นนี้แบบ 3 มิติ" and in the room-fit, and the Thai controls over
+   the camera (WebXR dom-overlay). Shared module: alias tokens only (--s-*), so A · B · C look native in light and dark. */
+.m3d-acts{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.ar{display:contents}
+.ar-ic{display:inline-flex;flex:none}
+.ar-ic svg{display:block}
+.ar-go{gap:8px;padding-inline:14px 16px}
+.ar-go .ar-ic{color:var(--s-accent)}
+.ar-go[aria-busy=true] .ar-ic{display:none}
+.ar-hint{flex:1 1 260px;display:flex;align-items:flex-start;gap:8px;margin:0;font-size:13px;line-height:1.55;color:var(--s-ink-2)}
+.ar-hint .ar-ic{margin-top:1px;color:var(--s-ink-3)}
+.ar-hint .ar-ic svg{width:18px;height:18px}
+.ar-info{flex:1 1 100%;display:grid;gap:3px;padding:10px 12px;border-radius:var(--s-r);background:var(--s-card-2);border:1px solid var(--s-line)}
+.ar-info p{margin:0;font-size:13px;line-height:1.6;color:var(--s-ink-2)}
+.ar-info .ar-dim{font-variant-numeric:tabular-nums;color:var(--s-ink)}
+.ar-src{display:inline-block;margin-right:4px;padding:0 8px;border-radius:999px;background:var(--s-accent-soft);color:var(--s-ink);font-size:12.5px;font-weight:600;line-height:1.75}
+.ar-info .ar-fine{font-size:12.5px;color:var(--s-ink-3)}
+.ar-tip:empty,.ar-msg:empty{display:none}
+.ar-msg{flex:1 1 100%;margin:0;font-size:13px;line-height:1.55;color:var(--s-ink-2)}
+.ar-ql{display:none}
+.ar-nw{white-space:nowrap}
+@media (max-width:340px){.ar-nw{white-space:normal}}
+/* room-fit side panel (roomfit.js .rf-ar, under the chosen model): the same entry, narrower — the model card above it already
+   gives the size, so only its source stays */
+.rf-ar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0 2px}
+.rf-ar:empty{display:none}
+.ar.compact .ar-go{flex:1 1 100%;justify-content:center}
+.ar.compact .ar-info{padding:8px 10px}
+.ar.compact .ar-dim>.ar-nw{display:none}
+.ar.compact .ar-hint{flex-basis:100%}
+
+/* ---- the camera view (WebXR immersive-ar): the page is not shown, only this layer over the camera picture ---- */
+.ar-xr{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;justify-content:space-between;gap:12px;
+  padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));pointer-events:none;color:var(--s-ink);font-size:14px;line-height:1.55}
+.ar-xr:focus{outline:none}
+.ar-xr.wait{background:var(--s-card-2);background:color-mix(in srgb,var(--s-card-2) 82%,transparent);pointer-events:auto;justify-content:flex-end}
+.ar-xr.wait .ar-xr-top{display:none}
+.ar-xr-top,.ar-xr-bot{pointer-events:auto;width:100%;max-width:560px;margin:0 auto;padding:12px 14px;border-radius:var(--s-r);border:1px solid var(--s-line);
+  background:var(--s-card);background:color-mix(in srgb,var(--s-card) 92%,transparent);box-shadow:0 10px 30px rgba(0,0,0,.28);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.ar-xr p{margin:0}
+.ar-xr-t{font-size:13px;color:var(--s-ink-2)}
+.ar-xr-t b{color:var(--s-ink);font-size:15px;font-weight:700}
+.ar-xr-d{margin-top:4px!important;font-size:13.5px;font-variant-numeric:tabular-nums}
+.ar-xr-h{margin-top:6px!important;padding-top:6px;border-top:1px dashed var(--s-line);font-size:13px;color:var(--s-ink-2)}
+.ar-xr-s{font-size:15px;font-weight:600;min-height:1.55em}
+.ar-xr-b{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+.ar-xr-b .s-btn{min-height:48px;padding:0 6px;font-size:15px}
+/* not available right now: dashed and quiet (never told by fading alone — CLAUDE.md §5.4) */
+.ar-xr-b .s-btn:disabled{opacity:1;background:var(--s-card-2);border:1px dashed var(--s-line);color:var(--s-ink-3)}
+.ar-xr.wait .ar-xr-b .s-btn:not([data-a=close]){visibility:hidden}
+.ar-xr-book{width:100%;margin-top:8px;min-height:48px}
+.ar-xr-f{margin-top:8px!important;font-size:12.5px;color:var(--s-ink-3)}
+/* aiming without a surface yet: a ring at the centre of the screen, where the hit-test ray goes */
+.ar-xr-aim{display:none;position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;
+  border:2px dashed var(--s-card);box-shadow:0 0 0 1px var(--s-ink),inset 0 0 0 1px var(--s-ink);opacity:.9;pointer-events:none}
+.ar-xr[data-mode=aim][data-ok=false] .ar-xr-aim{display:block}
+@media (prefers-reduced-motion:no-preference){.ar-xr-aim{animation:ar-breathe 1.8s ease-in-out infinite}}
+@keyframes ar-breathe{50%{transform:scale(.86);opacity:.6}}
+@media (max-width:420px){.ar-xr-b{gap:6px}.ar-xr-b .s-btn{font-size:14.5px}}

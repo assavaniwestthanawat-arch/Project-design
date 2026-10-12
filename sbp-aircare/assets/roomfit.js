@@ -12,6 +12,8 @@
 // bracket, high bracket, roof, ground), drain and distance to the panel → pipe length from the route, the extra work it implies
 // (siteplan.siteWorks, priced from the Pricebook or "ประเมินหน้างาน"), furniture that scales with the room, and a layout code +
 // summary the customer sends so the team opens the same layout.
+// Rev.11 (owner 12 ต.ค. 2569 "…ประสบการณ์ที่ไม่คาดคิด…"): the chosen model also opens at its real size on the customer's own wall
+// through the phone camera (ar.js, loaded only once a model is chosen; one line saying where it works on other devices).
 import { icon } from './icons.js';
 import { DEMO, DATA, BRAND_BY_ID, TYPE_BY_ID, baht, btuFmt, recommendBtu, installOptions, addonsFor, h, $$ } from './sbp-core.js';
 import { cart } from './commerce.js';
@@ -232,10 +234,11 @@ export function mountRoomFit(root, { theme = 'light', onOpenModel, preset = 'bed
   const q = h('input', { type: 'search', class: 'rf-q', placeholder: 'ค้นหารุ่น แบรนด์ หรือ BTU', 'aria-label': 'ค้นหารุ่นแอร์' });
   const list = h('div', { class: 'rf-list', role: 'list' });
   const selBox = h('div', { class: 'rf-selm' });
+  const arBox = h('div', { class: 'rf-ar' });   // Rev.11 วางบนผนังบ้านคุณ for the chosen model (ar.js)
   const fj = BRAND_BY_ID.fujiva;
   const fjNote = fj && !fj.n ? h('p', { class: 'rf-fj' }, h('b', {}, 'FUJIVA'), ' แบรนด์ของเรา · ข้อมูลรุ่นกำลังนำเข้า ', h('button', { type: 'button', class: 'rf-link', onclick: () => { const need = fitCheck(S).need; const i = FUJIVA_PREVIEW.skus.findIndex(k => k.btu >= need); setModel(FUJIVA_PREVIEW, i < 0 ? 3 : i); } }, 'ลองตัวเครื่อง FUJIVA'), ' · ', h('button', { type: 'button', class: 'rf-link', onclick: () => askTeam('FUJIVA', 'สนใจ FUJIVA สำหรับ' + roomText()) }, 'สอบถาม FUJIVA')) : null;
   q.addEventListener('input', renderPick);
-  side.append(h('section', { class: 'rf-sec' }, h('h3', {}, h('span', {}, '1'), 'เลือกแอร์'), typeSeg, selBox, q, list, fjNote));
+  side.append(h('section', { class: 'rf-sec' }, h('h3', {}, h('span', {}, '1'), 'เลือกแอร์'), typeSeg, selBox, arBox, q, list, fjNote));
 
   // 2 · room + building (r7: storey, ceiling type, void above the ceiling, wall material)
   const sw = slider({ label: 'กว้าง', min: 2, max: 15, step: 0.1, value: S.room.w, on: v => resizeRoom('w', v) });
@@ -425,9 +428,11 @@ export function mountRoomFit(root, { theme = 'light', onOpenModel, preset = 'bed
     });
   }
   function renderSel() {
-    selBox.innerHTML = '';
+    selBox.innerHTML = ''; arBox.replaceChildren();
     if (!S.sel) { selBox.append(h('p', { class: 'rf-note' }, 'ยังไม่ได้เลือกรุ่น')); return; }
-    const { m, si } = S.sel, s = m.skus[si], d = S.unit.dims;
+    const { m, si } = S.sel, s = m.skus[si], d = S.unit.dims, sel = S.sel;
+    // the FUJIVA preview has no catalogue data yet (nothing to book): no AR for it
+    if (!m.preview) import('./ar.js').then(A => { if (S.sel !== sel) return; const el = A.arButton(m, s, { type: S.unit.type, w: d.w, h: d.h, d: d.d, src: d.src }, { compact: true }); if (el) arBox.replaceChildren(el); }).catch(e => console.warn('[ar] not mounted', e));
     selBox.append(productVisual(m, s, { size: 'thumb' }),
       h('div', {}, h('p', { class: 'rf-br' }, BRAND_BY_ID[m.brand].name, ' · ', TYPE_BY_ID[m.type].th, m.inverter ? ' · Inverter' : ''), h('b', { class: 'rf-sku' }, s.sku), h('p', { class: 'rf-meta' }, `${btuFmt(s.btu)} · ${s.price == null ? 'ราคากำลังนำเข้า' : baht(s.price) + ' ก่อน VAT'}`),
         h('p', { class: 'rf-dims' + (d.src === 'est' ? ' est' : '') }, `กว้าง ${Math.round(d.w * 100)} · สูง ${Math.round(d.h * 100)} · ลึก ${Math.round(d.d * 100)} ซม.`, h('small', {}, d.src === 'spec' ? ' ตามสเปกผู้ผลิต' : ' ขนาดโดยประมาณ · รอสเปกรุ่น'))));
