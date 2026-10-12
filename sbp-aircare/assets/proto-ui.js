@@ -135,9 +135,17 @@ export function mountCatalog(root, cfg) {
   els.sort && els.sort.addEventListener('change', () => { f.sort = els.sort.value; renderGrid(); });
   els.more && els.more.addEventListener('click', () => { page++; renderGrid(); });
   $$('[data-cat-view]', root).forEach(b => b.addEventListener('click', () => { view = b.dataset.catView; $$('[data-cat-view]', root).forEach(x => x.setAttribute('aria-pressed', x === b)); renderGrid(); }));
-  els.sheetBtn && els.sheetBtn.addEventListener('click', () => { els.sheet.classList.add('open'); document.body.classList.add('lock'); });
-  els.sheetClose.forEach(b => b.addEventListener('click', () => { els.sheet.classList.remove('open'); document.body.classList.remove('lock'); }));
-  els.sheetApply && els.sheetApply.addEventListener('click', () => { els.sheet.classList.remove('open'); document.body.classList.remove('lock'); els.grid.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' }); });
+  // filter sheet (phones/tablets): closed = inert (no hidden tab stops), open = focus inside, Esc closes, focus returns to the button
+  const sheet = on => {
+    if (!els.sheet) return;
+    const back = !on && els.sheet.contains(document.activeElement);
+    els.sheet.classList.toggle('open', on); els.sheet.inert = !on; document.body.classList.toggle('lock', on);
+    if (on) { const x = $('[data-cat-sheet-close]', els.sheet); x && x.focus(); } else if (back && els.sheetBtn) els.sheetBtn.focus({ preventScroll: true });
+  };
+  if (els.sheet) { els.sheet.inert = true; els.sheet.addEventListener('keydown', e => { if (e.key === 'Escape' && els.sheet.classList.contains('open')) { e.stopPropagation(); sheet(false); } }); }
+  els.sheetBtn && els.sheetBtn.addEventListener('click', () => sheet(true));
+  els.sheetClose.forEach(b => b.addEventListener('click', () => sheet(false)));
+  els.sheetApply && els.sheetApply.addEventListener('click', () => { sheet(false); els.grid.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' }); });
   // skeleton first, then data (demonstrates the loading state)
   if (cfg.skeleton) { els.grid.innerHTML = ''; for (let i = 0; i < per; i++) els.grid.append(cfg.skeleton()); setTimeout(update, 650); } else update();
   return {

@@ -214,7 +214,7 @@ export function mountBoard(root) {
       && (!filt.pay || (t.pay && (filt.pay === 'pending' ? t.pay.pending > 0 : owes(t)))) && hit(t));
     const statusSel = h('select', { 'aria-label': 'สถานะ', 'data-fk': 'f:status', onchange: e => { filt.status = e.target.value; board(); } }, [['active', 'ยังไม่ปิด'], ['all', 'ทั้งหมด'], ['booked', 'นัดแล้ว'], ...Object.entries(STATUSES)].map(([k, t]) => h('option', { value: k, selected: k === filt.status }, t)));
     const kindSel = h('select', { 'aria-label': 'ประเภทคำขอ', 'data-fk': 'f:kind', onchange: e => { filt.kind = e.target.value; board(); } }, [['', 'ทุกประเภท'], ...Object.entries(KINDS)].map(([k, t]) => h('option', { value: k, selected: k === filt.kind }, t)));
-    const search = h('input', { type: 'search', placeholder: 'ค้นหา เลขที่ ชื่อ เบอร์ รหัสอ้างอิงการชำระ', value: filt.q, 'aria-label': 'ค้นหาคำขอ', 'data-fk': 'f:q', oninput: e => { filt.q = e.target.value; clearTimeout(search._t); search._t = setTimeout(board, 250); } });
+    const search = h('input', { type: 'search', placeholder: 'ค้นหา เลขที่ ชื่อ เบอร์ รหัสชำระเงิน', value: filt.q, 'aria-label': 'ค้นหาคำขอ', 'data-fk': 'f:q', oninput: e => { filt.q = e.target.value; clearTimeout(search._t); search._t = setTimeout(board, 250); } });
     const P = hasPay(), cols = ['เลขที่', 'รับเมื่อ', 'คำขอ', 'ลูกค้า', 'พื้นที่', 'วันที่', 'สถานะ', ...(P ? ['ชำระเงิน'] : []), 'ทีม'];
     const payCell = p => { const st = payState(p); const x = p ? [st ? h('span', { class: 'bo-ps ps-' + st.k }, st.th) : null, p.due > 0 ? h('small', { class: 'nw' }, 'ค้าง ' + thb(p.due)) : null, st && st.k === 'asked' ? h('small', { class: 'nw' }, 'ยังไม่เรียกเก็บ ' + thb(p.unasked)) : null, p.pending > 0 ? h('small', { class: 'bo-pend' }, `รอตรวจยอด ${p.pending}`) : null].filter(Boolean) : []; return x.length ? h('div', { class: 'bo-pc-cell' }, x) : '—'; };
     // each row: the ticket number is the button (keyboard + screen readers); a click anywhere on the row opens it too
@@ -458,7 +458,7 @@ export function mountBoard(root) {
     const refOf = id => (d.requests.find(r => r.id === id) || {}).ref || id;
     // payment requests
     const reqRow = r => h('li', {}, h('div', { class: 'bo-rw' }, h('span', {}, `${K[r.kind] || r.kind} `, h('b', {}, thb(r.amount))), h('span', { class: 'bo-ps rq-' + r.status }, r.statusTh || r.status)),
-      meta([`รหัสอ้างอิง ${r.ref}`, r.paid > 0 && r.paid < r.amount ? `รับแล้ว ${thb(r.paid)}` : '', r.status === 'open' && r.expiresAt ? `ชำระได้ถึง ${thDay(r.expiresAt)}` : '', r.createdBy ? `โดย ${r.createdBy}` : '']),
+      meta([`รหัสชำระเงิน ${r.ref}`, r.paid > 0 && r.paid < r.amount ? `รับแล้ว ${thb(r.paid)}` : '', r.status === 'open' && r.expiresAt ? `ชำระได้ถึง ${thDay(r.expiresAt)}` : '', r.createdBy ? `โดย ${r.createdBy}` : '']),
       r.note ? h('small', {}, r.note) : null, r.status === 'open' && can.request && !(r.paid > 0) && !(d.payments || []).some(p => p.reqId === r.id && ['submitted', 'pending'].includes(p.status)) ? voidForm(t, r) : null);
     // payments received
     const payRow = p => {

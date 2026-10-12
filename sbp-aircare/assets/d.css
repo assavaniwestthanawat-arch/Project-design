@@ -280,8 +280,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 .empty{grid-column:1/-1;text-align:center;padding:40px;background:var(--surface);border-radius:8px;display:grid;gap:8px;justify-items:center}
 @media (max-width:1080px){.cat{grid-template-columns:minmax(0,1fr)}.facets-wrap{display:none}.filter-btn{display:inline-flex}}
 @media (max-width:640px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.card{padding:8px}.card .acts{flex-direction:column}.card .pr b{font-size:20px}}
-.sheet{position:fixed;inset:0;z-index:60;background:rgba(7,21,48,.5);opacity:0;pointer-events:none;transition:opacity .25s}
-.sheet.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;inset:0;z-index:60;background:rgba(7,21,48,.5);opacity:0;pointer-events:none;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
+.sheet.open{opacity:1;pointer-events:auto;visibility:visible;transition:opacity .25s}
 .sheet .panel{position:absolute;left:0;right:0;bottom:0;max-height:86vh;background:var(--surface);border-radius:12px 12px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.7,.1,1)}
 .sheet.open .panel{transform:none}
 .sheet .ph-h{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}

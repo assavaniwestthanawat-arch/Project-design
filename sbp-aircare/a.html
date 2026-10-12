@@ -232,8 +232,8 @@ table.rows{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed
 .filter-btn{display:none}
 @media (max-width:1080px){.cat{grid-template-columns:1fr}.facets-wrap{display:none}.filter-btn{display:inline-flex}}
 @media (max-width:640px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.card{padding:10px}.card .acts{flex-direction:column}}
-.sheet{position:fixed;inset:0;z-index:60;background:rgba(10,18,28,.45);opacity:0;pointer-events:none;transition:opacity .25s}
-.sheet.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;inset:0;z-index:60;background:rgba(10,18,28,.45);opacity:0;pointer-events:none;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
+.sheet.open{opacity:1;pointer-events:auto;visibility:visible;transition:opacity .25s}
 .sheet .panel{position:absolute;left:0;right:0;bottom:0;max-height:86vh;background:var(--tile);border-radius:22px 22px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s var(--ease)}
 .sheet.open .panel{transform:none}
 .sheet .ph-h{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}

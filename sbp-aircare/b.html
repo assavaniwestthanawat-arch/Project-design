@@ -216,8 +216,8 @@ table.rows{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed
 .filter-btn{display:none}
 @media (max-width:1000px){.cat{grid-template-columns:1fr}.facets-wrap{display:none}.filter-btn{display:inline-flex}}
 @media (max-width:560px){.grid{grid-template-columns:1fr 1fr}.card{padding:10px}}
-.sheetd{position:fixed;inset:0;z-index:60;background:rgba(8,24,43,.5);opacity:0;pointer-events:none;transition:opacity .2s}
-.sheetd.open{opacity:1;pointer-events:auto}
+.sheetd{position:fixed;inset:0;z-index:60;background:rgba(8,24,43,.5);opacity:0;pointer-events:none;visibility:hidden;transition:opacity .2s,visibility 0s .2s}
+.sheetd.open{opacity:1;pointer-events:auto;visibility:visible;transition:opacity .2s}
 .sheetd .panel{position:absolute;inset:auto 0 0 0;max-height:86vh;background:var(--sheet);border-top:2px solid var(--ink);display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s var(--ease)}
 .sheetd.open .panel{transform:none}
 .sheetd .ph-h{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--rule)}

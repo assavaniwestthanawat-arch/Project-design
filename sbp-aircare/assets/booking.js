@@ -217,7 +217,7 @@ export function mountBooking(root, { variant = 'A', hl = 'h3', onSent } = {}) {
       tSay.textContent = [k.id, k.statusTh, P && P.statusTh && k.status !== 'cancelled' ? P.statusTh + (owe ? ' ' + thb(P.due) : '') : ''].filter(Boolean).join(' · ');
     } catch (e) {
       tSay.textContent = '';
-      const err = h('p', { class: 's-note bad bk-terr', role: 'alert' }, errTh(e));
+      const err = h('p', { class: 's-note bad bk-terr', role: 'alert' }, errTh(e, 'track'));
       if (same) { tOut.querySelector('.bk-terr')?.remove(); tOut.prepend(err); } else { shown = null; tOut.replaceChildren(err); }
     } finally { busy = false; tBtn.removeAttribute('aria-busy'); tBtn.textContent = 'ตรวจสถานะ'; tOut.removeAttribute('aria-busy'); }
   }

@@ -46,7 +46,7 @@ export function paymentBox({ id, tel, payment: P, status = '', onChange = null, 
       : h('p', { class: 's-note' }, 'ติดต่อบริษัทเพื่อชำระเงิน · ', ...callUs());
     box.append(h('div', { class: 'pay-req' },
       h('p', { class: 'pay-rq' }, h('b', {}, r.kindTh), payable.length > 1 ? ` ${thb(r.remaining)}` : null),
-      facts(['รหัสอ้างอิง', h('b', {}, r.ref)], r.expiresAt ? ['ชำระได้ถึง', thDate(r.expiresAt)] : null),
+      facts(['รหัสชำระเงิน', h('b', {}, r.ref)], r.expiresAt ? ['ชำระได้ถึง', thDate(r.expiresAt)] : null),
       // reported: say so plainly and keep the pay buttons out of the way (a second transfer is the costly mistake here)
       r.submitted ? [h('p', { class: 'pay-call pay-chk' }, h('b', {}, 'แจ้งโอนแล้ว · บริษัทกำลังตรวจยอด'), ' ยอดนี้นับเป็นชำระแล้วเมื่อบริษัทยืนยันและออกเลขที่ใบเสร็จ'),
         h('details', { class: 'pay-more' }, h('summary', {}, 'ยังไม่ได้โอน หรือโอนไม่ครบ? ดูวิธีชำระอีกครั้ง'), pick, detail)]
@@ -71,7 +71,7 @@ export function paymentBox({ id, tel, payment: P, status = '', onChange = null, 
       const { pay } = await payInfo(id, tel, r.id, m);
       if (detail.dataset.tok === tok) detail.replaceChildren(...render(pay, r).filter(Boolean));
     } catch (e) {
-      if (detail.dataset.tok === tok) detail.replaceChildren(h('p', { class: 's-note bad', role: 'alert' }, errTh(e)), onChange && ['pay_closed', 'ticket_cancelled'].includes(e && e.code) ? h('button', { type: 'button', class: 's-btn ghost', onclick: onChange }, 'ตรวจสถานะอีกครั้ง') : '');
+      if (detail.dataset.tok === tok) detail.replaceChildren(h('p', { class: 's-note bad', role: 'alert' }, errTh(e, 'pay')), onChange && ['pay_closed', 'ticket_cancelled'].includes(e && e.code) ? h('button', { type: 'button', class: 's-btn ghost', onclick: onChange }, 'ตรวจสถานะอีกครั้ง') : '');
     } finally { btn.removeAttribute('aria-busy'); }
   }
   function render(p, r) {
@@ -95,7 +95,7 @@ export function paymentBox({ id, tel, payment: P, status = '', onChange = null, 
     const msg = h('span', { class: 's-tk-m', 'aria-live': 'polite' });
     const copy = h('button', { type: 'button', class: 's-hand-x', onclick: async () => { msg.textContent = (await copyText(String(b.accountNo).replace(/\D/g, ''))) ? 'คัดลอกแล้ว' : 'เลือกเลขบัญชีแล้วคัดลอกจากเครื่องของคุณ'; } }, 'คัดลอก');
     return [test, facts(amount, ['ธนาคาร', b.name], ['ชื่อบัญชี', b.accountName], ['เลขที่บัญชี', [h('b', {}, b.accountNo), ' ', copy, msg]]),
-      h('p', { class: 's-note' }, `ใส่รหัสอ้างอิง ${p.ref} ในบันทึกการโอน (ถ้าแอปมีช่องบันทึก) เพื่อให้ตรวจยอดได้เร็ว`), report];
+      h('p', { class: 's-note' }, `ใส่รหัสชำระเงิน ${p.ref} ในบันทึกการโอน (ถ้าแอปมีช่องบันทึก) เพื่อให้ตรวจยอดได้เร็ว`), report];
   }
   function reportForm(p, r) {
     const ref = h('input', { maxlength: '60', autocomplete: 'off', placeholder: 'เช่น เวลาโอน 14:05 หรือ 4 ตัวท้ายบัญชีผู้โอน' });
@@ -109,9 +109,9 @@ export function paymentBox({ id, tel, payment: P, status = '', onChange = null, 
         // the reply already carries the new public view: re-render from it (no second track call that could hit a limit)
         if (onReport && res && res.payment) { onReport(res.payment); return; }
         out.textContent = 'แจ้งแล้ว บริษัทจะตรวจยอดในบัญชีแล้วยืนยัน ตรวจสถานะได้ที่นี่ด้วยเลขที่คำขอและเบอร์โทร';
-      } catch (err) { out.textContent = errTh(err); out.classList.add('bad'); }
+      } catch (err) { out.textContent = errTh(err, 'report'); out.classList.add('bad'); }
       finally { btn.removeAttribute('aria-busy'); btn.removeAttribute('aria-disabled'); }
-    } }, h('label', { class: 's-field' }, 'ข้อมูลช่วยตรวจยอด (ไม่บังคับ)', ref), btn, out);
+    } }, h('label', { class: 's-field' }, 'ข้อมูลจากสลิป (ไม่บังคับ)', ref), btn, out);
   }
   return box;
 }
