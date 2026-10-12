@@ -1,11 +1,14 @@
 /* SBP AirCare — public legal pages (privacy.html · terms.html · refund.html) · Rev.10 (10 ต.ค. 2569)
    Standalone sheet (no shared.css, no script): tokens on :root, dark mode in both blocks (CLAUDE.md §5.1), body 16px/1.7 Anuphan,
-   Thai text ≥ 12.5px, touch targets ≥ 44px on pointer:coarse, no motion, print-friendly. Contrast (computed, WCAG 2.x):
-   light — ink 14.6–16.5 · ink-2 7.1–8.0 · ink-3 5.3–5.9 · link 6.8–7.6 · accent 5.1–5.7 · dark — ink 13.6–16.1 · ink-2 8.9–10.6 ·
-   ink-3 6.9–8.2 · link 8.6–10.2 · accent 5.9–7.0 (each on bg / surface / key / note / header). */
-:root{color-scheme:light;--lg-bg:#F3F6FA;--lg-surface:#FFFFFF;--lg-head:#FFFFFF;--lg-key:#EDF2F9;--lg-note:#FDF0EB;--lg-note-line:#F0C9BA;--lg-ink:#15202C;--lg-ink-2:#45525F;--lg-ink-3:#5A6573;--lg-link:#1B51A4;--lg-accent:#B83A1B;--lg-line:#C9D4E1;--lg-line-2:#E2E8F0;--lg-shadow:0 1px 2px rgba(21,32,44,.06),0 8px 24px rgba(21,32,44,.05);--lg-r:14px;--lg-font:'Anuphan',system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--lg-bg:#0B111B;--lg-surface:#121A25;--lg-head:#0F1620;--lg-key:#152235;--lg-note:#24170F;--lg-note-line:#5A3324;--lg-ink:#E7EDF4;--lg-ink-2:#B7C3D0;--lg-ink-3:#9EACBC;--lg-link:#9EC0F7;--lg-accent:#F47A50;--lg-line:#2B394B;--lg-line-2:#1E2A39;--lg-shadow:none}}
-:root[data-theme="dark"]{color-scheme:dark;--lg-bg:#0B111B;--lg-surface:#121A25;--lg-head:#0F1620;--lg-key:#152235;--lg-note:#24170F;--lg-note-line:#5A3324;--lg-ink:#E7EDF4;--lg-ink-2:#B7C3D0;--lg-ink-3:#9EACBC;--lg-link:#9EC0F7;--lg-accent:#F47A50;--lg-line:#2B394B;--lg-line-2:#1E2A39;--lg-shadow:none}
+   Thai text ≥ 12.5px, touch targets ≥ 44px on pointer:coarse, no motion, print-friendly.
+   Rev.10 UX: the palette and display face of design C (the production home page, c.html :root): bg / panel / panel-2 / ink /
+   cool (links) / heat (accent), headings in Kanit 500 (--display) — reaching these pages from the consent line or the footer no
+   longer looks like another site. .lg-nw keeps a Thai phrase on one line (the pages have no script for typeset.thaiPhrases).
+   Contrast (computed, WCAG 2.x; each on bg / surface / key / note / header): light — ink 15.3–17.1 · ink-2 6.2–6.9 ·
+   ink-3 5.3–6.0 · link 6.8–7.6 · accent 4.6–5.1 · dark — ink 13.9–16.8 · ink-2 7.6–9.2 · ink-3 5.6–6.8 · link 6.7–8.1 · accent 5.3–6.4 */
+:root{color-scheme:light;--lg-bg:#EEF2F8;--lg-surface:#FFFFFF;--lg-head:#FFFFFF;--lg-key:#F3F6FB;--lg-note:#FDF0EB;--lg-note-line:#F0C9BA;--lg-ink:#0F1C2E;--lg-ink-2:#4B5B70;--lg-ink-3:#586477;--lg-link:#1B51A4;--lg-accent:#C4401F;--lg-line:rgba(27,81,164,.22);--lg-line-2:rgba(27,81,164,.12);--lg-shadow:0 1px 2px rgba(15,28,46,.06),0 8px 24px rgba(15,28,46,.05);--lg-r:18px;--lg-font:'Anuphan','Noto Sans Thai',Tahoma,sans-serif;--lg-display:'Kanit','Anuphan',Tahoma,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--lg-bg:#090E17;--lg-surface:#111A28;--lg-head:#0C1320;--lg-key:#172234;--lg-note:#24170F;--lg-note-line:#5A3324;--lg-ink:#EAF0F7;--lg-ink-2:#A6B4C6;--lg-ink-3:#8B9AAE;--lg-link:#7FA8F5;--lg-accent:#F26A3D;--lg-line:rgba(140,180,240,.22);--lg-line-2:rgba(140,180,240,.14);--lg-shadow:none}}
+:root[data-theme="dark"]{color-scheme:dark;--lg-bg:#090E17;--lg-surface:#111A28;--lg-head:#0C1320;--lg-key:#172234;--lg-note:#24170F;--lg-note-line:#5A3324;--lg-ink:#EAF0F7;--lg-ink-2:#A6B4C6;--lg-ink-3:#8B9AAE;--lg-link:#7FA8F5;--lg-accent:#F26A3D;--lg-line:rgba(140,180,240,.22);--lg-line-2:rgba(140,180,240,.14);--lg-shadow:none}
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:16px}
 @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
@@ -21,7 +24,7 @@ a:focus-visible{outline:3px solid var(--lg-link);outline-offset:2px;border-radiu
 .lg-brand{display:inline-flex;align-items:center;gap:12px;min-height:44px;color:var(--lg-ink);text-decoration:none}
 .lg-brand img{display:block;width:auto;height:40px}
 .lg-brand span{display:grid;line-height:1.3}
-.lg-brand b{font-size:17px;font-weight:700}
+.lg-brand b{font-family:var(--lg-display);font-size:17px;font-weight:500}
 .lg-brand small{font-size:13px;color:var(--lg-ink-2)}
 .lg-nav ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px}
 .lg-nav a{display:inline-flex;align-items:center;min-height:40px;padding:6px 12px;border-radius:999px;color:var(--lg-ink);font-size:15px;font-weight:500;text-decoration:none}
@@ -30,7 +33,8 @@ a:focus-visible{outline:3px solid var(--lg-link);outline-offset:2px;border-radiu
 .lg-nav .lg-home{color:var(--lg-link)}
 /* page title block */
 .lg-top{max-width:72rem;margin:0 auto;padding:32px 16px 8px}
-.lg-top h1{margin:0;font-size:clamp(28px,4.2vw,40px);line-height:1.25;font-weight:700;letter-spacing:0;text-wrap:balance}
+.lg-top h1{margin:0;font-family:var(--lg-display);font-size:clamp(28px,4.2vw,40px);line-height:1.25;font-weight:500;letter-spacing:0;text-wrap:balance}
+.lg-nw{white-space:nowrap}
 .lg-ver{display:inline-flex;flex-wrap:wrap;gap:0 6px;margin:12px 0 0;padding:4px 12px;border:1px solid var(--lg-note-line);border-radius:12px;background:var(--lg-note);color:var(--lg-ink-2);font-size:14px;line-height:1.5}
 .lg-lead{max-width:46rem;margin:14px 0 0;color:var(--lg-ink-2);font-size:17px}
 /* layout: table of contents beside the document on wide screens */
@@ -52,7 +56,7 @@ a:focus-visible{outline:3px solid var(--lg-link);outline-offset:2px;border-radiu
 @media (max-width:640px){.lg-doc{padding:4px 18px 20px}}
 .lg-doc section{padding-top:24px;scroll-margin-top:16px}
 .lg-doc section+section{margin-top:24px;border-top:1px solid var(--lg-line-2)}
-.lg-doc h2{margin:0 0 10px;font-size:22px;line-height:1.4;font-weight:700}
+.lg-doc h2{margin:0 0 10px;font-family:var(--lg-display);font-size:22px;line-height:1.4;font-weight:500}
 .lg-doc h3{margin:20px 0 6px;font-size:18px;line-height:1.45;font-weight:600}
 .lg-doc p,.lg-doc ul,.lg-doc ol,.lg-doc dl{margin:0 0 12px}
 .lg-doc ul,.lg-doc ol{padding-left:1.3em}
