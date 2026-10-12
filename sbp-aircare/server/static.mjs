@@ -133,6 +133,14 @@ export function createStatic(cfg, root) {
       return false;
     },
     notFound(req, res) {
+      // Rev.10 UX: the branded 404.html (design C tokens in both themes, the company mark, ways back: home, request status,
+      // phone) with the normal page CSP, which allows its own stylesheet, fonts and logo; the plain page only if the file is missing
+      const e = load('404.html');
+      if (e) {
+        res.writeHead(404, { ...securityHeaders(req, cfg), 'Content-Type': e.type, 'Cache-Control': 'no-store', 'Content-Security-Policy': e.csp, 'X-Robots-Tag': 'noindex', 'Content-Length': e.body.length });
+        res.end(req.method === 'HEAD' ? undefined : e.body);
+        return;
+      }
       const h = { ...securityHeaders(req, cfg), 'Content-Type': TYPES['.html'], 'Cache-Control': 'no-store', 'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; base-uri 'none'; frame-ancestors 'none'" };
       res.writeHead(404, h);
       res.end(`<!doctype html><html lang="th"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ไม่พบหน้านี้ · SBP AirCare</title><body style="font:16px/1.6 system-ui,sans-serif;max-width:36rem;margin:15vh auto;padding:0 16px;color:#15202C"><h1 style="font-size:1.5rem">ไม่พบหน้านี้</h1><p>ลิงก์อาจพิมพ์ผิดหรือหน้านี้ถูกย้ายแล้ว</p><p><a href="/" style="color:#1B51A4">กลับหน้าแรก SBP AirCare</a></p></body></html>`);

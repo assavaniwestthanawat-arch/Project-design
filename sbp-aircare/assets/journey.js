@@ -1,4 +1,5 @@
 // Small shared pieces for the customer journey: travel-fee table, quote progress pill, contact form topic (Rev.09).
+// Rev.10 UX: the phone menu reuses a 'เมนู' button written in the page's bar, and drops the editions-hub link on the live site.
 import { TRAVEL, baht, h, $$ } from './sbp-core.js';
 import { cart } from './commerce.js';
 
@@ -31,7 +32,9 @@ export function mountMobileMenu() {
   const sheet = h('div', { class: 's-msheet', hidden: true, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'เมนู' });
   const panel = h('div', { class: 's-msheet-p' });
   const close = () => { sheet.classList.remove('open'); setTimeout(() => sheet.hidden = true, 220); };
-  const hub = globalThis.SBP_HUB ?? './';   // single-file builds set this (artifact URL, or '' when embedded in the tester)
+  // single-file builds set SBP_HUB (artifact URL, or '' when embedded in the tester) · Rev.10 UX: the live site (SITE_MODE=live,
+  // server/static.mjs) has no editions hub — './' would only reload the home page
+  const hub = document.documentElement.hasAttribute('data-sbp-live') ? '' : globalThis.SBP_HUB ?? './';
   // links are read when the sheet opens, so a menu rebuilt later (site.js views) is what the sheet shows
   const fill = () => {
     panel.innerHTML = ''; panel.append(h('p', { class: 's-lbl' }, 'ไปที่หัวข้อ'));
@@ -41,9 +44,10 @@ export function mountMobileMenu() {
   sheet.append(panel); document.body.append(sheet);
   sheet.addEventListener('click', e => { if (e.target === sheet) close(); });
   sheet.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-  const btn = h('button', { type: 'button', class: 'btn-ghost s-mmenu', 'aria-haspopup': 'dialog' }, 'เมนู');
+  // Rev.10 UX: a page may write the button into its .mbar markup (C) so the bar does not shift when this runs — reuse it
+  const btn = bar.querySelector('.s-mmenu') || h('button', { type: 'button', class: 'btn-ghost s-mmenu', 'aria-haspopup': 'dialog' }, 'เมนู');
   btn.addEventListener('click', () => { fill(); sheet.hidden = false; requestAnimationFrame(() => { sheet.classList.add('open'); const a = panel.querySelector('a'); a && a.focus(); }); });
-  bar.prepend(btn);
+  if (!btn.isConnected) bar.prepend(btn);
 }
 
 /* =========================================================

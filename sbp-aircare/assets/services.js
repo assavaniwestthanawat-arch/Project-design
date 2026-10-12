@@ -534,7 +534,12 @@ export function mountServices(root, cfg = {}) {
     renderFlow(steps);
     if (st.svc === 'repair') { const S = SYMPTOMS.find(s => s.id === st.sym); if (S.parts[0]) how.mark(S.parts.find(p => st.type === 'cassette' || p !== 'pump') || S.parts[0]); }
     renderSide();
-    pkgHost.innerHTML = ''; if (st.svc === 'clean') pkgHost.append(h('h3', { class: 'sv-h4' }, 'แพ็กเกจล้างของบริษัท: ได้อะไร เหมาะกับใคร ราคาเริ่มต้น'), cleanPackageGuide());
+    // Rev.10 UX: cfg.pkgLink {href, open} — the page shows the package guide elsewhere in the same view (C: the price centre),
+    // so this spot links there instead of rendering the same guide and price matrix a second time
+    pkgHost.innerHTML = ''; if (st.svc === 'clean') pkgHost.append(...(cfg.pkgLink
+      ? [h('div', { class: 'sv-pkg-go' }, h('p', {}, h('b', {}, 'แพ็กเกจล้าง P1 · P2 · P3'), ' ได้อะไร เหมาะกับใคร และราคาต่อเครื่องตามประเภทและขนาด อยู่ในค่าบริการด้านล่าง'),
+        h('a', { class: 's-btn', href: cfg.pkgLink.href, onclick: () => cfg.pkgLink.open && cfg.pkgLink.open() }, 'เทียบแพ็กเกจและราคา'))]
+      : [h('h3', { class: 'sv-h4' }, 'แพ็กเกจล้างของบริษัท: ได้อะไร เหมาะกับใคร ราคาเริ่มต้น'), cleanPackageGuide()]));
     if (st.svc === 'install') {
       const mt = h('details', { class: 'sv-mat' }, h('summary', {}, 'เทียบวัสดุ มาตรฐาน / พรีเมียม ของขนาดนี้'), materialTable(st.type, st.btu, { compact: true }));
       side.append(mt);

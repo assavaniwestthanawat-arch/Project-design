@@ -1,0 +1,71 @@
+<!doctype html>
+<!--
+  SBP AirCare — "page not found" (served by server/static.mjs notFound() with status 404 for any unknown path) · Rev.10 UX
+  Design C tokens in both themes (dark first, light from the system setting), the company mark, and three ways on:
+  home, request status (#booking-track in the contact page) and the company phone (COMPANY in assets/sbp-core.js).
+  Every URL is absolute (/assets/…): this page answers at any depth (/a/b/c). No script element — the page CSP needs none.
+-->
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#EEF2F8">
+<meta name="theme-color" content="#090E17">
+<meta name="robots" content="noindex">
+<title>ไม่พบหน้านี้ · SBP AirCare</title>
+<link rel="stylesheet" href="/assets/fonts.css">
+<style>
+:root{
+  --bg:#090E17; --panel:#111A28; --panel-2:#172234; --line:rgba(140,180,240,.14); --ink:#EAF0F7; --ink-2:#A6B4C6; --ink-3:#8B9AAE;
+  --cool:#7FA8F5; --heat-d:#F15A2B; --heat-h:#F26A3D; --on-heat:#0F1C2B;
+  --display:'Kanit','Anuphan',Tahoma,sans-serif; --sans:'Anuphan','Noto Sans Thai',Tahoma,sans-serif; --mono:'IBM Plex Mono','Anuphan',ui-monospace,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root{
+  --bg:#EEF2F8; --panel:#FFFFFF; --panel-2:#F3F6FB; --line:rgba(27,81,164,.12); --ink:#0F1C2E; --ink-2:#4B5B70; --ink-3:#586477;
+  --cool:#1B51A4; --heat-d:#C4401F; --heat-h:#A9361A; --on-heat:#FFFFFF; color-scheme:light;}}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;min-height:100vh;min-height:100dvh;display:grid;grid-template-rows:auto 1fr auto;background:var(--bg);color:var(--ink);font:400 16px/1.7 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--cool);outline-offset:2px}
+.wrap{width:100%;max-width:720px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px))}
+header{border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;min-height:60px}
+.logo{display:inline-flex;align-items:center;gap:8px;min-height:44px;font:500 19px var(--display);text-decoration:none}
+.logo img{height:30px;width:auto}
+main{position:relative;isolation:isolate;display:grid;align-content:center;padding-block:clamp(40px,10vh,96px)}
+/* the showroom entrance: a cone of cool light from the top edge */
+main::before{content:"";position:absolute;z-index:-1;inset:0 0 auto;height:70%;pointer-events:none;background:radial-gradient(50% 80% at 30% 0%,color-mix(in oklab,var(--cool) 16%,transparent),transparent 72%)}
+.code{margin:0;font:500 15px var(--mono);letter-spacing:.06em;color:var(--cool)}
+h1{margin:6px 0 0;font:500 clamp(36px,7vw,56px)/1.15 var(--display);letter-spacing:-.01em;text-wrap:balance}
+.lead{margin:12px 0 0;max-width:34em;color:var(--ink-2);font-size:17px}
+.ways{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:10px}
+.ways a{display:grid;align-content:center;gap:2px;min-height:64px;padding:12px 18px;border:1px solid var(--line);border-radius:14px;background:var(--panel);text-decoration:none;transition:border-color .2s,background .2s}
+.ways a:hover{border-color:color-mix(in oklab,var(--cool) 55%,var(--line))}
+.ways b{font-weight:600;font-size:16.5px}
+.ways small{font-size:13.5px;color:var(--ink-2)}
+.ways a.go{background:var(--heat-d);border-color:var(--heat-d);color:var(--on-heat)}
+.ways a.go small{color:inherit}
+.ways a.go:hover{background:var(--heat-h);border-color:var(--heat-h)}
+.tel{font-family:var(--mono);font-variant-numeric:tabular-nums}
+footer{border-top:1px solid var(--line);padding-block:18px calc(18px + env(safe-area-inset-bottom,0px));font-size:13.5px;color:var(--ink-2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><a class="logo" href="/"><img src="/assets/logos/sbp.png" alt="" width="41" height="30">SBP AirCare</a></div></header>
+<main><div class="wrap">
+  <p class="code">404</p>
+  <h1>ไม่พบหน้านี้</h1>
+  <p class="lead">ลิงก์อาจพิมพ์ผิด หรือหน้านี้ถูกย้ายแล้ว เลือกทางไปต่อได้จากด้านล่าง</p>
+  <ul class="ways" aria-label="ไปต่อที่">
+    <li><a class="go" href="/"><b>กลับหน้าแรก</b><small>ราคา จองคิว และบริการทั้งหมด</small></a></li>
+    <li><a href="/#booking-track"><b>ตรวจสถานะคำขอ</b><small>ใช้เลขที่คำขอและเบอร์โทรที่ให้ไว้ตอนส่ง</small></a></li>
+    <li><a href="tel:024593291"><b>โทร <span class="tel">02-459-3291-9</span></b><small>คุยกับทีมของเรา</small></a></li>
+  </ul>
+</div></main>
+<footer><div class="wrap">SBP AirCare · บริษัท สหบูรพากรุ๊ป จำกัด</div></footer>
+</body>
+</html>

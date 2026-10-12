@@ -10,6 +10,7 @@ import { askTeam, handoffBox, copyText, guardForm, submitTicket, consentBox, hon
 import { quoteFromCart, sourceTag } from './ticket.js';
 import { productVisual } from './product-media.js';
 import { modelViewer, hasGL } from './model3d.js';
+import { trapFocus } from './feedback.js';
 
 const exInc = ex => (ex == null ? null : { ex, inc: ex });
 const priceNode = (ex, unit) => ex == null
@@ -119,14 +120,28 @@ export function mountCart({ buttons = '[data-cart-btn]' } = {}) {
   const dr = h('div', { class: 's-cart', hidden: true, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'ใบเสนอราคาเบื้องต้น' });
   const panel = h('div', { class: 's-cart-panel' });
   dr.append(panel); document.body.append(dr);
-  const close = () => { dr.classList.remove('open'); document.body.classList.remove('lock'); setTimeout(() => dr.hidden = true, 250); };
-  const open = () => { render(); dr.hidden = false; requestAnimationFrame(() => dr.classList.add('open')); document.body.classList.add('lock'); };
+  // Rev.10 UX: a real modal — focus moves into the panel on open, Tab stays inside (feedback.trapFocus), and focus goes back
+  // to the button that opened it on close; the "added" toast is dismissed so it never covers the first line's stepper
+  let prev = null;
+  const close = () => { if (dr.hidden) return; dr.classList.remove('open'); document.body.classList.remove('lock'); setTimeout(() => { if (!dr.classList.contains('open')) dr.hidden = true; }, 250); const p = prev; prev = null; if (p && p.isConnected && p !== document.body) p.focus({ preventScroll: true }); };
+  const open = () => { if (dr.hidden || !dr.classList.contains('open')) prev = document.activeElement; $('#toast')?.classList.remove('on'); render(); dr.hidden = false; requestAnimationFrame(() => { dr.classList.add('open'); if (!dr.contains(document.activeElement)) $('.s-x', panel)?.focus(); }); document.body.classList.add('lock'); };
+  trapFocus(dr);
   dr.addEventListener('click', e => { if (e.target === dr) close(); });
   addEventListener('keydown', e => { if (e.key === 'Escape' && !dr.hidden) close(); });
   let sent = null, docView = false;
   const quoteText = () => { const t = cart.totals(); return ['ใบเสนอราคาเบื้องต้น SBP AirCare', ...cart.items.map(i => `• ${i.name}${i.detail ? ' (' + i.detail + ')' : ''} × ${i.qty}${i.unitEx == null ? ' — ประเมินหน้างาน' : ' — ' + baht((i.unitEx * i.qty))}`), `พื้นที่: ${cart.zoneInput || '-'}`, `ยอดก่อน VAT ${baht(t.totalEx)}`, t.tax === 'invoice' ? `ต้องการใบกำกับภาษี · VAT 7% ${baht(t.vat)} · รวมทั้งสิ้น ${baht(t.inc)}` : `บุคคลทั่วไป ไม่ต้องการใบกำกับภาษี · รวมทั้งสิ้น ${baht(t.inc)}`].join('\n'); };
   const copySum = async () => { toast((await copyText(quoteText())) ? 'คัดลอกสรุปแล้ว วางในอีเมลหรือแชตได้เลย' : 'คัดลอกไม่ได้ในหน้านี้'); };
+  // re-rendering rebuilds the panel: keep keyboard focus on the same control (stepper / remove of the same line — the next
+  // line's remove after a delete — or the close button) instead of dropping it to <body>
   function render() {
+    const a = document.activeElement, fk = a && panel.contains(a) ? a.dataset.fk || '' : null;
+    const rmAt = fk && fk.endsWith(':rm') ? $$('[data-fk$=":rm"]', panel).indexOf(a) : -1;
+    draw();
+    if (fk === null || panel.contains(document.activeElement)) return;
+    const rms = $$('[data-fk$=":rm"]', panel);
+    (panel.querySelector(`[data-fk="${CSS.escape(fk)}"]`) || (rmAt >= 0 && rms[Math.min(rmAt, rms.length - 1)]) || $('.s-x', panel))?.focus();
+  }
+  function draw() {
     const t = cart.totals();
     panel.innerHTML = '';
     if (!cart.items.length || sent) docView = false;
@@ -152,9 +167,12 @@ export function mountCart({ buttons = '[data-cart-btn]' } = {}) {
         h('div', { class: 's-l-t' }, h('b', {}, i.name), i.detail ? h('small', {}, i.detail) : null),
         i.unitEx == null ? h('span', { class: 's-price survey' }, 'ประเมินหน้างาน')
           : h('div', { class: 's-l-q' },
-            h('div', { class: 's-stp' }, h('button', { type: 'button', 'aria-label': 'ลด', onclick: () => { cart.setQty(i.id, i.qty - 1); render(); } }, '−'), h('span', {}, String(i.qty)), h('button', { type: 'button', 'aria-label': 'เพิ่ม', onclick: () => { cart.setQty(i.id, i.qty + 1); render(); } }, '+')),
+            h('div', { class: 's-stp', role: 'group', 'aria-label': 'จำนวน ' + i.name },
+              h('button', { type: 'button', 'data-fk': i.id + ':dec', 'aria-label': `ลดจำนวน ${i.name} (ตอนนี้ ${i.qty})`, onclick: () => { cart.setQty(i.id, i.qty - 1); render(); } }, '−'),
+              h('span', {}, String(i.qty)),
+              h('button', { type: 'button', 'data-fk': i.id + ':inc', 'aria-label': `เพิ่มจำนวน ${i.name} (ตอนนี้ ${i.qty})`, onclick: () => { cart.setQty(i.id, i.qty + 1); render(); } }, '+')),
             h('span', { class: 's-l-p' }, baht((i.unitEx * i.qty)))),
-        h('button', { type: 'button', class: 's-rm', 'aria-label': 'ลบ ' + i.name, onclick: () => { cart.remove(i.id); render(); } }, 'ลบ')));
+        h('button', { type: 'button', class: 's-rm', 'data-fk': i.id + ':rm', 'aria-label': 'ลบ ' + i.name, onclick: () => { cart.remove(i.id); render(); } }, 'ลบ')));
     });
     body.append(list);
     // zone
@@ -169,19 +187,21 @@ export function mountCart({ buttons = '[data-cart-btn]' } = {}) {
       r.addEventListener('change', () => { cart.setTax(m.id); render(); }); return h('label', { class: 's-tax-o', for: id }, r, h('span', {}, h('b', {}, m.th), h('small', {}, m.sub))); }));
     body.append(taxSeg);
     let sumBox = summary(); body.append(sumBox);
+    // a <dl> holds only dt/dd pairs: the notes under the totals sit beside it in the same box (.s-sum-w)
     function summary() {
       const t = cart.totals();
-      return h('dl', { class: 's-sum' },
+      const notes = [
+        t.travelShort ? h('p', { class: 's-note bad' }, `ระยะนี้รับงานขั้นต่ำ ${cart.zone.minUnits} เครื่องต่อเที่ยว (ตอนนี้ ${t.units}) ส่งข้อมูลได้ ทีมจะรวมคิวกับงานใกล้เคียงหรือเสนอทางเลือก`) : null,
+        t.tax === 'invoice' ? null : h('p', { class: 's-note' }, 'บุคคลทั่วไป ชำระตามราคาที่แสดง ไม่บวก VAT · ต้องการใบกำกับภาษี เลือก "นิติบุคคล" ด้านบน'),
+        t.surveys ? h('p', { class: 's-note' }, `+ ${t.surveys} รายการประเมินหน้างาน ทีมแจ้งราคาให้ยืนยันก่อนเริ่มงาน`) : null,
+        cart.zone && cart.zone.tier === 'out' ? h('p', { class: 's-note bad' }, 'พื้นที่นี้เกินระยะรับงานรายเครื่อง ส่งข้อมูลได้ ทีมจะประเมินเป็นงานโครงการ') : null];
+      return h('div', { class: 's-sum-w' }, h('dl', { class: 's-sum' },
         h('dt', {}, 'รวมรายการ (ก่อน VAT)'), h('dd', {}, baht(t.ex)),
         t.travel ? [h('dt', {}, 'ค่าเดินทาง 1 เที่ยว'), h('dd', {}, baht(t.travel))] : null,
         t.travelWaived ? [h('dt', {}, `ค่าเดินทาง (ยกเว้น ${t.units} เครื่อง)`), h('dd', {}, baht(0))] : null,
-        t.travelShort ? h('p', { class: 's-note bad', style: 'grid-column:1/-1' }, `ระยะนี้รับงานขั้นต่ำ ${cart.zone.minUnits} เครื่องต่อเที่ยว (ตอนนี้ ${t.units}) ส่งข้อมูลได้ ทีมจะรวมคิวกับงานใกล้เคียงหรือเสนอทางเลือก`) : null,
         t.minGap ? [h('dt', {}, `ปรับขั้นต่ำงานล้าง ${baht(DATA.minBill)}`), h('dd', {}, baht(t.minGap))] : null,
         t.tax === 'invoice' ? [h('dt', {}, 'ยอดก่อน VAT'), h('dd', {}, baht(t.totalEx)), h('dt', {}, 'VAT 7% (ใบกำกับภาษี)'), h('dd', {}, baht(t.vat))] : null,
-        h('dt', { class: 'tot' }, t.tax === 'invoice' ? 'รวมทั้งสิ้น (รวม VAT)' : 'รวมทั้งสิ้น'), h('dd', { class: 'tot' }, baht(t.inc)),
-        t.tax === 'invoice' ? null : h('p', { class: 's-note', style: 'grid-column:1/-1' }, 'บุคคลทั่วไป ชำระตามราคาที่แสดง ไม่บวก VAT · ต้องการใบกำกับภาษี เลือก "นิติบุคคล" ด้านบน'),
-        t.surveys ? h('p', { class: 's-note', style: 'grid-column:1/-1' }, `+ ${t.surveys} รายการประเมินหน้างาน ทีมแจ้งราคาให้ยืนยันก่อนเริ่มงาน`) : null,
-        cart.zone && cart.zone.tier === 'out' ? h('p', { class: 's-note bad', style: 'grid-column:1/-1' }, 'พื้นที่นี้เกินระยะรับงานรายเครื่อง ส่งข้อมูลได้ ทีมจะประเมินเป็นงานโครงการ') : null);
+        h('dt', { class: 'tot' }, t.tax === 'invoice' ? 'รวมทั้งสิ้น (รวม VAT)' : 'รวมทั้งสิ้น'), h('dd', { class: 'tot' }, baht(t.inc))), ...notes);
     }
     body.append(h('p', { class: 's-note' }, 'ราคาตาม Pricebook 2569 ของบริษัท ปัดเป็นหลักร้อย ก่อน VAT ยืนยันอีกครั้งในใบเสนอราคาอย่างเป็นทางการ รายการเครื่องต้องยืนยันสต็อกก่อนสั่ง'));
     body.append(h('button', { type: 'button', class: 's-btn s-doc-open', onclick: () => { docView = true; render(); } }, 'ดูเป็นใบประเมินราคา'));
@@ -197,13 +217,16 @@ export function mountCart({ buttons = '[data-cart-btn]' } = {}) {
     f.addEventListener('submit', async e => {
       e.preventDefault(); const v = id => (f.querySelector('#' + id)?.value || '').trim(), ref = 'Q' + Date.now().toString().slice(-7);
       const text = [`ขอใบเสนอราคาอย่างเป็นทางการ · เลขอ้างอิง ${ref}`, `ชื่อ / บริษัท: ${v('s-q-name')}`, `โทร: ${v('s-q-tel')}`, v('s-q-date') ? `วันที่สะดวก: ${v('s-q-date')}` : null, v('s-q-tax') ? `ใบกำกับภาษีในนาม: ${v('s-q-tax')}` : null, '', quoteText()].filter(x => x != null).join('\n');
-      const out = h('div');
+      const out = h('div'), sb = f.querySelector('button[type=submit]'); sb && sb.setAttribute('aria-busy', 'true');   // spinner while sending (shared.css)
       const ticket = { kind: 'quote', service: guessService(), prefDate: v('s-q-date'), consent: true, website: f.querySelector('[name=website]').value, source: sourceTag(),
         customer: { name: v('s-q-name'), tel: v('s-q-tel'), taxInvoice: cart.tax === 'invoice', taxName: v('s-q-tax') }, site: { area: cart.zoneInput, zoneTier: cart.zone ? cart.zone.tier : '', travelFee: cart.totals().travel }, quote: quoteFromCart(cart) };
       const r = await submitTicket(ticket, { out, form: f, label: 'คำขอใบเสนอราคา', fallback: { ref, title: 'ใบเสนอราคาเบื้องต้นของคุณ', text, subject: 'ขอใบเสนอราคา SBP AirCare' } });
+      sb && sb.removeAttribute('aria-busy');
       if (!r.ok && ['bad_tel', 'bad_name', 'no_consent', 'bad_date', 'bad_email', 'rate_limited'].includes(r.code)) { f.querySelector('.s-tkerr')?.remove(); out.classList.add('s-tkerr'); f.append(out); return; }   // fixable: stay on the form
       sent = { ref, node: out };
       render();
+      // the result card takes focus (the form it replaced had it) so the dialog never leaves focus on <body>
+      const card = out.firstElementChild || out; card.tabIndex = -1; card.focus();
     });
     body.append(f);
     // Rev.09 r10: turn this basket into a booking (the booking form attaches the basket lines)
@@ -411,7 +434,7 @@ export function cleanPackageGuide(where = 'บริการ', hl = 'h4') {   /
     const seg = h('div', { class: 's-seg', role: 'group', 'aria-label': 'วิธีล้าง' }, [['C1', 'ล้างปกติ C1'], ['C2', 'ล้างใหญ่ C2']].map(([k, t]) => h('button', { type: 'button', 'aria-pressed': k === method, onclick: () => { method = k; render(); } }, t)));
     const tb = h('tbody');
     types.forEach(([t, th]) => { const bands = SIZE_BANDS.filter(b => DATA.clean.some(r => r.type === t && r.range === (t === 'wall' ? b.wall : b.other)));
-      bands.forEach((b, i) => { const rg = t === 'wall' ? b.wall : b.other; tb.append(h('tr', {}, i === 0 ? h('th', { rowspan: bands.length, scope: 'rowgroup' }, th) : null, h('td', {}, rg + ' BTU'), ...PKG_INFO.map(p => { const r = DATA.clean.find(x => x.pkg === p.id && x.level === method && x.type === t && x.range === rg); return h('td', { class: 'pr' }, r && r.rate.s != null ? baht(r.rate.s) : 'ประเมิน'); }))); }); });
+      bands.forEach((b, i) => { const rg = t === 'wall' ? b.wall : b.other; tb.append(h('tr', {}, i === 0 ? h('th', { rowspan: bands.length, scope: 'rowgroup' }, th) : null, h('td', {}, rg + ' BTU'), ...PKG_INFO.map(p => { const r = DATA.clean.find(x => x.pkg === p.id && x.level === method && x.type === t && x.range === rg); return h('td', { class: 'pr', 'data-l': p.id }, r && r.rate.s != null ? baht(r.rate.s) : 'ประเมิน'); }))); }); });   // data-l: the package name above each price on phones (shared.css)
     root.append(cards,
       h('div', { class: 'pk-key' }, h('b', {}, 'ระดับบริการแพงขึ้น ไม่เท่ากับล้างลึกขึ้น: '), 'ความลึกของการล้างอยู่ที่วิธีล้าง C1 / C2 ส่วน P1 / P2 / P3 คือหลักฐาน การตรวจวัด การรับประกัน และการดูแลหลังงาน เลือกได้อิสระ เช่น P3 + ล้างปกติ'),
       methods,

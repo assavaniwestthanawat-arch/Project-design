@@ -7,6 +7,7 @@ import {
 } from './sbp-core.js';
 import { createACViewer, createRoomSim, PARTS } from './ac3d.js';
 import { whenCalm } from './gl-pool.js';
+import { trapFocus } from './feedback.js';
 
 export { DEMO, TYPES, TYPE_BY_ID, BRANDS, BRAND_BY_ID, baht, btuFmt, h, $, $$, countUp, reduceMotion, PARTS, stockTh, incVat };
 
@@ -70,11 +71,17 @@ export function mountCatalog(root, cfg) {
     if (f.inverter) add(f.inverter === 'inv' ? 'Inverter' : 'Fixed speed', () => { f.inverter = ''; });
     if (els.chips.children.length > 1) els.chips.append(h('button', { type: 'button', class: 'chip clear', onclick: () => { Object.assign(f, emptyFilter()); els.search.value = ''; page = 1; update(); } }, 'ล้างทั้งหมด'));
   }
-  let lastQ;
+  let lastQ, animated = false;
+  // Rev.10 UX: a re-render (BTU chip, เทียบ, sort) rebuilds the cards — keep keyboard focus on the same control of the same card
+  const FOC = 'a[href],button,input,select,textarea,[tabindex]';
   function renderGrid() {
     const q = queryCatalog(f); lastQ = q;
     els.count && (els.count.innerHTML = `<b>${q.list.length.toLocaleString()}</b> รุ่น · <b>${q.skuTotal.toLocaleString()}</b> SKU`);
     const shown = q.list.slice(0, page * per);
+    const a = document.activeElement, ci = a && a !== els.grid && els.grid.contains(a) ? [...els.grid.children].findIndex(c => c.contains(a)) : -1;
+    const fi = ci >= 0 ? $$(FOC, els.grid.children[ci]).indexOf(a) : -1;
+    // cards rise in once, on the first render only (not after every filter, chip or compare change — motion is kept for 3D)
+    const anim = !animated && !reduceMotion(); if (shown.length) animated = true;
     els.grid.innerHTML = '';
     els.grid.dataset.view = view;
     if (!shown.length) {
@@ -89,9 +96,12 @@ export function mountCatalog(root, cfg) {
         compare: () => toggleCompare(m, skus[si]),
         inCompare: compare.has(m.id),
       });
-      if (!reduceMotion() && idx >= (page - 1) * per) card.style.animationDelay = `${(idx % per) * 28}ms`;
+      if (anim) card.style.animationDelay = `${(idx % per) * 28}ms`; else card.style.animation = 'none';
       els.grid.append(card);
     });
+    // radio chips inside a card (BTU sizes): one tab stop per group (the checked one); arrows move the choice (keydown below)
+    $$('[role=radiogroup]', els.grid).forEach(g => { const r = $$('[role=radio]', g); r.forEach(x => { x.tabIndex = x.getAttribute('aria-checked') === 'true' || !r.some(y => y.getAttribute('aria-checked') === 'true') && x === r[0] ? 0 : -1; }); });
+    if (ci >= 0) { const c = els.grid.children[Math.min(ci, els.grid.children.length - 1)]; const t = c && ($$(FOC, c)[fi] || c.querySelector(FOC)); t && t.focus({ preventScroll: true }); }
     if (els.more) {
       els.more.hidden = shown.length >= q.list.length;
       els.more.textContent = `โหลดเพิ่ม (${Math.min(per, q.list.length - shown.length)} จาก ${q.list.length - shown.length} รุ่นที่เหลือ)`;
@@ -113,6 +123,13 @@ export function mountCatalog(root, cfg) {
   // the address keeps #catalog only after the visitor filters (not on the first render, not while the catalog is hidden in another view — r5)
   let first = true;
   function update() { renderFacets(); renderChips(); renderGrid(); if (first) { first = false; return; } if (!els.grid.offsetParent) return; try { history.replaceState(null, '', location.pathname + location.search + '#catalog'); } catch (e) {} }
+  els.grid.addEventListener('keydown', e => {
+    const r = e.target.closest && e.target.closest('[role=radio]'), g = r && r.closest('[role=radiogroup]');
+    const d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!g || !d) return;
+    const all = $$('[role=radio]', g), n = all[(all.indexOf(r) + d + all.length) % all.length];
+    e.preventDefault(); n.focus(); n.click();
+  });
   let t;
   els.search && els.search.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { f.q = els.search.value.trim(); page = 1; update(); }, 160); });
   els.sort && els.sort.addEventListener('change', () => { f.sort = els.sort.value; renderGrid(); });
@@ -427,10 +444,16 @@ export function reveal(sel = '[data-reveal]') {
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
   $$(sel).forEach(el => { if (el.getBoundingClientRect().top < innerHeight) return; el.classList.add('rv'); io.observe(el); });
 }
-export function openDrawer(drawer) { drawer.hidden = false; requestAnimationFrame(() => drawer.classList.add('open')); document.body.classList.add('lock'); const c = $('[data-close]', drawer); c && c.focus(); }
-export function closeDrawer(drawer) { drawer.classList.remove('open'); document.body.classList.remove('lock'); setTimeout(() => drawer.hidden = true, 260); }
+// Rev.10 UX: product / compare drawer is a real modal — Tab stays inside (feedback.trapFocus, wired once), focus goes back to
+// the control that opened it ('รายละเอียด', 'เทียบ') on close
+export function openDrawer(drawer) { if (drawer.hidden || !drawer.classList.contains('open')) drawer._prev = document.activeElement; drawer.hidden = false; requestAnimationFrame(() => drawer.classList.add('open')); document.body.classList.add('lock'); const c = $('[data-close]', drawer); c && c.focus(); }
+export function closeDrawer(drawer) {
+  drawer.classList.remove('open'); document.body.classList.remove('lock'); setTimeout(() => { if (!drawer.classList.contains('open')) drawer.hidden = true; }, 260);
+  const p = drawer._prev; drawer._prev = null; if (p && p.isConnected && p !== document.body) p.focus({ preventScroll: true });
+}
 export function wireDrawers() {
   $$('[data-drawer]').forEach(d => {
+    trapFocus(d);
     $$('[data-close]', d).forEach(b => b.addEventListener('click', () => closeDrawer(d)));
     d.addEventListener('click', e => { if (e.target === d) closeDrawer(d); });
   });

@@ -38,6 +38,10 @@ await p.locator('#quickRoot .jc-add').click();
 await p.waitForFunction(() => { const d = document.querySelector('.s-cart'); return d && !d.hidden; }, null, { timeout: 10000 }).catch(() => {});
 const n1 = await p.evaluate(() => +(document.querySelector('[data-cart-btn]')?.dataset.n || 0));
 ok('ใส่ใบเสนอราคา → ตะกร้าเพิ่มและเปิดเอง', n1 > n0 && await p.evaluate(() => !document.querySelector('.s-cart').hidden), `${n0} → ${n1}`);
+// Rev.10 UX: the basket is a real dialog (focus inside) · C phones: once it has lines, the bottom bar's quote button is the primary
+await p.waitForTimeout(400);
+ok('ตะกร้าเป็น dialog: โฟกัสย้ายเข้าในกล่อง', await p.evaluate(() => !!document.activeElement?.closest('.s-cart')), await p.evaluate(() => document.activeElement?.className || document.activeElement?.tagName));
+if (mob && pg === 'c') ok('แถบล่าง: มีรายการแล้ว ปุ่มใบเสนอราคาเป็นปุ่มหลัก', await p.evaluate(() => document.querySelector('.mbar [data-cart-btn]')?.classList.contains('btn-primary') && !document.querySelector('.mbar [data-mbar-book]')?.classList.contains('btn-primary')));
 
 // 4. basket → estimate document
 await p.locator('#s-cart-zone').fill('จอมทอง'); await p.waitForTimeout(500);
@@ -50,6 +54,7 @@ ok('ใบประเมินราคา: ไม่เลื่อนแน�
 await p.locator('.s-doc-act button', { hasText: 'ขอใบเสนอราคาอย่างเป็นทางการ' }).click(); await p.waitForTimeout(300);
 ok('ใบประเมินราคา → กลับไปฟอร์มขอใบเสนอราคา (โฟกัสช่องชื่อ)', await p.evaluate(() => document.activeElement?.id === 's-q-name'));
 await p.keyboard.press('Escape'); await p.waitForTimeout(400);
+ok('ปิดตะกร้า (Esc) → โฟกัสออกจากกล่อง ไม่ตกไปที่ body', await p.evaluate(() => !document.activeElement?.closest('.s-cart') && document.activeElement !== document.body), await p.evaluate(() => document.activeElement?.className || document.activeElement?.tagName));
 
 // 5. quick quote → booking (contact view, booking section shown with the job preset)
 await p.evaluate(() => { location.hash = 'home'; }); await p.waitForTimeout(800);
