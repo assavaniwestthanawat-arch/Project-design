@@ -21,12 +21,16 @@ The **Apps Script contract is kept as-is** (`backoffice/apps-script/Code.gs`): `
 `ticket.payment` (public view) is present only once the office has asked for money:
 
 ```
-{status:'unpaid'|'partial'|'paid'|'overpaid'|'refunded'|'part_refunded'|'none', statusTh,
+{status:'unpaid'|'partial'|'checking'|'expired'|'paid'|'overpaid'|'refunded'|'part_refunded'|'none', statusTh,
+                                           // checking = every request still owed has a reported transfer waiting (รอตรวจยอด; still unpaid)
+                                           // expired = a request lapsed with money still owed (มีรายการชำระเงินหมดอายุ)
+                                           // paid reads ชำระครบแล้ว only once a full / balance request is paid, else ชำระตามที่เรียกเก็บแล้ว
  due, paid, refunded,                      // baht
  pending:bool,                             // a reported transfer is waiting for verification
- methods:['gateway'?,'promptpay'?,'transfer'?,'onsite'?],
+ methods:['gateway'?,'promptpay'?,'transfer'?,'onsite'?],   // none on a cancelled ticket · no onsite once the job is done
  payee,
- requests:[{id, kind, kindTh, amount, remaining, status:'open'|'paid'|'expired', statusTh, ref, expiresAt, submitted:bool}],
+ requests:[{id, kind, kindTh, amount, remaining, status:'open'|'paid'|'expired', statusTh, ref, expiresAt, submitted:bool,
+            rejected:bool}],               // rejected: the customer's last report on this request was not found (no staff name / note)
  receipts:[{no, amount, at, method}]}
 ```
 
@@ -60,7 +64,7 @@ Every staff action takes `{token, staff?}`. `token` is either the session token 
 | `bad_amount` | |
 | `amount_required` | |
 | `forbidden` | the role is not allowed to do this |
-| `ticket_cancelled` | |
+| `ticket_cancelled` | the ticket is cancelled: no new payment request, and the customer's `pay` / `paid` are refused |
 | `has_payments` | |
 | `bad_decision` | |
 | `reason_required` | |

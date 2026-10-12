@@ -67,7 +67,7 @@ const FAKE = () => {
   };
   const db = Object.freeze({ doc: docRef, collection: colRef });
   const user = Object.freeze({ id: async () => 'u_tester', me: async () => ({ id: 'u_tester', name: '', avatarUrl: 'data:,', color: '#1B51A4', email: null, isOwner: true, canEdit: true }),
-    isOwner: async () => true, canEdit: async () => true, can: async () => true, profiles: async ids => Object.fromEntries([].concat(ids).map(i => [i, { id: i, name: '', avatarUrl: 'data:,', color: '#1B51A4', email: null, isMe: i === 'u_tester', guest: false }])),
+    isOwner: async () => true, canEdit: async () => true, can: async () => !window.__sbpReadOnly, profiles: async ids => Object.fromEntries([].concat(ids).map(i => [i, { id: i, name: '', avatarUrl: 'data:,', color: '#1B51A4', email: null, isMe: i === 'u_tester', guest: false }])),
     name: async () => '', avatarUrl: async () => null, search: async () => [], email: async () => null });
   window.claude = Object.freeze({ use: async name => (name === 'db' ? db : name === 'user' ? user : null) });
 };
@@ -141,9 +141,12 @@ try {
   await p.click('.pay .pay-m button:has-text("พร้อมเพย์")').catch(() => {});
   await p.waitForSelector('.pay-qr', { timeout: 20000 }).catch(() => {});
   ok(await p.$eval('.pay-qr', e => e.complete && e.naturalWidth > 100).catch(() => false), 'PromptPay QR rendered');
+  ok(/ห้ามโอนเงินจริง/.test(await text(p, '.pay-test')) && await p.$('.pay-qrw.test'), 'test QR is marked "ทดสอบ — ห้ามโอนเงินจริง"');
   await p.click('.pay-rep button[type=submit]').catch(() => {});
-  await p.waitForFunction(() => /แจ้งแล้ว/.test(document.querySelector('.pay-rep')?.textContent || ''), null, { timeout: 15000 }).catch(() => {});
-  ok(/แจ้งแล้ว/.test(await text(p, '.pay-rep')), 'transfer reported (waits for the office)');
+  // the box re-renders from the reply: "รอตรวจยอด" (never paid by itself), pay buttons folded away
+  await p.waitForFunction(() => /รอตรวจยอด/.test(document.querySelector('.pay .pay-st')?.textContent || ''), null, { timeout: 15000 }).catch(() => {});
+  ok(/รอตรวจยอด/.test(await text(p, '.pay .pay-st')) && /แจ้งโอนแล้ว/.test(await text(p, '.pay')) && await p.$$eval('.pay .pay-m button', x => x.every(b => b.closest('details'))), 'transfer reported: รอตรวจยอด, waits for the office');
+  ok(!/\bnull\b|undefined|NaN/.test(await text(p, '#bookRoot .bk-tout')), 'no null / undefined / NaN in the tracking result');
 
   // 4 · office verifies (in-page confirmation) → receipt number
   await s.reload(); await s.waitForSelector('.bo-t tbody th', { timeout: 30000 });
@@ -172,6 +175,15 @@ try {
   const out2 = await text(q, '#bookRoot .bk-out, #bookRoot .s-hand');
   ok(!/SBP-\d{6}-\d{3}/.test(out2), 'without the viewer: no ticket number is claimed', out2.slice(0, 160));
   await ctx2.close();
+
+  // 7 · a view-only viewer (below Contributor) learns it before filling the form, and is never pointed at the real company
+  const ctx3 = await b.newContext({ viewport: { width: +W, height: 900 } });
+  await ctx3.addInitScript(() => { window.__sbpReadOnly = true; }); await ctx3.addInitScript(FAKE);
+  const r3 = await ctx3.newPage(); await r3.goto(URL0 + '#booking'); await r3.waitForSelector('#bookRoot .bk-form', { timeout: 90000 });
+  await r3.waitForFunction(() => /ดูได้อย่างเดียว/.test(document.querySelector('#bookRoot .bk-conn')?.textContent || ''), null, { timeout: 30000 }).catch(() => {});
+  const conn3 = await text(r3, '#bookRoot .bk-conn');
+  ok(/เว็บทดสอบ/.test(conn3) && /ดูได้อย่างเดียว/.test(conn3) && !/ส่งเข้าระบบหลังบ้านของบริษัท/.test(conn3), 'view-only viewer: the side card says so before the form is filled', conn3);
+  await ctx3.close();
 
   ok(!errs.length, 'no console errors and no window dialogs', errs.slice(0, 5));
 } catch (e) { fails++; console.log('✗ crashed', e.message); }

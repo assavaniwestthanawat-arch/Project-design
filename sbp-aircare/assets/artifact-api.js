@@ -35,7 +35,8 @@ export const REQ_KINDS = { full: 'ชำระเต็มจำนวน', depo
 export const REQ_STATUS = { open: 'รอชำระ', paid: 'ชำระแล้ว', void: 'ยกเลิกรายการ', expired: 'หมดอายุ' };
 export const PAY_METHODS = { promptpay: 'พร้อมเพย์ (QR)', transfer: 'โอนเข้าบัญชีบริษัท', cash: 'เงินสด (หน้างาน)', edc: 'บัตร (เครื่องรูดหน้างาน)', cheque: 'เช็ค', gateway: 'ชำระออนไลน์ผ่านผู้ให้บริการ', other: 'อื่น ๆ' };
 export const PAY_STATUS = { submitted: 'รอตรวจยอด', verified: 'ได้รับเงินแล้ว', rejected: 'ไม่พบยอด', pending: 'รอชำระ', failed: 'ไม่สำเร็จ', expired: 'หมดอายุ' };
-const MONEY_TH = { none: '', unpaid: 'รอชำระ', partial: 'ชำระบางส่วน', paid: 'ชำระครบแล้ว', overpaid: 'ชำระเกิน รอคืนส่วนต่าง', refunded: 'คืนเงินแล้ว', part_refunded: 'คืนเงินบางส่วน' };
+const MONEY_TH = { none: '', unpaid: 'รอชำระ', partial: 'ชำระบางส่วน', checking: 'รอตรวจยอด', expired: 'มีรายการชำระเงินหมดอายุ', paid: 'ชำระครบแล้ว', overpaid: 'ชำระเกิน รอคืนส่วนต่าง', refunded: 'คืนเงินแล้ว', part_refunded: 'คืนเงินบางส่วน' };
+const PAID_ASKED_TH = 'ชำระตามที่เรียกเก็บแล้ว';
 const TEAMS = ['ทีม 1', 'ทีม 2', 'ผู้รับเหมา'], CAPACITY = 2;
 const LIMITS = { createPerTel: 5, createPerIp: 20, createGlobal: 300, trackPerIp: 30, loginPerIp: 10, payPerIp: 20 };   // server/config.mjs (here: per tab)
 
@@ -295,13 +296,17 @@ function summary(t) {
   if (!R.length && !Pm.length && !F.length) return null;
   const paid = Pm.filter(p => p.status === 'verified').reduce((a, p) => a + p.amount, 0);
   const refunded = F.filter(f => f.status === 'done').reduce((a, f) => a + f.amount, 0);
-  const open = R.filter(r => r.status === 'open');
-  const due = open.reduce((a, r) => a + Math.max(0, r.amount - paidFor(t, r.id)), 0);
+  const open = R.filter(r => r.status === 'open'), left = r => Math.max(0, r.amount - paidFor(t, r.id));
+  const due = open.reduce((a, r) => a + left(r), 0);
   const asked = R.filter(r => r.status === 'open' || r.status === 'paid').reduce((a, r) => a + r.amount, 0);
   const pending = Pm.filter(p => p.status === 'submitted').length;
+  const reported = new Set(Pm.filter(p => p.status === 'submitted' && p.reqId).map(p => p.reqId));
+  const owed = R.filter(r => (r.status === 'open' || r.status === 'expired') && left(r) > 0), todo = owed.filter(r => !reported.has(r.id));
   const net = paid - refunded;
-  const status = refunded && net <= 0 ? 'refunded' : refunded ? 'part_refunded' : due > 0 ? (paid > 0 ? 'partial' : 'unpaid') : net > asked && asked > 0 ? 'overpaid' : paid > 0 ? 'paid' : 'none';
-  return { status, statusTh: MONEY_TH[status], due, paid, refunded, asked, pending, open: open.length };
+  const status = refunded && net <= 0 ? 'refunded' : refunded ? 'part_refunded' : todo.some(r => r.status === 'open') ? (paid > 0 ? 'partial' : 'unpaid')
+    : todo.length ? 'expired' : owed.length ? 'checking' : net > asked && asked > 0 ? 'overpaid' : paid > 0 ? 'paid' : 'none';
+  const settled = R.some(r => r.status === 'paid' && (r.kind === 'full' || r.kind === 'balance'));
+  return { status, statusTh: status === 'paid' && !settled ? PAID_ASKED_TH : MONEY_TH[status], due, paid, refunded, asked, pending, open: open.length };
 }
 const baht = x => x && { ...x, due: x.due / 100, paid: x.paid / 100, refunded: x.refunded / 100, asked: x.asked / 100 };
 // list / update: like server summaries() — only tickets with a payment request or a payment carry `pay`
@@ -314,14 +319,17 @@ function suggested(t) {
 }
 const payee = () => ({ name: P.payee, promptpay: P.promptpayId ? maskId(P.promptpayId) : '', bank: P.bank && P.accountNo ? { name: P.bank, accountName: P.accountName || P.payee, accountNo: P.accountNo } : null });
 const methodsFor = () => [P.promptpayId ? 'promptpay' : null, P.bank && P.accountNo ? 'transfer' : null, P.onsite ? 'onsite' : null].filter(Boolean);
-// what the customer may see after id + phone: amounts, request references, receipt numbers — no staff names or notes
+// the customer's own last "โอนแล้ว" on a request came back ไม่พบยอด (no staff name or note is exposed)
+const lastReportRejected = (t, r) => { const mine = t.pays.filter(p => p.reqId === r.id && p.byWho === 'ลูกค้า'); return r.status === 'open' && mine.length > 0 && mine[mine.length - 1].status === 'rejected'; };
+// what the customer may see after id + phone: amounts, request references, receipt numbers — no staff names or notes.
+// A cancelled ticket offers no way to pay; once the job is done, paying the technician on site is no longer offered.
 function publicView(t) {
   const s = summary(t);
   if (!s) return null;
   return {
     status: s.status, statusTh: s.statusTh, due: s.due / 100, paid: s.paid / 100, refunded: s.refunded / 100, pending: s.pending > 0,
-    methods: methodsFor(), payee: P.payee,
-    requests: t.reqs.filter(r => r.status !== 'void').map(r => ({ id: r.id, kind: r.kind, kindTh: REQ_KINDS[r.kind] || r.kind, amount: r.amount / 100, remaining: Math.max(0, r.amount - paidFor(t, r.id)) / 100, status: r.status, statusTh: REQ_STATUS[r.status] || r.status, ref: r.ref, expiresAt: r.expiresAt, submitted: t.pays.some(p => p.reqId === r.id && p.status === 'submitted') })),
+    methods: t.status === 'cancelled' ? [] : methodsFor().filter(m => !(m === 'onsite' && t.status === 'done')), payee: P.payee,
+    requests: t.reqs.filter(r => r.status !== 'void').map(r => ({ id: r.id, kind: r.kind, kindTh: REQ_KINDS[r.kind] || r.kind, amount: r.amount / 100, remaining: Math.max(0, r.amount - paidFor(t, r.id)) / 100, status: r.status, statusTh: REQ_STATUS[r.status] || r.status, ref: r.ref, expiresAt: r.expiresAt, submitted: t.pays.some(p => p.reqId === r.id && p.status === 'submitted'), rejected: lastReportRejected(t, r) })),
     receipts: t.pays.filter(p => p.status === 'verified' && p.receiptNo).map(p => ({ no: p.receiptNo, amount: p.amount / 100, at: p.verifiedAt.slice(0, 10), method: PAY_METHODS[p.method] || p.method })),
     test: true,
   };
@@ -331,6 +339,7 @@ async function pay(b) {
   if (b.method === 'gateway') throw fail('pay_unavailable');   // phase 2 gateway: never on the test site
   if (!rl.hit('pay:ip', LIMITS.payPerIp, 10 * 60e3)) throw fail('rate_limited');
   const t = await findByIdTel(b.id, b.tel); if (!t) throw fail('not_found');
+  if (t.status === 'cancelled') throw fail('ticket_cancelled');
   const r = openReq(t, b.req); if (!r) throw fail('pay_closed');
   const remaining = r.amount - paidFor(t, r.id);
   if (remaining < 100) throw fail('pay_closed');
@@ -345,7 +354,7 @@ async function pay(b) {
     return { ok: true, pay: { ...out, method: 'transfer', bank: p.bank, test: true } };
   }
   if (b.method === 'onsite') {
-    if (!P.onsite) throw fail('pay_unavailable');
+    if (!P.onsite || t.status === 'done') throw fail('pay_unavailable');
     return { ok: true, pay: { ...out, method: 'onsite', test: true } };
   }
   throw fail('bad_method');
@@ -354,6 +363,7 @@ async function pay(b) {
 async function paid(b) {
   if (!rl.hit('pay:ip', LIMITS.payPerIp, 10 * 60e3)) throw fail('rate_limited');
   const t0 = await findByIdTel(b.id, b.tel); if (!t0) throw fail('not_found');
+  if (t0.status === 'cancelled') throw fail('ticket_cancelled');
   const method = b.method === 'transfer' ? 'transfer' : 'promptpay';
   if (!methodsFor().includes(method)) throw fail('pay_unavailable');
   const t = await mutate(t0.id, t => {

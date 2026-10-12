@@ -74,6 +74,9 @@ try {
   await p.waitForFunction(() => /ยืนยันนัดแล้ว/.test(document.querySelector('#bookRoot .bk-tl li.now')?.textContent || ''), null, { timeout: 15000 });
   const tout = await p.textContent('#bookRoot .bk-tout');
   ok(/นัดหมาย:/.test(tout) && !/โทรก่อน/.test(tout), 'track: confirmed + appointment, staff note hidden', tout);
+  // UX audit: no literal "null", the current step is exposed (aria-current) and only finished steps carry the check
+  const tl = await p.$$eval('#bookRoot .bk-tl li', x => x.map(li => ({ cur: li.getAttribute('aria-current'), done: li.classList.contains('done'), check: !!li.querySelector('svg') })));
+  ok(!/\bnull\b|undefined/.test(tout) && tl.filter(l => l.cur === 'step').length === 1 && tl.every(l => l.check === l.done), 'track: no "null", aria-current on the current step, checks only on finished steps', tl);
   // 5 · contact form → inquiry ticket
   await p.evaluate(() => { location.hash = '#quote'; }); await p.waitForTimeout(1200);
   const nameSel = '#qform input[id$="name"]', telSel = '#qform input[id$="tel"]';

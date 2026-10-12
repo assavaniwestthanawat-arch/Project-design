@@ -15,7 +15,8 @@ export function createNotifier(ctx) {
   const { db, cfg } = ctx;
   const memory = [];   // MAIL_TRANSPORT=memory (development / tests): what would have been sent
   const site = () => cfg.siteUrl || '';
-  const trackUrl = id => (site() ? `${site()}/?track=${encodeURIComponent(id)}#booking` : '');
+  // the tracking card itself (booking.js #booking-track); links already sent with #booking still land there
+  const trackUrl = id => (site() ? `${site()}/?track=${encodeURIComponent(id)}#booking-track` : '');
   const enqueue = (channel, recipient, subject, body, ticketId = '') => {
     if (!recipient) return;
     db.prepare(`INSERT INTO outbox (channel, recipient, subject, body, ticketId, createdAt, nextMs) VALUES (?, ?, ?, ?, ?, ?, 0)`).run(channel, recipient, subject, body, ticketId, now());

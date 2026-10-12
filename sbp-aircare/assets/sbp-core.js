@@ -406,6 +406,8 @@ export const FAQ = [
 
 /* ---------- utilities used by all variants ---------- */
 export const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+// scrollIntoView({behavior: smoothOrAuto()}) — no animated scroll under prefers-reduced-motion (CLAUDE.md §5.4)
+export const smoothOrAuto = () => (reduceMotion() ? 'auto' : 'smooth');
 export function $(sel, root = document) { return root.querySelector(sel); }
 export function $$(sel, root = document) { return [...root.querySelectorAll(sel)]; }
 export function h(tag, attrs = {}, ...kids) {
