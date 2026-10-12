@@ -12,6 +12,7 @@
 <meta property="og:site_name" content="SBP AirCare">
 <meta property="og:title" content="SBP AirCare · แบบ C Virtual Showroom">
 <meta property="og:description" content="โชว์รูมแอร์ออนไลน์ ทุกรุ่นดูแบบ 3 มิติได้ ราคาเครื่องพร้อมติดตั้ง ล้าง ซ่อม จองคิวออนไลน์ — SBP AirCare โดย บริษัท สหบูรพากรุ๊ป จำกัด">
+<script>/* Rev.10 UX: before the first paint — a link to another page of the site (#contact, #booking …) keeps everything below the header hidden until site.js shows that page (no flash of the home showroom, no layout jump); on the home page the other pages' sections stay out of the layout. Safety: the mark is dropped after 12 s if the page script never ran. */(function(d){var v='';try{v=decodeURIComponent(location.hash.slice(1))}catch(e){}d.setAttribute('data-sx-boot',!v||/^(top|home|quick|start|flow)$/.test(v)?'home':'view');setTimeout(function(){d.removeAttribute('data-sx-boot')},12000)})(document.documentElement)</script>
 <link rel="stylesheet" href="assets/fonts.css">
 <link rel="stylesheet" href="assets/shared.css">
 <link rel="stylesheet" href="assets/business.css">
@@ -405,6 +406,11 @@ main:focus{outline:none}
 }
 /* phones: the bottom bar is menu · booking · quote from the first paint (the menu button is in the markup; journey.js reuses it) */
 .mbar:has(.s-mmenu){grid-template-columns:1fr 1fr 1.6fr!important}
+/* first paint (the boot mark in <head>): another page asked for = only the header shows until site.js has shown it; the hero
+   stays out of the layout so its 3D does not boot for a page that does not show it · home = the other pages' sections stay out */
+html[data-sx-boot=view]:not(.sx-on) body>:not(header):not(.skip){visibility:hidden}
+html[data-sx-boot=view]:not(.sx-on) #top{display:none}
+html[data-sx-boot=home]:not(.sx-on) :is(#journey,main>section:not(#quick):not(#start):not(#flow)){display:none}
 /* the dock's part note is written in the markup (no jump when the 3D boots); without WebGL there are no parts to tap */
 .stage:has([data-v-fallback]:not([hidden])) .info{display:none}
 </style>
@@ -420,7 +426,7 @@ main:focus{outline:none}
 </div></header>
 
 <section class="stage" id="top" aria-label="โชว์รูมเสมือน">
-  <div class="cv" data-v-canvas><img class="v-poster" src="assets/posters/hero-c.webp" alt="" aria-hidden="true" decoding="async"></div>
+  <div class="cv" data-v-canvas><picture><source media="(pointer:coarse) and (max-width:900px)" srcset="assets/posters/hero-c.webp"><img class="v-poster" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" aria-hidden="true" width="780" height="846" fetchpriority="high"></picture></div>
   <div class="labels" data-v-labels></div>
   <div class="fb" data-v-fallback hidden>อุปกรณ์นี้เปิดภาพ 3 มิติไม่ได้ เวอร์ชันจริงจะแสดงวิดีโอแทน</div>
   <div class="dock">

@@ -100,7 +100,8 @@ def build_variant(v, transform=None):
     # r12: poster frames of the v2 stages (assets/posters/*.jpg, rendered by tools/posters.mjs) -> inline data URI
     html = re.sub(r'(src|srcset)="assets/posters/([\w-]+\.jpg)"', lambda m: f'{m.group(1)}="data:image/jpeg;base64,' + base64.b64encode(open(os.path.join(A, 'posters', m.group(2)), 'rb').read()).decode() + '"', html)
     # r20: hero posters of A/B/C for phones (assets/posters/hero-<v>.webp, rendered by tools/heroposters.mjs) -> inline data URI
-    html = re.sub(r'src="assets/posters/([\w-]+\.webp)"', lambda m: 'src="data:image/webp;base64,' + base64.b64encode(open(os.path.join(A, 'posters', m.group(1)), 'rb').read()).decode() + '"', html)
+    # (Rev.10 UX: also a <picture><source srcset> — C downloads its poster on phones only)
+    html = re.sub(r'(src|srcset)="assets/posters/([\w-]+\.webp)"', lambda m: f'{m.group(1)}="data:image/webp;base64,' + base64.b64encode(open(os.path.join(A, 'posters', m.group(2)), 'rb').read()).decode() + '"', html)
     # r13: photos of the v3 editions (AI illustrations, assets/photos/*.webp) -> inline data URI
     html = re.sub(r'src="assets/photos/([\w-]+\.webp)"', lambda m: 'src="data:image/webp;base64,' + base64.b64encode(open(os.path.join(A, 'photos', m.group(1)), 'rb').read()).decode() + '"', html)
     # the one module script -> bundled inline module
@@ -139,7 +140,8 @@ def strip_doc(html):
     head = re.sub(r'<title>.*?</title>', '', head, flags=re.S)
     body_m = re.search(r'<body([^>]*)>(.*)</body>', html, flags=re.S)
     attrs, body = body_m.group(1), body_m.group(2)
-    out = (f'<title>{title.group(1)}</title>' if title else '') + head + body
+    # Rev.10 UX: the publish skeleton has no lang — the page sets it (screen readers otherwise read the Thai with the default voice)
+    out = (f'<title>{title.group(1)}</title>' if title else '') + "<script>document.documentElement.lang||(document.documentElement.lang='th')</script>" + head + body
     if 'class=' in attrs:   # carry body classes over
         cls = re.search(r'class="([^"]*)"', attrs).group(1)
         out += f"<script>document.body.classList.add(...{json.dumps(cls.split())})</script>"

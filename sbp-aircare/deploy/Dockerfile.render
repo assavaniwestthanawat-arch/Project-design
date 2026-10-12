@@ -7,7 +7,7 @@ WORKDIR /src
 COPY package.json ./
 COPY server/ server/
 COPY assets/ assets/
-COPY a.html b.html c.html d.html a2.html b2.html c2.html d2.html a3.html b3.html c3.html backoffice.html privacy.html terms.html refund.html ./
+COPY a.html b.html c.html d.html a2.html b2.html c2.html d2.html a3.html b3.html c3.html backoffice.html privacy.html terms.html refund.html 404.html ./
 RUN find . \( -name '*.md' -o -name '*.txt' -o -name 'README*' -o -name '.*' -o -name '*.py' \) -type f -delete \
  && rm -f assets/photos/photos.json \
  && find . -type d -empty -delete

@@ -1249,9 +1249,9 @@ html.sx-on .s-dock{display:none!important}   /* r6: views + the journey strip re
 /* r20 · hero poster on phones: a still of the first 3D frame (tools/heroposters.mjs) stands in until the live canvas shows
    (the 3D waits for a tap on it or a calm moment — proto-ui mountViewer phoneDefer); desktop starts the 3D at once */
 .v-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;transition:opacity .45s ease;z-index:0}
-[data-v-canvas]:has(>canvas:not([style*="opacity: 0"]))>.v-poster{opacity:0}
+[data-v-canvas]:has(>canvas:not([style*="opacity: 0"])) .v-poster{opacity:0}
 @media not ((pointer:coarse) and (max-width:900px)){.v-poster{display:none}}
-@media (pointer:coarse) and (max-width:900px){[data-v-canvas]:has(>.v-poster)::before{display:none}}
+@media (pointer:coarse) and (max-width:900px){[data-v-canvas]:has(.v-poster)::before{display:none}}   /* Rev.10 UX: the poster may sit in a <picture> (C: phones only download it, at high priority) */
 
 /* ---------- r20 · quick quote on the home page of A / B / C (#quick: the job card of D — jobcard.js — in each edition's tokens) ----------
    Priced live from the Pricebook (before VAT, round hundreds; the cleaning minimum is its own line), then straight to the

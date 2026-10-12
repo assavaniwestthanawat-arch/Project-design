@@ -145,3 +145,7 @@
 .sv-chk{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:5px}
 .sv-chk li{font-size:12.5px;line-height:1.3;padding:3px 9px;border-radius:999px;border:1px solid var(--s-line);background:var(--s-card-2,rgba(0,0,0,.03));color:var(--s-ink-2)}
 .sv-ph.close{color:var(--s-ink-2)}
+/* Rev.10 UX: link to the package guide when the page already shows it (mountServices cfg.pkgLink) */
+.sv-pkg-go{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid var(--s-line);border-radius:var(--s-r);background:var(--s-card)}
+.sv-pkg-go p{margin:0;flex:1 1 320px;font-size:14.5px;line-height:1.6;color:var(--s-ink-2)}.sv-pkg-go b{color:var(--s-ink)}
+.sv-pkg-go .s-btn{text-decoration:none}

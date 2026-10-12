@@ -442,6 +442,10 @@ try {
     const r = await http(S1, 'GET', p); ok(r.status === 404 && /ไม่พบหน้านี้/.test(r.body.toString('utf8')), `404 ${p}`, [r.status, r.body.toString('utf8').slice(0, 80)]);
   }
   ok((await http(S1, 'POST', '/c.html', { body: 'x' })).status === 405, 'POST to a page → 405');
+  // Rev.10 UX: the 404 is the branded page (ways back + its own stylesheet, fonts and logo allowed by its CSP), at any depth
+  const nf = await http(S1, 'GET', '/no-such-page/deeper'), nfh = nf.body.toString('utf8'), nfc = nf.headers['content-security-policy'] || '';
+  ok(nf.status === 404 && /href="\/#booking-track"/.test(nfh) && /href="tel:/.test(nfh) && /href="\/assets\/fonts\.css"/.test(nfh) && /style-src 'self'/.test(nfc) && /font-src 'self'/.test(nfc) && /img-src 'self'/.test(nfc) && nf.headers['cache-control'] === 'no-store',
+    'branded 404 page: home / request status / phone, served with a CSP that allows its own stylesheet, fonts and logo', [nf.status, nfc]);
   const home = await http(S1, 'GET', '/'), html = home.body.toString('utf8'), csp = home.headers['content-security-policy'] || '';
   const inl = [...html.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/gi)].filter(m => !/application\/(ld\+)?json/i.test(m[1]));
   const scriptSrc = (csp.split(';').find(d => d.trim().startsWith('script-src')) || '').trim();
@@ -463,12 +467,12 @@ try {
   const hz = await http(S1, 'GET', '/healthz'), hzj = JSON.parse(hz.body);
   ok(hz.status === 200 && hzj.ok === true && hzj.version && Number.isInteger(hzj.uptimeS) && Number.isInteger(hzj.outboxPending), '/healthz ok', hzj);
   // the CSP really lets the pages run in a browser (an inline module blocked by its own CSP = a dead site)
-  for (const pg of ['/backoffice.html', '/']) {
+  for (const pg of ['/backoffice.html', '/', '/no-such-page']) {
     const c = await browser.newContext(), p = await c.newPage(), viol = [];
     p.on('console', m => { if (/Content Security Policy|Refused to/i.test(m.text())) viol.push(m.text().slice(0, 160)); });
     await p.addInitScript(() => document.addEventListener('securitypolicyviolation', e => console.error('Refused to ' + e.violatedDirective + ' ' + e.blockedURI)));
     await p.goto(`http://127.0.0.1:${S1.port}${pg}`, { waitUntil: 'domcontentloaded' });
-    const ran = await p.waitForFunction(sel => document.querySelector(sel), pg === '/' ? 'html.sx-on' : '#bo-nm', { timeout: 90000 }).then(() => true, () => false);
+    const ran = await p.waitForFunction(sel => document.querySelector(sel), pg === '/' ? 'html.sx-on' : pg === '/no-such-page' ? 'main h1' : '#bo-nm', { timeout: 90000 }).then(() => true, () => false);
     await p.waitForTimeout(1500);
     ok(ran && !viol.length, `${pg} runs under its CSP in Chromium (no violation)`, viol.slice(0, 5));
     await c.close();

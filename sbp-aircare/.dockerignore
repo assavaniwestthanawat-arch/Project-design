@@ -20,6 +20,7 @@
 !privacy.html
 !terms.html
 !refund.html
+!404.html
 
 # never, even inside the allowed folders
 **/*.md
