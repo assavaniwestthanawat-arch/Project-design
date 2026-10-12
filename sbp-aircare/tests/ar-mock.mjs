@@ -1,12 +1,13 @@
 // Rev.11 AR test doubles (page init scripts) — headless Chromium has neither AR Quick Look nor an AR device, so the AR flow test
 // and the screenshots stand them in:
-//   QL_MOCK  a.relList.supports('ar') → true, as on iPhone / iPad Safari (the click then downloads the .usdz in Chromium)
+//   QL_MOCK  iPhone Safari: its user agent + a.relList.supports('ar') → true (the click then downloads the .usdz in Chromium)
 //   XR_MOCK  navigator.xr with immersive-ar support and a fake XRSession: hit-test results on a wall / floor / ceiling
 //            (window.__xr.surface), viewer pose 1.5 m above the floor, frames every 50 ms; window.__xr records the request
 //            (window.__xr.reject = 'NotAllowedError' makes requestSession fail like a denied camera). The renderer's canvas is
 //            kept (window.__xr.canvas) so a screenshot can show the body over a stand-in "camera picture".
 // Test-only globals; the site itself adds none.
 export const QL_MOCK = () => {
+  Object.defineProperty(navigator, 'userAgent', { configurable: true, get: () => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1' });
   const sup = DOMTokenList.prototype.supports;
   DOMTokenList.prototype.supports = function (t) { return t === 'ar' ? true : sup.call(this, t); };
 };
@@ -52,12 +53,16 @@ export const XR_MOCK = () => {
 // open the shop view and the product panel of the first catalogue model of a type ('ติดผนัง' = wall …)
 export async function openModel(p, typeTh = 'ติดผนัง') {
   await p.evaluate(() => { location.hash = 'shop'; });
+  // B opens the catalogue as a table: switch to cards (the same product panel opens from either)
+  await p.waitForSelector('[data-cat-grid] > *', { state: 'attached', timeout: 120000 });
+  await p.evaluate(() => { const g = document.querySelector('[data-cat-view="grid"]'); if (g && g.getAttribute('aria-pressed') !== 'true') g.click(); });
   await p.waitForSelector('[data-cat-grid] .card .open', { timeout: 120000 });
   await p.waitForTimeout(600);
   // narrow the catalogue to the type (the facet checkbox works in the hidden phone sheet too)
   const tid = { 'ติดผนัง': 'wall', 'แขวนใต้ฝ้า': 'ceiling', 'สี่ทิศทาง': 'cassette', 'ตู้ตั้งพื้น': 'floor', 'ซ่อนในฝ้า': 'duct' }[typeTh];
-  if (tid) { await p.evaluate(id => { const i = document.getElementById('f-type-' + id); if (i && !i.checked) i.click(); }, tid); await p.waitForTimeout(800); }
-  const ok = await p.evaluate(th => { const c = [...document.querySelectorAll('[data-cat-grid] .card')].find(x => x.textContent.includes(th)); const b = c && c.querySelector('.open'); if (b) b.click(); return !!b; }, typeTh);
+  if (tid) await p.evaluate(id => { const i = document.getElementById('f-type-' + id); if (i && !i.checked) i.click(); }, tid);
+  await p.waitForFunction(([th, id]) => [...document.querySelectorAll('[data-cat-grid] .card')].some(x => x.textContent.includes(th) || x.querySelector(`[data-type="${id}"]`)), [typeTh, tid], { timeout: 30000 }).catch(() => {});
+  const ok = await p.evaluate(([th, id]) => { const c = [...document.querySelectorAll('[data-cat-grid] .card')].find(x => x.textContent.includes(th) || x.querySelector(`[data-type="${id}"]`)); const b = c && c.querySelector('.open'); if (b) b.click(); return !!b; }, [typeTh, tid]);
   if (!ok) throw new Error('no catalogue card of type ' + typeTh);
   await p.waitForSelector('#drawerBody .m3d', { state: 'attached', timeout: 30000 });
   await p.waitForFunction(() => { const r = document.querySelector('#drawerBody .ar'); return r && r.dataset.ar !== 'wait'; }, null, { timeout: 30000 });

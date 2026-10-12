@@ -41,13 +41,25 @@ const phr = t => t.split(' · ').flatMap((x, i) => [i ? ' · ' : null, h('span',
 export const dimsTh = sc => `กว้าง ${cm(sc.w)} × สูง ${cm(sc.h)} × ลึก ${cm(sc.d)} ซม.`;
 export const srcTh = sc => (sc.src === 'spec' ? 'ขนาดตามสเปก' : 'ขนาดทั่วไปของประเภทนี้') + (sc.type === 'cassette' ? ' (ตัวเครื่อง ไม่รวมหน้ากาก)' : '');
 
+// in-app browsers (LINE, Facebook, Instagram, WeChat, TikTok) — AR does not open from them: say "open in Safari / Chrome"
+const INAPP = /\bLine\/|FBAN|FBAV|Instagram|MicroMessenger|TikTok|musical_ly|BytedanceWebview/i;
+// AR Quick Look is the iPhone / iPad camera only: macOS Safari also knows rel="ar" (it shows a 3D preview, not the room), and an
+// app's web view (WKWebView) only opens it when it is a full browser (Chrome, Edge, Firefox, Google app, DuckDuckGo on iOS)
+function quickLookCandidate() {
+  const ua = navigator.userAgent || '';
+  if (!(/iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) || INAPP.test(ua)) return false;
+  if (window.webkit && window.webkit.messageHandlers) return /CriOS\/|EdgiOS\/|FxiOS\/|GSA\/|DuckDuckGo\//.test(ua);
+  const a = document.createElement('a');
+  return !!(a.relList && a.relList.supports && a.relList.supports('ar'));
+}
 /** which AR this browser can open: AR Quick Look (iOS / iPadOS Safari), WebXR immersive-ar (Android Chrome), or none */
 let SUP = null;
 export function arSupport() {
   if (SUP) return SUP;
   return (SUP = (async () => {
     try { if (testSite()) return 'none'; } catch (_) { /* no endpoint config: a normal page */ }
-    try { const a = document.createElement('a'); if (a.relList && a.relList.supports && a.relList.supports('ar')) return 'quicklook'; } catch (_) {}
+    try { if (quickLookCandidate()) return 'quicklook'; } catch (_) {}
+    if (INAPP.test(navigator.userAgent || '')) return 'none';
     try { if (window.isSecureContext !== false && navigator.xr && await navigator.xr.isSessionSupported('immersive-ar')) return 'webxr'; } catch (_) { /* blocked by the frame or the permissions policy */ }
     return 'none';
   })());
@@ -57,7 +69,7 @@ function whyNot(sc) {
   const real = TX[sc.type].real;
   let site = false; try { site = testSite(); } catch (_) {}
   if (site) return `เว็บทดสอบบน Claude เปิดกล้องไม่ได้ · บนเว็บจริงเปิดหน้านี้บนมือถือ iPhone หรือ Android เพื่อ${real}`;
-  if (/\bLine\/|FBAN|FBAV|Instagram|MicroMessenger|TikTok/i.test(navigator.userAgent || '')) return `เปิดลิงก์นี้ใน Safari หรือ Chrome เพื่อ${real}`;
+  if (INAPP.test(navigator.userAgent || '')) return `เปิดลิงก์นี้ใน Safari หรือ Chrome เพื่อ${real}`;
   if (matchMedia('(pointer: coarse)').matches) return `เบราว์เซอร์นี้ยังเปิดกล้อง AR ไม่ได้ · เปิดหน้านี้ใน Safari บน iPhone หรือ Chrome บน Android เพื่อ${real}`;
   return `เปิดหน้านี้บนมือถือ iPhone หรือ Android เพื่อ${real}`;
 }

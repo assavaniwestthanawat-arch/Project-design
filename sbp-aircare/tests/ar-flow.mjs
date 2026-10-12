@@ -1,5 +1,6 @@
 // Rev.11 วางบนผนังบ้านคุณ — browser flow of the AR entry in the product panel (ar.js), with stand-ins for what headless Chromium lacks:
-//   none   no AR in this browser → no button at all, one line saying where it works; "ดูรุ่นนี้แบบ 3 มิติ" stays
+//   none   no AR in this browser → no button at all, one line saying where it works; "ดูรุ่นนี้แบบ 3 มิติ" stays — also on a desktop
+//          that knows rel="ar" (macOS Safari previews, it has no camera AR) and in an in-app browser (LINE) even with WebXR
 //   ql     AR Quick Look (iPhone / iPad Safari, mocked relList.supports('ar')) → the button makes a USDZ in the page and clicks an
 //          <a rel="ar"> holding an <img> whose href is a blob: URL (#allowsContentScaling=0); the file is a real USDZ with the right
 //          alignment; the Quick Look banner button books this model
@@ -20,10 +21,12 @@ const res = [], errs = [];
 const ok = (name, pass, info) => { res.push({ name, pass: !!pass, ...(info === undefined ? {} : { info }) }); console.log(`${pass ? 'ok  ' : 'FAIL'} ${name}${info === undefined ? '' : ' ' + JSON.stringify(info)}`); };
 
 const b = await launch();
+const LINE_UA = 'Mozilla/5.0 (Linux; Android 14; SM-A546E Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/129.0.6668.100 Mobile Safari/537.36 Line/14.16.1/IAB';
 async function open(mock, typeTh) {
-  const ctx = await b.newContext({ viewport: { width: +w, height: mob ? 844 : 900 }, colorScheme: scheme, isMobile: mob, hasTouch: mob, acceptDownloads: true });
+  const ctx = await b.newContext({ viewport: { width: +w, height: mob ? 844 : 900 }, colorScheme: scheme, isMobile: mob, hasTouch: mob, acceptDownloads: true, ...(mock === 'xr-line' ? { userAgent: LINE_UA } : {}) });
   if (mock === 'ql') await ctx.addInitScript(QL_MOCK);
-  if (mock === 'xr') await ctx.addInitScript(XR_MOCK);
+  if (mock === 'xr' || mock === 'xr-line') await ctx.addInitScript(XR_MOCK);
+  if (mock === 'rel-only') await ctx.addInitScript(() => { const sup = DOMTokenList.prototype.supports; DOMTokenList.prototype.supports = function (t) { return t === 'ar' ? true : sup.call(this, t); }; });
   const p = await ctx.newPage();
   p.on('pageerror', e => errs.push(`${mock}: ${e.message}`));
   p.on('console', m => { if (m.type() === 'error' && !/WebGL|GPU stall|context lost|ERR_FILE_NOT_FOUND|favicon/i.test(m.text())) errs.push(`${mock}: ${m.text().slice(0, 200)}`); });
@@ -60,6 +63,12 @@ const booked = p => p.evaluate(() => { try { return JSON.parse(document.document
   ok('none: one line says where it works', /iPhone/.test(s.hint) && /Android/.test(s.hint) && /เพื่อวางบนผนังจริง/.test(s.hint), s.hint);
   ok('none: 3D viewer button stays', s.m3d);
   await axeOn(p, '#drawerBody .m3d', 'none: AR block');
+  await ctx.close();
+}
+for (const [mock, re, what] of [['rel-only', /iPhone|Safari/, 'desktop that knows rel="ar" (macOS Safari)'], ['xr-line', /เปิดลิงก์นี้ใน Safari หรือ Chrome/, 'LINE in-app browser']]) {
+  const { ctx, p } = await open(mock, 'ติดผนัง');
+  const s = await arState(p);
+  ok(`${mock}: ${what} → no button, one line`, s.mode === 'none' && !s.btn && re.test(s.hint), s.hint);
   await ctx.close();
 }
 

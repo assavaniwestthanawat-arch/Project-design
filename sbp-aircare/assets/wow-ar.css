@@ -20,9 +20,14 @@
 .ar-ql{display:none}
 .ar-nw{white-space:nowrap}
 @media (max-width:340px){.ar-nw{white-space:normal}}
-/* room-fit side panel: the same entry, narrower */
-.ar.compact .ar-go{flex:1 1 100%}
+/* room-fit side panel (roomfit.js .rf-ar, under the chosen model): the same entry, narrower — the model card above it already
+   gives the size, so only its source stays */
+.rf-ar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0 2px}
+.rf-ar:empty{display:none}
+.ar.compact .ar-go{flex:1 1 100%;justify-content:center}
 .ar.compact .ar-info{padding:8px 10px}
+.ar.compact .ar-dim>.ar-nw{display:none}
+.ar.compact .ar-hint{flex-basis:100%}
 
 /* ---- the camera view (WebXR immersive-ar): the page is not shown, only this layer over the camera picture ---- */
 .ar-xr{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;justify-content:space-between;gap:12px;
