@@ -26,6 +26,8 @@ services:
         value: live                   # real customers: no Beta bar / design switcher (use "beta" for a test round)
       - key: HOME_PAGE
         value: c.html
+      - key: PORT
+        value: "10000"                # Render's web port, stated here so the image's own 8080 default never applies
       - key: TRUST_PROXY
         value: "1"
       - key: TRUST_PROXY_HOPS

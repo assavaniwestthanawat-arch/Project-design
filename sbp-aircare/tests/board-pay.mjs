@@ -246,10 +246,11 @@ try {
   ok(await u.evaluate(() => !document.querySelector('.bo-sure') && document.activeElement.textContent === 'บันทึกรับเงิน'), 'Esc closes the confirmation and returns focus to its button');
   ok((await api({ action: 'paydetail', token: TOKEN, id: U2.id })).payments.length === 0, 'nothing recorded without the confirmation');
   // the reply to a payrecord is lost on the way back: the board says it is unsure, reloads, and a retry is not recorded twice
+  // (the note shows at once; the reloaded list lands a moment later — wait for both, the check below used to race the reload under load)
   let dropped = 0;
   await u.route('**/exec', async route => { if (!dropped && /"payrecord"/.test(route.request().postData() || '')) { dropped++; await route.fetch(); return route.abort('failed'); } return route.continue(); });
   await u.fill('#bo-pm-amt', '1000'); await u.click('.bo-pay form:has(#bo-pm-amt) button[type=submit]'); await yes(u);
-  await u.waitForFunction(() => { const f = document.querySelector('.bo-pay form:has(#bo-pm-amt)'); return /ไม่แน่ใจว่าบันทึกสำเร็จหรือไม่/.test(f?.querySelector('.bo-err')?.textContent || '') && !f.querySelector('button[type=submit]').disabled; }, null, { timeout: 15000 });   // message shown, list reloaded
+  await u.waitForFunction(() => { const f = document.querySelector('.bo-pay form:has(#bo-pm-amt)'); return /ไม่แน่ใจว่าบันทึกสำเร็จหรือไม่/.test(f?.querySelector('.bo-err')?.textContent || '') && !f.querySelector('button[type=submit]').disabled && document.querySelectorAll('.bo-pay [data-pay]').length === 1; }, null, { timeout: 15000 });   // message shown, list reloaded
   for (let i = errs.length - 1; i >= 0; i--) if (/net::ERR_FAILED/.test(errs[i])) errs.splice(i, 1);   // the browser logs the reply dropped on purpose above
   const pd1 = await api({ action: 'paydetail', token: TOKEN, id: U2.id });
   ok(dropped === 1 && pd1.payments.length === 1 && await u.$$eval('.bo-pay [data-pay]', x => x.length) === 1 && !(await u.$eval('.bo-pay form:has(#bo-pm-amt) button[type=submit]', e => e.disabled)), 'lost reply: inline "not sure" message, the list already shows the payment, button usable again', pd1.payments.length);

@@ -22,13 +22,13 @@ import { icon } from './icons.js';
 const SK = 'sbp-staff-v1', DK = 'sbp-staff-draft-v1';
 const ss = { get() { try { return JSON.parse(sessionStorage.getItem(SK) || 'null'); } catch (e) { return null; } }, set(v) { try { v ? sessionStorage.setItem(SK, JSON.stringify(v)) : sessionStorage.removeItem(SK); } catch (e) {} } };
 const ACTIVE = ['new', 'need_info', 'confirmed', 'assigned', 'in_progress'];
-const pad = n => String(n).padStart(2, '0');
-const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const thDay = s => s ? new Date(s + 'T00:00:00').toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short' }) : '';
 const thDayLong = s => s ? new Date(s + 'T00:00:00').toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'short' }) : '';
 // one Thai date-time for every time stamp on the board: '2026-10-11 10:47:43' → 'อา. 11 ต.ค. 10:47' (another year adds it)
 const thDT = s => { const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String(s || '')); if (!m) return String(s || ''); const other = +m[1] !== new Date().getFullYear(); return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short', ...(other ? { year: '2-digit' } : {}) }) + ` ${m[4]}:${m[5]}`; };
-const hhmm = d => d ? d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : '';
+const hhmm = d => d ? d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' }) : '';
+// Bangkok calendar day (no DST), whatever clock the staff device uses — same as the server's today()
+const bkkDay = (i = 0) => new Date(Date.now() + 7 * 36e5 + i * 864e5).toISOString().slice(0, 10);
 const telFmt = t => { const d = String(t || '').replace(/\D/g, ''); return d.length === 10 ? `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}` : d.length === 9 ? `${d.slice(0, 2)}-${d.slice(2, 5)}-${d.slice(5)}` : d; };
 const units = u => { try { const o = typeof u === 'string' && u ? JSON.parse(u) : (u || {}); return Object.entries(o).map(([k, n]) => `${(TYPE_BY_ID[k] || { th: k }).th} ${n}`).join(' · '); } catch (e) { return String(u || ''); } };
 const when = t => t.schedDate ? { d: t.schedDate, s: t.schedSlot, fixed: true } : t.prefDate ? { d: t.prefDate, s: t.slot, fixed: false } : null;
@@ -184,7 +184,7 @@ export function mountBoard(root) {
   }
 
   function board() {
-    const T = data.tickets, today = iso(new Date()), fk = focusKey();
+    const T = data.tickets, today = bkkDay(), fk = focusKey();
     const act = T.filter(t => ACTIVE.includes(t.status));
     const kpi = [
       ['ใหม่ รอยืนยัน', T.filter(t => t.status === 'new').length, 'new'],
@@ -199,7 +199,7 @@ export function mountBoard(root) {
     const tiles = h('div', { class: 'bo-kpi' }, kpi.map(([th, n, k]) => h('button', { type: 'button', class: 'bo-tile', 'data-fk': 'tile:' + k, 'aria-pressed': !filt.pay && (filt.status === k || (k === 'today' && filt.day === today)), onclick: () => { filt.pay = ''; if (k === 'today') { filt.day = today; filt.status = 'active'; } else { filt.status = k; filt.day = ''; } board(); } }, h('b', {}, String(n)), h('span', {}, th))),
       pk.map(([th, v, k]) => h('button', { type: 'button', class: 'bo-tile' + (k === 'due' ? ' money' : ''), 'data-fk': 'tile:' + k, 'aria-pressed': filt.pay === k, onclick: () => { filt.pay = filt.pay === k ? '' : k; filt.status = 'all'; filt.day = ''; board(); } }, h('b', {}, v), h('span', {}, th))));
     // 14-day load: bookings per half-day vs capacity (scheduled date first, else the customer's preferred date)
-    const cap = data.capacity || 2, days = Array.from({ length: 14 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i); return iso(d); });
+    const cap = data.capacity || 2, days = Array.from({ length: 14 }, (_, i) => bkkDay(i));
     const busyAt = {}; act.forEach(t => { const w = when(t); if (!w || t.kind !== 'booking') return; const k = w.d + '|' + (w.s || 'AM'); (busyAt[k] = busyAt[k] || []).push(t); });
     const grid = h('div', { class: 'bo-cap', role: 'table', 'aria-label': `คิว 14 วัน (รับได้ ${cap} งานต่อช่วง)` },
       h('div', { role: 'row', class: 'bo-cap-r hd' }, h('span', { role: 'columnheader' }, 'วัน'), ...Object.values(SLOTS).map(s => h('span', { role: 'columnheader' }, s))),
