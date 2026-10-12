@@ -190,6 +190,8 @@ try {
   for (const [k, a, b] of [['KINDS', API.KINDS, Tk.KINDS], ['SERVICES', API.SERVICES, Tk.SERVICES], ['STATUSES', API.STATUSES, Tk.STATUSES], ['SLOTS', API.SLOTS, Tk.SLOTS], ['ACTIVE', API.ACTIVE, Tk.ACTIVE],
     ['CONSENT_DEFAULT', API.CONSENT_DEFAULT, Tk.CONSENT_DEFAULT], ['HEADERS', API.HEADERS, Db.HEADERS], ['ROLES', API.ROLES, Sf.ROLES], ['REQ_KINDS', API.REQ_KINDS, Pm.REQ_KINDS],
     ['REQ_STATUS', API.REQ_STATUS, Pm.REQ_STATUS], ['PAY_METHODS', API.PAY_METHODS, Pm.PAY_METHODS], ['PAY_STATUS', API.PAY_STATUS, Pm.PAY_STATUS]]) ok(same(a, b), `${k} equals the server's`, [a, b]);
+  // Rev.10 UX: the sentence the forms show (contact.js CONSENT_TH) is the one the server stores by default
+  ok((await import('../assets/contact.js')).CONSENT_TH === Tk.CONSENT_DEFAULT, "the forms' consent sentence equals the server's CONSENT_DEFAULT");
   ok(Object.isFrozen(TEST_PAY) && TEST_PAY.promptpayId === '0000000000000' && TEST_PAY.bank === 'ธนาคารตัวอย่าง' && TEST_PAY.accountNo === '000-0-00000-0' && TEST_PAY.onsite === true && TEST_PAY.payee === 'บริษัท สหบูรพากรุ๊ป จำกัด', 'TEST_PAY: frozen placeholder settings', TEST_PAY);
   ok(same(Object.keys(TEST_ACCOUNTS), ['admin', 'staff', 'tech']) && TEST_ACCOUNTS.admin.name === 'ผู้ดูแล (ทดสอบ)' && TEST_ACCOUNTS.tech.role === 'tech', 'three test accounts');
 
