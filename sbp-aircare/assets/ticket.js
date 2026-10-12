@@ -47,7 +47,7 @@ const ERR_TH = {
   bad_method: 'ช่องทางชำระไม่ถูกต้อง', bad_amount: 'จำนวนเงินไม่ถูกต้อง ใส่อย่างน้อย 1 บาท ทศนิยมไม่เกิน 2 ตำแหน่ง', amount_required: 'ใบเสนอราคายังมีรายการที่ต้องประเมิน กรุณาใส่จำนวนเงินที่ยืนยันกับลูกค้าแล้ว',
   forbidden: 'บัญชีนี้ไม่มีสิทธิ์ทำรายการนี้', ticket_cancelled: 'คำขอนี้ถูกยกเลิกแล้ว', has_payments: 'รายการนี้มียอดชำระแล้ว ยกเลิกไม่ได้ ใช้การคืนเงินแทน',
   reason_required: 'กรุณาระบุเหตุผล', refund_too_large: 'คืนเงินได้ไม่เกินยอดที่ได้รับสุทธิ', gateway_error: 'ระบบรับชำระออนไลน์ขัดข้อง ลองใหม่หรือเลือกช่องทางอื่น',
-  bad_json: 'ข้อมูลที่ส่งไม่ถูกต้อง', too_large: 'ข้อมูลยาวเกินไป', bad_status: 'สถานะไม่ถูกต้อง', bad_team: 'ไม่มีทีมนี้ในระบบ', bad_decision: 'คำสั่งไม่ถูกต้อง',
+  bad_json: 'ข้อมูลที่ส่งไม่ถูกต้อง', too_large: 'ข้อมูลยาวเกินไป ย่อรายละเอียดแล้วลองอีกครั้ง', bad_status: 'สถานะไม่ถูกต้อง', bad_team: 'ไม่มีทีมนี้ในระบบ', bad_decision: 'คำสั่งไม่ถูกต้อง',
 };
 // errTh(e, action?) — the action (send · track · pay · report) names what failed, so a status check never reads like a failed send
 const ACT_TH = { send: 'ส่งคำขอไม่สำเร็จ', track: 'ตรวจสถานะไม่ได้ตอนนี้', pay: 'โหลดข้อมูลการชำระไม่ได้', report: 'แจ้งโอนไม่สำเร็จ' };
@@ -62,7 +62,8 @@ export function errTh(e, action = '') {
   const m = Object.prototype.hasOwnProperty.call(ERR_TH, code) ? ERR_TH[code] : null;
   if (m) return typeof m === 'function' ? m() : m;
   console.warn('[ticket] error without Thai text:', code || e);
-  return `${ACT_TH[action] || 'ทำรายการไม่สำเร็จ'} ลองอีกครั้ง${callUs()}`;
+  // a failed send is shown inside the hand-off, which already gives the phone number
+  return `${ACT_TH[action] || 'ทำรายการไม่สำเร็จ'} ลองอีกครั้ง${action === 'send' ? '' : callUs()}`;
 }
 
 async function call(body) {

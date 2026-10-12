@@ -43,7 +43,9 @@ try {
     await p.reload(); await p.waitForSelector('#bookRoot .bk-form', { timeout: 60000 });
     const j0 = await strip();
     ok(/ทำแล้ว 3 จาก 4/.test(j0) && /ยังไม่ได้ส่งคำขอ/.test(j0) && /ไปส่งคำขอ/.test(j0) && !/ครบทุกขั้นแล้ว|ทีมจะติดต่อกลับ/.test(j0), 'journey: nothing sent → the send step stays open ("ยังไม่ได้ส่งคำขอ" + ไปส่งคำขอ)', j0);
-    await p.evaluate(() => { location.hash = '#booking'; }); await p.waitForTimeout(2500);   // longer than the 1.8 s "seen" timer
+    await p.click('.sx-js-home button:has-text("ไปส่งคำขอ")'); await p.waitForTimeout(2500);   // longer than the 1.8 s "seen" timer
+    const here = await p.$eval('.sx-here', e => (e.hidden ? '' : e.textContent)).catch(() => '');
+    ok(/ขั้นที่ 4 จาก 4/.test(here) && /ยังไม่ได้ส่งคำขอ/.test(here) && !/\bnull\b/.test(here), '"ไปส่งคำขอ" opens the form; the step banner says it is not sent (no "null")', here);
     ok(/ยังไม่ได้ส่งคำขอ/.test(await strip()), 'journey: viewing the booking form does not mark it sent');
     await p.evaluate(() => { location.hash = '#booking'; }); await p.waitForTimeout(600);
   }
@@ -154,6 +156,15 @@ try {
     await p.waitForSelector('.sx-dlg .s-tk', { timeout: 20000 });
     const fc = await p.textContent('.sx-dlg .s-tk');
     ok(/ได้รับความเห็นแล้ว/.test(fc) && !/สถานะ:|โทรยืนยันวัน/.test(fc) && await p.evaluate(() => document.activeElement.id === 'sx-fb-h'), 'feedback: "ได้รับความเห็นแล้ว" card without booking status/steps, focus on the heading', fc.slice(0, 160));
+    await p.keyboard.press('Escape');
+  }
+  // 10 · search opens with Ctrl+K / ⌘K, never with a single character key (WCAG 2.1.4)
+  if (await p.$('.sx-sbtn')) {
+    await p.evaluate(() => document.activeElement && document.activeElement.blur());
+    await p.keyboard.press('/'); await p.waitForTimeout(300);
+    const slash = !!(await p.$('.sx-sdlg'));
+    await p.keyboard.press('Control+k'); await p.waitForTimeout(300);
+    ok(!slash && !!(await p.$('.sx-sdlg')) && (await p.getAttribute('.sx-sbtn', 'aria-keyshortcuts')) === 'Control+K Meta+K', 'search: "/" does nothing, Ctrl+K opens it (aria-keyshortcuts Control+K Meta+K)');
     await p.keyboard.press('Escape');
   }
   ok(errs.length === 0, 'no page errors', errs.slice(0, 5));
