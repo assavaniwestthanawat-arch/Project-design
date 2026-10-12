@@ -45,6 +45,8 @@ export function loadConfig(env = process.env) {
     customerAck: bool(env.CUSTOMER_ACK, false),
     customerNotify: bool(env.CUSTOMER_NOTIFY, false),
     retentionDays: int(env.RETENTION_DAYS, 0),
+    // key for the stored IP hash (HMAC) — empty: a random key made once and kept in DATA_DIR/ip-hash.key (server/tickets.mjs)
+    ipHashSecret: env.IP_HASH_SECRET || '',
     // outgoing mail (company Gmail: smtp.gmail.com 465 + App Password) and LINE Messaging API
     smtp: { host: env.SMTP_HOST || '', port: int(env.SMTP_PORT, 465), secure: bool(env.SMTP_SECURE, int(env.SMTP_PORT, 465) === 465), user: env.SMTP_USER || '', pass: env.SMTP_PASS || '', from: env.MAIL_FROM || env.SMTP_USER || '' },
     mailTransport: env.MAIL_TRANSPORT || (env.SMTP_HOST ? 'smtp' : 'none'),   // smtp | memory (dev/tests) | none
