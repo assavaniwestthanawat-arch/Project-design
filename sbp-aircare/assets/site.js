@@ -239,7 +239,7 @@ export function mountSite(cfg) {
     // sent → the ticket id · the send step is the one left → say plainly that nothing was sent yet, with the way to send it
     const act = sent ? h('p', { class: 'sx-jsd' }, `ส่งคำขอแล้ว${sentId ? ' เลขที่ ' + sentId : ''} · ตรวจสถานะได้ด้วยเลขที่คำขอและเบอร์โทร`)
       : nextS && nextS !== sendS ? h('button', { type: 'button', class: 's-btn primary', onclick: () => goStep(nextS) }, `ขั้นต่อไป: ${nextS.th}`)
-      : sendS ? [h('p', { class: 'sx-jsd' }, 'ยังไม่ได้ส่งคำขอ'), h('button', { type: 'button', class: 's-btn primary', onclick: () => goStep(sendS) }, 'ไปส่งคำขอ')]
+      : sendS ? [h('p', { class: 'sx-jsd', style: 'color:var(--s-warn)' }, 'ยังไม่ได้ส่งคำขอ'), h('button', { type: 'button', class: 's-btn primary', onclick: () => goStep(sendS) }, 'ไปส่งคำขอ')]   // pending, not the green "done" colour
       : h('p', { class: 'sx-jsd' }, 'ครบทุกขั้นแล้ว');
     return h('div', { class: 'sx-jsi' },
       h('p', { class: 'sx-jst' }, h('b', {}, `เส้นทางของคุณ: ${JOURNEYS[J.k].th}`), h('span', {}, ` · ทำแล้ว ${n} จาก ${steps.length} ขั้น`)),
@@ -329,7 +329,7 @@ export function mountSite(cfg) {
     // Rev.10 UX: a stored request folds the form away (a second tap cannot send it again) and offers a clean form for a new one;
     // askTeam() reopens it the same way ('sbp:reopen') when another "ติดต่อสอบถาม" button is used
     const reopen = () => { qf.reset(); qf.querySelectorAll('[aria-invalid]').forEach(clearFieldError); qf.hidden = false; out.hidden = true; out.replaceChildren(); };
-    const again = h('button', { type: 'button', class: 's-btn ghost sx-qagain', onclick: () => { reopen(); qf.querySelector('input,select,textarea')?.focus(); } }, 'ส่งเรื่องใหม่');
+    const again = h('button', { type: 'button', class: 's-btn ghost sx-qagain', style: 'margin-top:12px', onclick: () => { reopen(); qf.querySelector('input,select,textarea')?.focus(); } }, 'ส่งเรื่องใหม่');
     qf.addEventListener('sbp:reopen', reopen);
     const TOPIC_SVC = { 'ล้างแอร์': 'clean', 'ติดตั้งแอร์': 'install', 'ซ่อม / ตรวจเช็ก': 'repair', 'สัญญาล้างรายปี': 'amc', 'ซื้อแอร์': 'buy', 'FUJIVA': 'buy', 'ระบบ VRV / VRF': 'project', 'งานโครงการ / รีโนเวต / เปลี่ยนทั้งชุด': 'project', 'งานโครงการอื่น': 'project' };
     qf.addEventListener('submit', async e => {
