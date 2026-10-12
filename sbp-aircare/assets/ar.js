@@ -128,14 +128,20 @@ function overlay(cx) {
   move.addEventListener('click', run(c => c.move()));
   close.addEventListener('click', () => (ctl ? ctl.end() : cx.cancel()));
   bookB.addEventListener('click', () => { cx.after = () => book(cx); ctl ? ctl.end() : cx.cancel(); });
-  el.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); close.click(); } });
+  // Esc closes the camera view only (captured first: the product panel behind it, which also closes on Esc, stays open)
+  const esc = e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close.click(); } };
+  addEventListener('keydown', esc, true);
   const want = sc.type === 'cassette' ? 'ceiling' : sc.type === 'floor' ? 'floor' : 'wall';
   return {
     el,
     bind(c) { ctl = c; el.classList.remove('wait'); },
+    drop() { removeEventListener('keydown', esc, true); },
     paint(st) {
       el.dataset.mode = st.mode; el.dataset.ok = String(!!st.ok);
+      const f = document.activeElement;
       place.disabled = !(st.mode === 'aim' && st.ok); turn.disabled = !st.turn; move.disabled = st.mode !== 'placed'; bookB.hidden = st.mode !== 'placed';
+      // a control that just turned off loses the keyboard focus: hand it to the next sensible one (never to the page behind)
+      if (f && el.contains(f) && (f.disabled || f.hidden)) (st.mode === 'placed' ? move : !place.disabled ? place : el).focus({ preventScroll: true });
       let t;
       if (st.mode === 'placed') t = `วางแล้ว · กด\u00a0ย้าย เพื่อเลือกที่ใหม่${st.turn ? ' · กด\u00a0หมุน ทีละ 15\u00a0องศา' : ''}`;
       else if (st.ok) t = `พบ${SURF_TH[st.surf]}แล้ว · กด\u00a0วาง หรือแตะจอ`;
@@ -147,7 +153,7 @@ function overlay(cx) {
       if (st.bottom != null) ht = `ขอบล่างสูงจากพื้นประมาณ ${st.bottom.toFixed(2)} ม. · ค่าประมาณจากกล้อง` + (sc.type === 'wall' ? ` · ค่าแนะนำทั่วไป ${FIT_RULES.wall.bestBottom[0].toFixed(1)}–${FIT_RULES.wall.bestBottom[1].toFixed(1)} ม.` : sc.type === 'ceiling' ? ` · ค่าแนะนำทั่วไปไม่ต่ำกว่า ${FIT_RULES.ceiling.minBottom.toFixed(1)} ม.` : '');
       else if (st.ceil != null) ht = `ฝ้าสูงจากพื้นประมาณ ${st.ceil.toFixed(2)} ม. · ค่าประมาณจากกล้อง · ค่าแนะนำทั่วไป ${FIT_RULES.cassette.minH.toFixed(1)}–${FIT_RULES.cassette.maxH.toFixed(1)} ม.`;
       else if (want !== 'floor' && st.mode === 'aim' && !st.ok) ht = 'ส่องพื้นสักครู่ก่อน จะบอกความสูงจากพื้นให้';
-      tall.hidden = !ht; if (tall.textContent !== ht) tall.textContent = ht;
+      tall.hidden = !ht; if (tall.dataset.t !== ht) { tall.dataset.t = ht; tall.replaceChildren(...phr(ht)); }
     },
   };
 }
@@ -165,7 +171,7 @@ function webXR(cx) {
   let session = null, done = false;
   const finish = text => {
     if (done) return; done = true;
-    ov.el.remove(); btn.removeAttribute('aria-busy');
+    ov.drop(); ov.el.remove(); btn.removeAttribute('aria-busy');
     if (btn.isConnected) btn.focus({ preventScroll: true });
     say(text);
     const next = cx.after; cx.after = null; if (next) next();
