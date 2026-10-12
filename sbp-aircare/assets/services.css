@@ -99,7 +99,7 @@
 .sv-step.off .sv-n{border-style:dashed}
 .sv-step.has-part{cursor:pointer}
 .sv-step.has-part:hover,.sv-step.has-part:focus-visible{background:color-mix(in oklab,var(--s-accent) 7%,transparent)}
-.sv-side{position:sticky;top:84px;display:grid;gap:12px;padding:16px;border:1px solid var(--s-line);border-radius:calc(var(--s-r) * 1.2);background:var(--s-card)}
+.sv-side{position:sticky;top:84px;display:grid;gap:12px;padding:16px;border:1px solid var(--s-line);border-radius:calc(var(--s-r) * 1.2);background:var(--s-card);max-height:calc(100vh - 100px);overflow:auto;overscroll-behavior:contain}   /* Rev.10 UX: never taller than the screen (its last price rows stayed hidden) */
 .sv-side .s-btn{width:100%}
 .sv-price b{display:block;font:600 30px/1.1 var(--s-mono);letter-spacing:-.02em}
 .sv-price small{font-size:12.5px;color:var(--s-ink-3)}

@@ -93,7 +93,7 @@
 .st-pipe{fill:none;stroke-width:7;stroke-linecap:round;stroke-dasharray:14 12;animation:st-flow linear infinite}
 .st-pipe.hot{stroke:#e0522e}.st-pipe.warm{stroke:#f09a3e}.st-pipe.cold{stroke:#2a8fe6}.st-pipe.vap{stroke:#7cc4f2}
 @keyframes st-flow{to{stroke-dashoffset:-52}}
-.st-cmp{cursor:pointer}.st-cmp:focus{outline:none}.st-cmp.on rect,.st-cmp.on circle,.st-cmp:focus-visible rect,.st-cmp:focus-visible circle{stroke:var(--s-accent);stroke-width:4}
+.st-cmp{cursor:pointer}.st-cmp:focus{outline:none}.st-cmp.on rect,.st-cmp.on circle{stroke:var(--s-sel,var(--s-accent));stroke-width:4}.st-cmp:focus-visible rect,.st-cmp:focus-visible circle{stroke:var(--s-focus,var(--s-accent));stroke-width:4}
 .c-cold{fill:#d9ecfb;stroke:#2a8fe6;stroke-width:2}.c-hot{fill:#fde3d8;stroke:#e0522e;stroke-width:2}.c-comp{fill:#e7eaee;stroke:#56616d;stroke-width:2}.c-exp{fill:#fff1dc;stroke:#f09a3e;stroke-width:2}
 .st-ct{font:600 13px system-ui,sans-serif;fill:#1d2835;text-anchor:middle}.st-ct.sm{font-size:11px}
 .st-air{stroke-width:3;fill:none}.warm-air{stroke:#f09a3e}.cold-air{stroke:#2a8fe6}
@@ -212,3 +212,5 @@
 @media (max-width:600px){.st-in-art{min-height:640px}.st-groups{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}.st-groups button{flex:0 0 auto}}
 .st-cycle .st-cyc-info{display:none}
 .st-hud[hidden],.st-inside[hidden],.st-cycle[hidden]{display:none}
+/* Rev.10 UX: touch screens — selects use 16 px text (iOS zooms the page into any smaller field on focus) */
+@media (pointer:coarse){.st-size,.st-rc select{font-size:16px}}

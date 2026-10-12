@@ -39,7 +39,7 @@
 .bz-life li,.bz-flow li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;padding:14px;border:1px solid var(--s-line);border-radius:var(--s-r);background:var(--s-card)}
 .bz-n{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--s-accent);color:var(--s-on-accent);font:600 13px var(--s-mono)}
 .bz-life b,.bz-flow b{display:block;font-size:15px}
-.bz-life small{display:block;font-size:12px;color:var(--s-ink-2)}
+.bz-life small{display:block;font-size:12.5px;color:var(--s-ink-2)}
 .bz-life p,.bz-flow p{font-size:13.5px;color:var(--s-ink-2);margin-top:4px;line-height:1.6}
 .bz-out{display:flex;gap:6px;align-items:baseline;color:var(--s-ok)!important;font-weight:500}
 .bz-out svg{flex:none;transform:translateY(2px)}
@@ -66,7 +66,7 @@
 .bz-rep{--p-bg:#FFFFFF;--p-ink:#16202E;--p-ink2:#4A5668;--p-line:#D5DDE8;--p-head:#EEF3FA;
   display:grid;gap:12px;padding:18px;border-radius:var(--s-r);background:var(--p-bg);color:var(--p-ink);border:1px solid var(--p-line);box-shadow:0 18px 40px -28px rgba(10,20,40,.45);min-width:0}
 .bz-rep-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:10px;border-bottom:2px solid var(--p-ink)}
-.bz-rep-h b{display:block;font-size:17px}.bz-rep-h small{font-size:12px;color:var(--p-ink2)}
+.bz-rep-h b{display:block;font-size:17px}.bz-rep-h small{font-size:12.5px;color:var(--p-ink2)}
 .bz-stamp{flex:none;padding:3px 10px;border:2px solid #B83A1B;color:#B83A1B;border-radius:6px;font-weight:700;font-size:13px;transform:rotate(-4deg)}
 .bz-rep-meta{display:grid;grid-template-columns:repeat(3,auto minmax(0,1fr));gap:4px 12px;margin:0;font-size:13px}
 .bz-rep-meta dt{color:var(--p-ink2)}.bz-rep-meta dd{margin:0;font-weight:500}
@@ -84,7 +84,7 @@
 .bz-g{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:6px;font-weight:700;font-size:12px;color:#FFFFFF}
 .bz-g.gA{background:#1B7A45}.bz-g.gB{background:#1B51A4}.bz-g.gC{background:#9A4A0B}.bz-g.gD{background:#B02A26}
 .bz-sig{display:flex;gap:10px;flex-wrap:wrap}
-.bz-sig span{flex:1;min-width:90px;padding-top:22px;border-bottom:1px solid var(--p-ink2);font-size:12px;color:var(--p-ink2)}
+.bz-sig span{flex:1;min-width:90px;padding-top:22px;border-bottom:1px solid var(--p-ink2);font-size:12.5px;color:var(--p-ink2)}
 .bz-rep-n{display:flex;gap:6px;align-items:baseline;font-size:12.5px;color:var(--p-ink2);padding-top:8px;border-top:1px dashed var(--p-line)}
 .bz-rep-n svg{flex:none;transform:translateY(2px)}
 

@@ -463,7 +463,7 @@ a.s-flow-c:hover{border-color:var(--s-accent);transform:translateY(-1px)}
 .pk-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .pk-card{border:1px solid var(--s-line);border-radius:var(--s-r);background:var(--s-card);padding:14px 16px;display:grid;gap:6px;align-content:start}
 .pk-card.rec{border-color:var(--s-accent);box-shadow:0 0 0 2px color-mix(in oklab,var(--s-accent) 22%,transparent)}
-.pk-code{margin:0;font:700 12px var(--s-mono);color:var(--s-ink-3);display:flex;gap:8px;align-items:center}.pk-code span{font-family:inherit;font-weight:600;color:var(--s-accent)}
+.pk-code{margin:0;font:700 12.5px var(--s-mono);color:var(--s-ink-3);display:flex;gap:8px;align-items:center}.pk-code span{font-family:inherit;font-weight:600;color:var(--s-accent)}
 .pk-card :is(h3,h4,h5){margin:0;font-size:17px}.pk-pitch{margin:0;color:var(--s-ink-2);font-size:13.5px}
 .pk-from{margin:4px 0;display:flex;gap:6px;align-items:baseline}.pk-from b{font-size:22px;font-family:var(--s-mono)}.pk-from small{font-size:12.5px;color:var(--s-ink-3)}
 .pk-card ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.6}
@@ -475,6 +475,18 @@ a.s-flow-c:hover{border-color:var(--s-accent);transform:translateY(-1px)}
 .pk-t th,.pk-t td{padding:7px 10px;border-bottom:1px solid var(--s-line);text-align:left}.pk-t thead th{font-size:12.5px;color:var(--s-ink-3)}.pk-t td.pr{text-align:right;font-family:var(--s-mono)}.pk-t tbody th{vertical-align:top;font-weight:600}
 .pk-det>summary{cursor:pointer;font-weight:600;padding:8px 0}
 @media (max-width:900px){.pk-cards,.pk-methods{grid-template-columns:1fr}}
+/* Rev.10 UX: phones — the clean-price matrix becomes one block per size (type heading, size, three labelled prices), so no
+   price is ever cut at the edge of a scroll box */
+@media (max-width:560px){
+  .pk-scroll{overflow:visible}.pk-t,.pk-t tbody{display:block;min-width:0}
+  .pk-t thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .pk-t tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 10px;padding:8px 0;border-bottom:1px solid var(--s-line)}
+  .pk-t th,.pk-t td{padding:0;border:0}
+  .pk-t tbody th{grid-column:1/-1;padding-top:6px;font-size:15px}
+  .pk-t td:not(.pr){grid-column:1/-1;color:var(--s-ink-2)}
+  .pk-t td.pr{display:grid;text-align:left;font-weight:600}
+  .pk-t td.pr::before{content:attr(data-l);font-size:12.5px;font-weight:400;line-height:1.4;color:var(--s-ink-3)}
+}
 /* Rev.07 — installation materials showcase (3D) */
 .mt3-root{margin-bottom:16px}
 .mt3-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,1fr);gap:12px;align-items:start}
@@ -948,7 +960,7 @@ a.s-flow-c:hover{border-color:var(--s-accent);transform:translateY(-1px)}
 .cg-ph,.cg-opt{padding:2px 9px;border-radius:999px;font-size:12.5px;font-weight:600;background:var(--s-card-2);color:var(--s-ink-2);border:1px solid var(--s-line)}
 .cg-ph.ph-c2{background:var(--s-accent);border-color:var(--s-accent);color:var(--s-on-accent)}
 .cg-opt{border-style:dashed}
-.cg-n{margin-left:auto;font:500 12px var(--s-mono);color:var(--s-ink-3)}
+.cg-n{margin-left:auto;font:500 12.5px var(--s-mono);color:var(--s-ink-3)}
 .cg-chk{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
 .cg-chk li{padding:2px 9px;border-radius:8px;font-size:12.5px;background:var(--s-card-2);color:var(--s-ink-2)}
 .cg-you b{color:var(--s-ok)}
@@ -1051,7 +1063,7 @@ html.sx-on header nav a[aria-current="page"]{background:var(--s-accent-soft);col
 .sx-int-go::after{content:"";position:absolute;inset:0;border-radius:inherit}   /* the whole card is the button's hit area */
 .sx-int[data-k="fujiva"] .sx-int-go{background:transparent;color:var(--s-ink);box-shadow:inset 0 0 0 1px var(--s-line)}
 .sx-int:hover{border-color:var(--s-accent)}
-.sx-int:focus-within{box-shadow:0 0 0 2px var(--s-accent)}
+.sx-int:focus-within{box-shadow:0 0 0 2px var(--s-focus,var(--s-accent))}
 .sx-int-go:focus-visible{outline:none}
 .sx-nc:focus-visible,.sx-jump a:focus-visible{outline:2px solid var(--s-focus,var(--s-accent));outline-offset:2px}
 /* Rev.09 r9: 7 cards (+ projects) — 4 columns on wide screens, FUJIVA closes the last row */
@@ -1375,3 +1387,6 @@ html.sx-on .s-dock{display:none!important}   /* r6: views + the journey strip re
   .s-doc{border:0;padding:0;background:#fff;color:#000;--s-ink:#000;--s-ink-2:#222;--s-ink-3:#444;--s-line:#bbb;--s-card:#fff;--s-warn:#7a3a00}
   .s-doc-t tr{break-inside:avoid}
 }
+/* Rev.10 UX: touch screens — the shared modules' text fields and selects use 16 px text (iOS zooms the page into any smaller
+   field on focus) · last in the file so it follows each module's own font rule */
+@media (pointer:coarse){.s-search,.s-qtopic :is(select,textarea),.rf-code,.rf-sl input[type=number],.cg-size,.qk-card :is(.jc-u,.jc-row) select,.bz-rooms :is(input,select):not([type=checkbox]){font-size:16px}}

@@ -434,7 +434,7 @@ export function cleanPackageGuide(where = 'บริการ', hl = 'h4') {   /
     const seg = h('div', { class: 's-seg', role: 'group', 'aria-label': 'วิธีล้าง' }, [['C1', 'ล้างปกติ C1'], ['C2', 'ล้างใหญ่ C2']].map(([k, t]) => h('button', { type: 'button', 'aria-pressed': k === method, onclick: () => { method = k; render(); } }, t)));
     const tb = h('tbody');
     types.forEach(([t, th]) => { const bands = SIZE_BANDS.filter(b => DATA.clean.some(r => r.type === t && r.range === (t === 'wall' ? b.wall : b.other)));
-      bands.forEach((b, i) => { const rg = t === 'wall' ? b.wall : b.other; tb.append(h('tr', {}, i === 0 ? h('th', { rowspan: bands.length, scope: 'rowgroup' }, th) : null, h('td', {}, rg + ' BTU'), ...PKG_INFO.map(p => { const r = DATA.clean.find(x => x.pkg === p.id && x.level === method && x.type === t && x.range === rg); return h('td', { class: 'pr' }, r && r.rate.s != null ? baht(r.rate.s) : 'ประเมิน'); }))); }); });
+      bands.forEach((b, i) => { const rg = t === 'wall' ? b.wall : b.other; tb.append(h('tr', {}, i === 0 ? h('th', { rowspan: bands.length, scope: 'rowgroup' }, th) : null, h('td', {}, rg + ' BTU'), ...PKG_INFO.map(p => { const r = DATA.clean.find(x => x.pkg === p.id && x.level === method && x.type === t && x.range === rg); return h('td', { class: 'pr', 'data-l': p.id }, r && r.rate.s != null ? baht(r.rate.s) : 'ประเมิน'); }))); }); });   // data-l: the package name above each price on phones (shared.css)
     root.append(cards,
       h('div', { class: 'pk-key' }, h('b', {}, 'ระดับบริการแพงขึ้น ไม่เท่ากับล้างลึกขึ้น: '), 'ความลึกของการล้างอยู่ที่วิธีล้าง C1 / C2 ส่วน P1 / P2 / P3 คือหลักฐาน การตรวจวัด การรับประกัน และการดูแลหลังงาน เลือกได้อิสระ เช่น P3 + ล้างปกติ'),
       methods,
